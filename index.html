@@ -754,12 +754,12 @@ var CONFIG = {
   }
 };
 
-/* หมวดในเมนู — count ต้องตรงกับจำนวนไฟล์จริง
+/* หมวดในเมนู — count = จำนวนขั้นต่ำ; ถ้าอัปโหลดไฟล์เลขถัดไปเพิ่ม (เช่น hair_5.png) เว็บจะเจอเองอัตโนมัติ
    ไฟล์ตัวละคร : <AVATAR_BASE>/<key>_<n>.png
    ไฟล์ไอคอน   : <AVATAR_BASE>/icons/<thumb>_<n>_thumb.png */
 var LAYERS = [
-  {key:'hair',             label:'ทรงผม',        count:4,  thumb:'hair',       color:true},
-  {key:'back_hair',        label:'ผมด้านหลัง',   count:8,  thumb:'back_hair',  color:true},
+  {key:'hair',             label:'ทรงผม',        count:5,  thumb:'hair',       color:true},
+  {key:'back_hair',        label:'ผมด้านหลัง',   count:9,  thumb:'back_hair',  color:true},
   {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
   {key:'shirt',            label:'เสื้อ',         count:7,  thumb:'shirt',      color:true},
@@ -915,6 +915,22 @@ var STORE_KEY = 'wedding_guest_v1';
     b.addEventListener('click',function(){ current=L; $$('.tab').forEach(function(t){t.setAttribute('aria-selected','false');}); b.setAttribute('aria-selected','true'); buildGrid(); });
     tabsEl.appendChild(b);
   });
+
+  // หาไฟล์ที่อัปโหลดเพิ่ม: ลองเลขถัดจาก count ไปเรื่อย ๆ จนกว่าจะไม่เจอไฟล์ (ไม่ต้องแก้ count ในโค้ด)
+  function discoverMore(L){
+    var n=L.count+1;
+    function probe(){
+      if(n>L.count+30) return;
+      fetch(srcFor(L.key,n),{method:'HEAD',cache:'no-cache'}).then(function(r){
+        if(!r.ok) return;
+        L.count=n; n++;
+        if(current===L && stage.classList.contains('show')) buildGrid();
+        probe();
+      }).catch(function(){});
+    }
+    probe();
+  }
+  LAYERS.forEach(discoverMore);
 
   function buildGrid(){
     var L=current; gridEl.innerHTML='';
