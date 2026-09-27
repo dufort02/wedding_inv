@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<!--
+  สไลด์โชว์คำอวยพร — เปิดบนจอ/โปรเจกเตอร์ในงาน
+  • ดึงคำอวยพรที่ "แสดง" จาก Google Sheet (URL เดียวกับ RSVP_ENDPOINT ใน index.html — อ่านให้เอง)
+  • คำอวยพรใหม่จะแทรกขึ้นเป็นใบถัดไปอัตโนมัติ (เช็กทุก 45 วินาที)
+  • ปุ่ม:  → / Space = ถัดไป   ← = ย้อน   P = หยุด/เล่น   F หรือดับเบิลคลิก = เต็มจอ
+  • ?endpoint=<URL /exec>  ใช้แทนค่าจาก index.html ได้
+-->
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wishes — PALIDA &amp; PACHAYA</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3ECE0; --red:#C23B3B; --red-soft:#B5504C; --white:#FFFDF8;
+  --script:'Dancing Script','Mali',cursive; --body:'Mali',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  font-family:var(--body);color:var(--red-soft);background-color:var(--paper);overflow:hidden;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .22 0 0 0 .16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+body.idle{cursor:none}
+.stage{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding:clamp(14px,3vh,36px) clamp(16px,4vw,56px)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.top img{height:clamp(56px,11vh,120px);width:auto}
+.top h1{font-family:var(--script);color:var(--red);font-size:clamp(2rem,6vh,4rem);line-height:1}
+
+.center{display:flex;align-items:center;justify-content:center;min-height:0;perspective:1200px}
+.card{
+  position:relative;width:min(1000px,92vw);max-height:100%;display:flex;flex-direction:column;
+  background:var(--c,#FBE3DD);border-radius:6px;padding:clamp(34px,6vh,72px) clamp(22px,4vw,64px) clamp(20px,4vh,44px);
+  box-shadow:0 3px 0 rgba(0,0,0,.03),0 22px 50px rgba(120,60,40,.18);
+  transform:rotate(var(--r,0deg));opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1);
+}
+.card.in{opacity:1}
+.card.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
+.card::before{content:"";position:absolute;top:-16px;left:50%;width:140px;height:34px;transform:translateX(-50%) rotate(var(--t,-3deg));background:rgba(222,196,150,.8)}
+.card.pinned::before{background:rgba(194,59,59,.5)}
+.msg{
+  color:#7a3b35;font-size:var(--fs,clamp(1.05rem,min(4.4vh,3.6vw),2.9rem));line-height:1.6;white-space:pre-wrap;word-break:break-word;
+  overflow:hidden;text-align:center;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:safe center;
+}
+.msg span{display:block;max-height:100%}
+.by{display:flex;align-items:center;justify-content:center;gap:clamp(12px,2vw,22px);margin-top:clamp(16px,3.5vh,36px);padding-top:clamp(14px,3vh,28px);border-top:2px dashed rgba(194,59,59,.3)}
+.av{width:clamp(56px,min(13vh,16vw),128px);height:clamp(56px,min(13vh,16vw),128px);flex:none;border-radius:50%;background:var(--white);border:2.5px solid var(--red);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);font-size:clamp(1.6rem,5vh,3rem)}
+.av img{width:100%;height:100%;object-fit:contain}
+.name{font-family:var(--script);color:var(--red);font-size:clamp(1.6rem,min(6.5vh,7vw),4.2rem);line-height:1.25;word-break:break-word}
+.tag{display:block;font-family:var(--body);font-size:clamp(.8rem,2vh,1.2rem);line-height:1.3;margin-top:2px;color:var(--red-soft)}
+
+.bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.meta{font-size:clamp(.8rem,2vh,1.1rem)}
+.bar{width:min(320px,40vw);height:4px;background:rgba(194,59,59,.15);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--red)}
+.qr{display:flex;align-items:center;gap:14px;text-align:right;font-size:clamp(.85rem,2.1vh,1.2rem);line-height:1.4}
+.qr b{display:block;color:var(--red);font-size:1.1em}
+.qr .code{width:clamp(84px,15vh,150px);height:clamp(84px,15vh,150px);background:#fff;padding:8px;border-radius:10px;box-shadow:0 0 0 2px var(--red)}
+.qr .code svg{width:100%;height:100%;display:block}
+
+.empty{text-align:center}
+.empty p{font-size:clamp(1.2rem,3.5vh,2rem);margin-bottom:20px}
+.empty .code{width:clamp(180px,32vh,320px);height:clamp(180px,32vh,320px);margin:0 auto;background:#fff;padding:12px;border-radius:14px;box-shadow:0 0 0 2px var(--red)}
+.empty .code svg{width:100%;height:100%;display:block}
+
+.hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--red);color:var(--white);padding:6px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .4s}
+.hint.show{opacity:1}
+@media (max-width:640px){ .qr{display:none} .top h1{font-size:2rem} }
+@media (prefers-reduced-motion:reduce){ .card{transition:opacity .3s} }
+</style>
+</head>
+<body>
+<div class="stage">
+  <header class="top">
+    <img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652">
+    <h1>Wishes</h1>
+  </header>
+
+  <main class="center" id="center">
+    <div class="empty" id="empty" hidden>
+      <p id="emptyMsg">กำลังโหลดคำอวยพร...</p>
+      <div class="code js-qr"></div>
+    </div>
+  </main>
+
+  <footer class="bottom">
+    <div class="meta"><span id="count"></span><div class="bar"><i id="bar"></i></div></div>
+    <div class="qr" id="qrBox"><span><b>สแกนเพื่อเขียนคำอวยพร</b>ขึ้นจอนี้ได้เลย</span><div class="code js-qr"></div></div>
+  </footer>
+</div>
+<div class="hint" id="hint"></div>
+
+<script src="js/qrcode.js"></script>
+<script>
+(function(){
+  var PAPERS={blush:'#FBE3DD',cream:'#FFF3DA',sky:'#E1ECF6',sage:'#E4EEDC',lilac:'#ECE3F5'};
+  var TAGS={attend:'มาร่วมงาน',gift:'ส่งของขวัญมาอวยพร',wish:'อวยพรออนไลน์'};
+  var REFRESH_MS=45000, DEMO_KEY='wedding_rsvp_demo';
+  var $=function(s){ return document.querySelector(s); };
+  var center=$('#center'), empty=$('#empty');
+  var list=[], seen={}, queue=[], idx=-1, timer=null, paused=false, t0=0, dwell=0, endpoint='';
+
+  /* ---------- QR ไปหน้าเชิญ ---------- */
+  var siteUrl=location.href.replace(/[#?].*$/,'').replace(/wishes\.html$/,'')+'#rsvp';
+  try{
+    var qr=qrcode(0,'M'); qr.addData(siteUrl); qr.make();
+    var svg=qr.createSvgTag({cellSize:4,margin:0,scalable:true});
+    Array.prototype.forEach.call(document.querySelectorAll('.js-qr'),function(el){ el.innerHTML=svg; });
+  }catch(e){ $('#qrBox').hidden=true; }
+
+  /* ---------- endpoint: ?endpoint= หรืออ่านจาก index.html ---------- */
+  function findEndpoint(){
+    var q=new URLSearchParams(location.search).get('endpoint');
+    if(q) return Promise.resolve(q);
+    return fetch('index.html',{cache:'no-store'}).then(function(r){ return r.text(); })
+      .then(function(t){ var m=t.match(/RSVP_ENDPOINT\s*:\s*'([^']*)'/); return m?m[1]:''; })
+      .catch(function(){ return ''; });
+  }
+
+  function key(w){ return (w.ts||'')+'|'+w.name+'|'+String(w.message).slice(0,40); }
+  function hash(s){ var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+
+  function load(){
+    var p;
+    if(!endpoint){
+      p=Promise.resolve().then(function(){
+        var a=[]; try{ a=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]'); }catch(e){}
+        return a.filter(function(w){ return w.message&&w.showOnWall==='แสดง'; }).reverse();
+      });
+    } else {
+      p=fetch(endpoint+(endpoint.indexOf('?')<0?'?':'&')+'action=wishes&t='+Date.now())
+        .then(function(r){ return r.json(); }).then(function(j){ return (j&&j.wishes)||[]; });
+    }
+    return p.then(function(ws){
+      var first=!list.length && !Object.keys(seen).length, fresh=[];
+      ws.forEach(function(w){ var k=key(w); if(!seen[k]){ seen[k]=1; if(!first) fresh.push(w); } });
+      // คงลำดับจากชีต (ปักหมุดก่อน, ใหม่ก่อน) แต่ถ้าถูกซ่อนในชีตก็เอาออกจากรอบด้วย
+      var cur=list[idx]; list=ws;
+      idx = cur ? Math.max(-1, list.findIndex(function(w){ return key(w)===key(cur); })) : -1;
+      queue=queue.filter(function(w){ return list.some(function(x){ return key(x)===key(w); }); }).concat(fresh);
+      render();
+    }).catch(function(){ if(!list.length){ $('#emptyMsg').textContent='โหลดคำอวยพรไม่ได้ จะลองใหม่อัตโนมัติ'; empty.hidden=false; } });
+  }
+
+  function render(){
+    $('#count').textContent = list.length ? 'คำอวยพร '+list.length+' ใบ' : '';
+    if(!list.length){
+      $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — สแกนเพื่อเป็นคนแรกกันนะ';
+      empty.hidden=false; $('#qrBox').style.visibility='hidden';
+      var old=center.querySelector('.card'); if(old) old.remove();
+      clearTimeout(timer); timer=null; return;
+    }
+    empty.hidden=true; $('#qrBox').style.visibility='';
+    if(!timer && !paused) next();
+  }
+
+  function show(w){
+    var old=center.querySelector('.card');
+    if(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); }
+    var h=hash(key(w)), el=document.createElement('article');
+    el.className='card'+(w.pinned?' pinned':'');
+    el.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
+    el.style.setProperty('--r',((h%5)-2)*0.6+'deg');
+    el.style.setProperty('--t',((h>>3)%9-4)+'deg');
+    var len=String(w.message).length;
+    if(len>320) el.style.setProperty('--fs','clamp(.9rem,min(2.8vh,2.6vw),1.9rem)');
+    else if(len>160) el.style.setProperty('--fs','clamp(1rem,min(3.5vh,3vw),2.3rem)');
+    var msg=document.createElement('div'); msg.className='msg'; var sp=document.createElement('span'); sp.textContent=w.message; msg.appendChild(sp);
+    var by=document.createElement('div'); by.className='by';
+    var av=document.createElement('div'); av.className='av'; av.textContent=(w.name||'?').trim().charAt(0).toUpperCase();
+    if(w.avatar){ var im=new Image(); im.alt=''; im.onload=function(){ av.textContent=''; av.appendChild(im); }; im.src=w.avatar; }
+    var nm=document.createElement('div'); nm.className='name'; nm.textContent=w.name;
+    var tg=document.createElement('span'); tg.className='tag'; tg.textContent=TAGS[w.mode]||TAGS.wish; nm.appendChild(tg);
+    by.appendChild(av); by.appendChild(nm); el.appendChild(msg); el.appendChild(by);
+    center.appendChild(el);
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('in'); }); });
+    dwell=Math.min(20000,Math.max(7000,5000+len*55)); t0=performance.now();
+    clearTimeout(timer); timer = paused ? null : setTimeout(next,dwell);
+  }
+
+  function next(){
+    if(!list.length) return;
+    var w;
+    if(queue.length){ w=queue.shift(); idx=list.findIndex(function(x){ return key(x)===key(w); }); }
+    else { idx=(idx+1)%list.length; w=list[idx]; }
+    show(w);
+  }
+  function prev(){ if(!list.length) return; idx=(idx-1+list.length)%list.length; show(list[idx]); }
+
+  (function tick(){
+    var p = timer&&!paused ? Math.min(1,(performance.now()-t0)/dwell) : (paused?parseFloat($('#bar').style.width)/100||0:0);
+    $('#bar').style.width=(p*100)+'%'; requestAnimationFrame(tick);
+  })();
+
+  var hintT;
+  function hint(t){ var h=$('#hint'); h.textContent=t; h.classList.add('show'); clearTimeout(hintT); hintT=setTimeout(function(){ h.classList.remove('show'); },1400); }
+  function togglePause(){ paused=!paused; if(paused){ clearTimeout(timer); timer=null; hint('หยุดชั่วคราว'); } else { hint('เล่นต่อ'); next(); } }
+  function fullscreen(){ var d=document; if(!d.fullscreenElement) d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen().catch(function(){}); else d.exitFullscreen(); }
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft') prev();
+    else if(e.key==='p'||e.key==='P') togglePause();
+    else if(e.key==='f'||e.key==='F') fullscreen();
+  });
+  document.addEventListener('dblclick',fullscreen);
+  center.addEventListener('click',function(){ next(); });
+
+  var idleT; function wake(){ document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(function(){ document.body.classList.add('idle'); },2500); }
+  document.addEventListener('mousemove',wake); wake();
+
+  // กันจอดับระหว่างเปิดทิ้งไว้
+  function keepAwake(){ try{ navigator.wakeLock&&navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
+  keepAwake(); document.addEventListener('visibilitychange',function(){ if(!document.hidden) keepAwake(); });
+
+  findEndpoint().then(function(ep){ endpoint=ep; return load(); }).then(function(){ setInterval(load,REFRESH_MS); });
+})();
+</script>
+</body>
+</html>
