@@ -13,6 +13,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PALIDA & PACHAYA — We're getting married</title>
+<meta name="description" content="เสาร์ที่ 19 ธันวาคม 2569 — ขอเชิญร่วมงานแต่งงานของ Palida & Pachaya">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<!-- ภาพตอนแชร์ลิงก์ (LINE/Facebook) ต้องเป็น URL เต็ม — ถ้าย้ายโดเมนให้แก้ตรงนี้ -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dufort02.github.io/wedding_inv/">
+<meta property="og:title" content="PALIDA & PACHAYA — We're getting married">
+<meta property="og:description" content="เสาร์ที่ 19 ธันวาคม 2569 — ขอเชิญร่วมงานแต่งงานของเรา">
+<meta property="og:image" content="https://dufort02.github.io/wedding_inv/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
@@ -80,6 +92,8 @@ input,textarea{font-family:inherit}
 .thread .draw{stroke-dasharray:900;stroke-dashoffset:900;animation:draw 2.6s .3s ease forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .cover-names{font-family:var(--display);font-weight:600;color:var(--red);font-size:1.5rem;letter-spacing:.14em}
+.logo{display:block;margin:0 auto;height:auto}
+.cover-logo{width:min(300px,72vw);max-height:26vh;object-fit:contain}
 .cover-date{color:var(--red-soft);margin:2px 0 22px}
 .cover-note{font-size:.88rem;max-width:30ch;margin:18px auto 0;color:var(--red-soft)}
 
@@ -167,6 +181,7 @@ section{text-align:center;padding:34px 0}
 .hero{padding-top:calc(46px + env(safe-area-inset-top,0px))}
 .hero .cover-title{font-size:clamp(2.2rem,10vw,3.2rem)}
 .hero-names{font-family:var(--display);font-weight:600;font-size:1.45rem;color:var(--red);letter-spacing:.14em;margin-top:18px}
+.hero-logo{width:min(320px,78vw);margin-top:16px}
 .hero-date{margin-bottom:18px}
 .hero-msg{max-width:34ch;margin:0 auto}
 
@@ -263,6 +278,7 @@ section{text-align:center;padding:34px 0}
 
 footer{text-align:center;padding:10px 22px calc(80px + env(safe-area-inset-bottom,0px))}
 footer .script-h{font-size:2rem}
+.footer-logo{width:170px;margin-top:10px}
 
 #music{
   position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;width:46px;height:46px;border-radius:50%;
@@ -301,7 +317,7 @@ footer .script-h{font-size:2rem}
     <path class="draw" d="M6 168 C70 170 112 160 170 150 C132 124 104 102 104 74 C104 46 146 38 170 72 C194 38 236 46 236 74 C236 102 208 124 170 150 C228 160 270 170 334 168" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     <use href="#bow" x="137" y="132" width="66" height="44"/>
   </svg>
-  <div class="cover-names">PALIDA &amp; PACHAYA</div>
+  <img class="logo cover-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
   <div class="cover-date">เสาร์ที่ 19 ธันวาคม 2569</div>
   <button class="btn" id="openBtn">เปิดคำเชิญ</button>
   <p class="cover-note">ก่อนเข้างาน มาแต่งตัวละครของคุณเองกันก่อนนะ</p>
@@ -357,7 +373,7 @@ footer .script-h{font-size:2rem}
 
   <section class="hero">
     <h1 class="cover-title">WE'RE<br>GETTING<br>MARRIED!</h1>
-    <div class="hero-names">PALIDA &amp; PACHAYA</div>
+    <img class="logo hero-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
     <div class="hero-date">เสาร์ที่ 19 ธันวาคม 2569</div>
 
     <div class="pass" id="pass">
@@ -541,7 +557,7 @@ footer .script-h{font-size:2rem}
 <footer>
   <svg class="wave"><use href="#wave"/></svg>
   <p style="margin:14px 0 4px">ขอบคุณที่เป็นส่วนหนึ่งของวันสำคัญที่สุดวันหนึ่งในชีวิตเรา</p>
-  <div class="script-h">Palida &amp; Pachaya</div>
+  <img class="logo footer-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya" loading="lazy">
 </footer>
 
 <button id="music" type="button" aria-pressed="false" aria-label="เปิด/ปิดเพลง">
