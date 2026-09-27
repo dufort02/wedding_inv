@@ -2,7 +2,7 @@
    สุ่มแบบต่อการ์ด (คงที่ตามชื่อ+เวลา): โพลารอยด์ หรือ โปสการ์ดติดแสตมป์
    แขกที่ไม่มีรูปตัวละคร → โปสการ์ดเสมอ (แสตมป์เป็นตัวอักษรแรกของชื่อ)
 
-   WishCard.build(wish, {big:true})  → <article>
+   WishCard.build(wish, {big:true, kind:'pol'|'post'})  → <article>
    wish = {name, message, mode:'attend'|'gift'|'wish', paper, avatar, pinned, ts} */
 (function(){
   var PAPERS = {blush:'#FBE3DD', cream:'#FFF3DA', sky:'#E1ECF6', sage:'#E4EEDC', lilac:'#ECE3F5'};
@@ -87,7 +87,7 @@
 
   function build(w,opt){
     opt=opt||{};
-    var h=hash(key(w)), pol=!!w.avatar && (h>>2)%2===0;
+    var h=hash(key(w)), pol = opt.kind ? opt.kind==='pol' : (!!w.avatar && (h>>2)%2===0);   // opt.kind บังคับแบบได้ ('pol' | 'post')
     var a=el('article','wc '+(pol?'wc--pol':'wc--post')+(w.pinned?' pinned':'')+(opt.big?' wc--big':''));
     a.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
     a.style.setProperty('--r',(opt.big?TILTS[h%TILTS.length]*.4:TILTS[h%TILTS.length])+'deg');
