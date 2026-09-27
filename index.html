@@ -832,7 +832,10 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------------- avatar engine ---------------- */
   var win=$('#avWin'), layerEls={}, busy=0, loadedAny=false;
   var DEFAULT_SEL={}; LAYERS.forEach(function(L){ DEFAULT_SEL[L.key]=1; });
+  DEFAULT_SEL.shirt=2;
   DEFAULT_SEL.outerwear=0;   // เปิดมาครั้งแรกไม่ใส่เสื้อนอก
+  DEFAULT_SEL.hair_accessories=0; 
+  DEFAULT_SEL.accessories=0; 
   var sel=Object.assign({},DEFAULT_SEL), colors={};
 
   Z_ORDER.forEach(function(k,i){
