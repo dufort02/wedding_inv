@@ -23,8 +23,8 @@
           mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21C5 15 1 11 1 6.5A5.5 5.5 0 0 1 12 4a5.5 5.5 0 0 1 11 2.5C23 11 19 15 12 21z'/></svg>") center/contain no-repeat}
 .wc-msg{white-space:pre-wrap;word-break:break-word;line-height:1.75em;display:-webkit-box;-webkit-line-clamp:var(--lines,8);-webkit-box-orient:vertical;overflow:hidden}
 .wc.open .wc-msg{-webkit-line-clamp:unset;display:block}
-.wc-name{font-family:'Dancing Script','Mali',cursive;color:#C23B3B;font-size:1.5em;line-height:1.2;word-break:break-word}
-.wc-name .wc-tag{font-size:.42em;margin-top:.35em}
+.wc-name{font-family:'Dancing Script','Mali',cursive;color:#C23B3B;font-size:1.5em;line-height:1.5;padding-top:.08em;word-break:break-word}
+.wc-name .wc-tag{font-size:.42em;margin-top:.1em;line-height:1.3}
 .wc-tag{display:block;font-family:'Fredoka','Mali',sans-serif;font-size:.68em;letter-spacing:.12em;text-transform:uppercase;color:#B5504C;opacity:.85}
 
 /* โพลารอยด์ */
