@@ -706,7 +706,7 @@ var CONFIG = {
 var LAYERS = [
   {key:'hair',             label:'ทรงผม',        count:4,  thumb:'hair',       color:true},
   {key:'back_hair',        label:'ผมด้านหลัง',   count:8,  thumb:'back_hair',  color:true},
-  {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes'},
+  {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
   {key:'shirt',            label:'เสื้อ',         count:7,  thumb:'shirt',      color:true},
   {key:'outerwear',        label:'เสื้อนอก',      count:2,  thumb:'outerwear',  color:true, removable:true},
@@ -716,7 +716,16 @@ var LAYERS = [
 ];
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
 var Z_ORDER = ['back_hair','body','eyes','mouth','face_accessories','shirt','outerwear','accessories','hair','hair_accessories'];
-var PALETTE = ['#f7d794','#f8a5c2','#c7ace4','#778beb','#b8e994','#e55039','#5dade2','#f0a500','#ffffff','#555555','#3b2a24','#c23b3b'];
+/* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
+var PALETTE = [['#f7d794','เหลืองพาสเทล'],['#f8a5c2','ชมพู'],['#c7ace4','ม่วงพาสเทล'],['#778beb','น้ำเงินพาสเทล'],['#b8e994','เขียวพาสเทล'],['#e55039','แดงส้ม'],
+               ['#5dade2','ฟ้า'],['#f0a500','ส้มทอง'],['#ffffff','ขาว'],['#555555','เทาเข้ม'],['#3b2a24','น้ำตาลเข้ม'],['#c23b3b','แดง']];
+var PALETTES = {
+  hair: [['#1c1a1a','ดำ'],['#2e211c','ดำอมน้ำตาล'],['#4a2e22','น้ำตาลเข้ม'],['#6b4230','น้ำตาลช็อกโกแลต'],['#7a6456','น้ำตาลหม่น'],['#9a6a3f','คาราเมล'],
+         ['#c8975a','บลอนด์น้ำผึ้ง'],['#e0c07a','บลอนด์'],['#6e2430','แดงไวน์'],['#a0472a','ทองแดง'],['#a9a9ad','เทาเงิน'],['#e8a6b8','ชมพูพาสเทล']],
+  eyes: [['#1e1716','ดำ'],['#7a4b2a','น้ำตาล'],['#7d8791','เทา'],['#5b8db8','ฟ้า'],['#5e8a5a','เขียว']],
+  // เสื้อ: สีเดิม + สีธีมงานจาก Attire Guide
+  shirt: PALETTE.concat([['#6FA8DC','ฟ้าไฮเดรนเยีย'],['#E91E8C','ชมพูบานเย็น'],['#FF7F3F','ส้มพิกุล'],['#FFD166','เหลืองทอง'],['#FF9EC7','พีชอ่อน'],['#8E5FD9','ม่วงลาเวนเดอร์']])
+};
 var HAIR_PAIR = {hair:'back_hair', back_hair:'hair'};
 var STORE_KEY = 'wedding_guest_v1';
 
@@ -783,8 +792,16 @@ var STORE_KEY = 'wedding_guest_v1';
               var c=document.createElement('canvas'); c.width=o.naturalWidth; c.height=o.naturalHeight;
               var x=c.getContext('2d'); x.drawImage(o,0,0);
               var d=x.getImageData(0,0,c.width,c.height), a=d.data, t=hex2hsl(hex);
-              for(var i=0;i<a.length;i+=4){ if(!a[i+3]) continue;
-                var l=rgb2hsl(a[i],a[i+1],a[i+2])[2], rgb=hsl2rgb(t[0],t[1],l);
+              // หาความสว่างของ "สีพื้น" ของภาพ (median ของพิกเซลที่มีสี) แล้วเทียบสัดส่วน
+              // → สีพื้นกลายเป็นสีที่เลือกจริง ๆ, เส้นดำยังดำ, ไฮไลต์ขาวยังขาว
+              var hist=new Uint32Array(256), cnt=0, i, hsl;
+              for(i=0;i<a.length;i+=4){ if(a[i+3]<128) continue; hsl=rgb2hsl(a[i],a[i+1],a[i+2]);
+                if(hsl[1]>.25&&hsl[2]>.05&&hsl[2]<.95){ hist[Math.round(hsl[2]*255)]++; cnt++; } }
+              var base=.5; if(cnt){ for(var b=0,acc=0;b<256;b++){ acc+=hist[b]; if(acc>=cnt/2){ base=Math.min(.95,Math.max(.05,b/255)); break; } } }
+              for(i=0;i<a.length;i+=4){ if(!a[i+3]) continue;
+                var l=rgb2hsl(a[i],a[i+1],a[i+2])[2];
+                l = l<=base ? t[2]*l/base : t[2]+(l-base)/(1-base)*(1-t[2]);
+                var rgb=hsl2rgb(t[0],t[1],l);
                 a[i]=rgb[0];a[i+1]=rgb[1];a[i+2]=rgb[2]; }
               x.putImageData(d,0,0); res(c.toDataURL('image/png'));
             }catch(e){ rej(e); }
@@ -846,6 +863,7 @@ var STORE_KEY = 'wedding_guest_v1';
     buildPalette();
   }
 
+  function paletteFor(L){ return PALETTES[L.key] || PALETTES[HAIR_PAIR[L.key]] || PALETTE; }
   function buildPalette(){
     var L=current;
     paletteEl.classList.toggle('show',!!L.color);
@@ -856,9 +874,9 @@ var STORE_KEY = 'wedding_guest_v1';
     reset.setAttribute('aria-label','สีเดิม'); if(!colors[L.key]) reset.classList.add('on');
     reset.addEventListener('click',function(){ applyColor(L.key,null); });
     dotsEl.appendChild(reset);
-    PALETTE.forEach(function(hex){
-      var d=document.createElement('button'); d.type='button'; d.className='dot'; d.style.background=hex;
-      d.setAttribute('aria-label','สี '+hex); if(colors[L.key]===hex) d.classList.add('on');
+    paletteFor(L).forEach(function(p){
+      var hex=p[0], d=document.createElement('button'); d.type='button'; d.className='dot'; d.style.background=hex;
+      d.setAttribute('aria-label','สี'+p[1]); d.title=p[1]; if(colors[L.key]===hex) d.classList.add('on');
       d.addEventListener('click',function(){ applyColor(L.key,hex); });
       dotsEl.appendChild(d);
     });
@@ -875,7 +893,7 @@ var STORE_KEY = 'wedding_guest_v1';
     });
     LAYERS.forEach(function(L){
       if(L.color && L.key!=='back_hair' && Math.random()<.5){
-        var hex=PALETTE[Math.floor(Math.random()*PALETTE.length)];
+        var pal=paletteFor(L), hex=pal[Math.floor(Math.random()*pal.length)][0];
         colors[L.key]=hex; if(HAIR_PAIR[L.key]) colors[HAIR_PAIR[L.key]]=hex;
       }
     });
