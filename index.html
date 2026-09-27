@@ -318,6 +318,10 @@ section{text-align:center;padding:34px 0}
   transform:rotate(var(--r,0deg));cursor:pointer;animation:rise .4s ease both;
 }
 .wish::before{content:"";position:absolute;top:-9px;left:50%;width:58px;height:18px;transform:translateX(-50%) rotate(var(--t,-3deg));background:rgba(222,196,150,.75)}
+.wish--pinned::before{background:rgba(194,59,59,.5)}
+.wish--pinned::after{content:"";position:absolute;top:8px;right:9px;width:14px;height:13px;background:var(--red);
+  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21C5 15 1 11 1 6.5A5.5 5.5 0 0 1 12 4a5.5 5.5 0 0 1 11 2.5C23 11 19 15 12 21z'/></svg>") center/contain no-repeat;
+          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21C5 15 1 11 1 6.5A5.5 5.5 0 0 1 12 4a5.5 5.5 0 0 1 11 2.5C23 11 19 15 12 21z'/></svg>") center/contain no-repeat}
 .wish p{font-size:.86rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
 .wish.open p{-webkit-line-clamp:unset;display:block}
 .wish-by{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1.5px dashed rgba(194,59,59,.3)}
@@ -641,7 +645,7 @@ footer .script-h{font-size:2rem}
               <label style="--c:#ECE3F5"><input type="radio" name="paper" value="lilac"><span class="sr">ม่วง</span></label>
             </div>
           </div>
-          <label class="check"><input type="checkbox" id="rShow" checked> แสดงคำอวยพรบนสมุดอวยพรหน้าเว็บ</label>
+          <label class="check"><input type="checkbox" id="rShow" checked> <span>แสดงคำอวยพรบนสมุดอวยพรหน้าเว็บ<small class="js-approval-note"> (หลังบ่าวสาวอ่านแล้ว)</small></span></label>
 
           <button class="btn" type="submit" id="rSubmit">ส่งคำตอบ</button>
           <p class="status" id="rStatus" aria-live="polite"></p>
@@ -688,6 +692,8 @@ var CONFIG = {
   AVATAR_BASE: 'images/',
   // วาง URL Web App ของ Google Apps Script (ลงท้าย /exec) — ว่างไว้ = โหมดทดสอบ (เก็บในเครื่อง)
   RSVP_ENDPOINT: 'https://script.google.com/macros/s/AKfycbzE_b37rmXBPCkitzQzb4Y_NhE9nD7a-a-JaP2qTMrSx-4VVBrxYki9bfQKj2jZPRr1/exec',
+  // คำอวยพรต้องให้แอดมินอนุมัติก่อนขึ้นเว็บ — ตั้งให้ตรงกับ REQUIRE_APPROVAL ใน Code.gs
+  WISH_APPROVAL: true,
   SHOW_AVATAR_GAME: true,
   SHOW_SKIP: true,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
   EVENT_DATE: '2026-12-19T07:00:00+07:00',
@@ -1010,6 +1016,7 @@ var STORE_KEY = 'wedding_guest_v1';
     wish:  {label:'อวยพรออนไลน์',    tag:'อวยพรออนไลน์',     btn:'ส่งการ์ดอวยพร'}
   };
   var PAPERS={blush:'#FBE3DD',cream:'#FFF3DA',sky:'#E1ECF6',sage:'#E4EEDC',lilac:'#ECE3F5'};
+  if(!(CONFIG.WISH_APPROVAL && CONFIG.RSVP_ENDPOINT)) $$('.js-approval-note').forEach(function(e){ e.hidden=true; });
   function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
   function checked(n){ var el=form.querySelector('input[name='+n+']:checked'); return el?el.value:''; }
 
@@ -1058,8 +1065,10 @@ var STORE_KEY = 'wedding_guest_v1';
     } else {
       send=fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});
     }
+    var pending = CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง';
     send.then(function(){
-      if(data.showOnWall==='แสดง'){
+      data.pending=pending;
+      if(data.showOnWall==='แสดง' && !pending){
         wishes.unshift({name:name,message:message,mode:mode,paper:data.paper,avatar:guest?(guest.thumb||guest.img):'',ts:Date.now()});
         renderWall();
       }
@@ -1075,12 +1084,13 @@ var STORE_KEY = 'wedding_guest_v1';
     var line={
       attend:'เราตั้งตารอพบคุณ'+(data.guests>1?' และผู้ติดตามอีก '+(data.guests-1)+' ท่าน':'')+' ในวันงาน',
       gift:'ขอบคุณสำหรับของขวัญและคำอวยพร แม้ไม่ได้มาร่วมงาน แต่ใจของคุณมาถึงเราแล้ว',
-      wish:'การ์ดอวยพรของคุณถูกติดไว้ในสมุดอวยพรแล้ว'
+      wish: data.pending?'ได้รับการ์ดอวยพรของคุณแล้ว บ่าวสาวจะนำขึ้นสมุดอวยพรเร็ว ๆ นี้':'การ์ดอวยพรของคุณถูกติดไว้ในสมุดอวยพรแล้ว'
     }[data.mode];
+    if(data.pending && data.mode!=='wish') line+='<br><small>คำอวยพรของคุณจะขึ้นสมุดอวยพรหลังบ่าวสาวอ่านแล้ว</small>';
     var t=$('#rsvpThanks');
     t.innerHTML=av+'<b>ขอบคุณ '+esc(data.name)+'</b><p>'+line+'</p>'+
       (CONFIG.RSVP_ENDPOINT?'':'<p style="font-size:.75rem;opacity:.7">(โหมดทดสอบ: ยังไม่ได้เชื่อม Google Sheet)</p>')+
-      '<div class="btn-row">'+(data.showOnWall==='แสดง'?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
+      '<div class="btn-row">'+(data.showOnWall==='แสดง'&&!data.pending?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
       '<button class="btn btn--ghost" type="button" id="rAgain">ส่งคำตอบอีกครั้ง</button></div>';
     form.hidden=true; t.hidden=false;
     $('#rAgain').addEventListener('click',function(){ t.hidden=true; form.hidden=false; msgIn.value=''; });
@@ -1092,7 +1102,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function hash(s){ var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
   function wishCard(w,i){
     var el=document.createElement('article'), h=hash(w.name+(w.ts||i));
-    el.className='wish';
+    el.className='wish'+(w.pinned?' wish--pinned':'');
     el.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
     el.style.setProperty('--r',((h%5)-2)*0.8+'deg');
     el.style.setProperty('--t',((h>>3)%9-4)+'deg');
