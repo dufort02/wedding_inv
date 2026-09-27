@@ -6,6 +6,7 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
+const VERSION          = 3;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
 const SAVE_AVATAR      = true;             // true = เก็บรูปตัวละครของแขกลง Google Drive และโชว์ในชีต
@@ -20,7 +21,8 @@ const NOTIFY_EMAIL     = 'me';
 
 const S_SHOW = 'แสดง', S_HIDE = 'ไม่แสดง', S_PENDING = 'รออนุมัติ';
 const HEADERS = ['เวลา', 'ชื่อ', 'รูปแบบ', 'มาร่วมงาน', 'จำนวนคน', 'อาหาร', 'แพ้อาหาร/หมายเหตุ',
-                 'คำอวยพร', 'แสดงบนเว็บ', 'สีการ์ด', 'ตัวละคร', 'ลิงก์รูป', 'ค่าตัวละคร (JSON)', 'mode', 'ปักหมุด'];
+                 'คำอวยพร', 'แสดงบนเว็บ', 'สีการ์ด', 'ตัวละคร', 'ลิงก์รูป', 'ค่าตัวละคร (JSON)', 'mode', 'ปักหมุด',
+                 'rsvpId', 'แก้ไขล่าสุด'];
 const PAPERS  = ['blush', 'cream', 'sky', 'sage', 'lilac'];
 const MODES   = ['attend', 'gift', 'wish'];
 const FOODS   = ['ทานได้ทุกอย่าง', 'มังสวิรัติ/เจ', 'ฮาลาล'];
@@ -28,37 +30,56 @@ const FOODS   = ['ทานได้ทุกอย่าง', 'มังสว�
 /* ============================ รับคำตอบจากเว็บ ============================ */
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.waitLock(15000);
-  let p, status, mode;
+  lock.waitLock(20000);
+  let p, status, mode, updated = false;
   try {
     p = (e && e.parameter) || {};
     const sh = getSheet_(), c = cols_(sh);
 
-    let imgFormula = '', link = '';
+    // แขกคนเดิม (เบราว์เซอร์เดิม) ส่งซ้ำ/แก้คำตอบ → อัปเดตแถวเดิม ไม่เพิ่มแถวใหม่
+    const rid = String(p.rsvpId || '').replace(/[^\w-]/g, '').slice(0, 40);
+    let r = 0, old = null;
+    if (rid && sh.getLastRow() > 1) {
+      const ids = sh.getRange(2, c['rsvpId'], sh.getLastRow() - 1, 1).getValues();
+      for (let k = ids.length - 1; k >= 0; k--) if (ids[k][0] === rid) { r = k + 2; break; }
+      if (r) old = sh.getRange(r, 1, 1, sh.getLastColumn()).getValues()[0];
+    }
+    const prev = k => (old && c[k] ? old[c[k] - 1] : '');
+    updated = !!r;
+
+    let imgFormula = prev('ตัวละคร'), link = prev('ลิงก์รูป');
     if (SAVE_AVATAR && p.avatarPng) {
       try {
         const blob = Utilities.newBlob(Utilities.base64Decode(p.avatarPng), 'image/png',
                                        clean_(p.name || 'guest').slice(0, 40) + '_' + Date.now() + '.png');
         const file = getFolder_().createFile(blob);
         try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
+        const oldId = (String(link).match(/\/d\/([\w-]+)/) || [])[1];
+        if (oldId) try { DriveApp.getFileById(oldId).setTrashed(true); } catch (err) {}
         link = file.getUrl();
         imgFormula = '=IMAGE("' + thumbUrl_(file.getId()) + '")';
       } catch (err) { link = 'save error: ' + err; }
     }
 
-    mode   = MODES.indexOf(p.mode) >= 0 ? p.mode : 'attend';
-    status = p.showOnWall === S_SHOW && String(p.message || '').trim() ? (REQUIRE_APPROVAL ? S_PENDING : S_SHOW) : S_HIDE;
+    mode = MODES.indexOf(p.mode) >= 0 ? p.mode : 'attend';
+    const message = clean_(p.message);
+    const wantShow = p.showOnWall === S_SHOW && String(p.message || '').trim();
+    status = !wantShow ? S_HIDE
+           : (!REQUIRE_APPROVAL || (updated && prev('แสดงบนเว็บ') === S_SHOW && String(prev('คำอวยพร')) === message)) ? S_SHOW  // ข้อความเดิมที่อนุมัติแล้ว ไม่ต้องอนุมัติซ้ำ
+           : S_PENDING;
     const v = {
-      'เวลา': new Date(), 'ชื่อ': clean_(p.name), 'รูปแบบ': clean_(p.modeLabel), 'มาร่วมงาน': clean_(p.attending),
+      'เวลา': updated ? prev('เวลา') : new Date(), 'ชื่อ': clean_(p.name), 'รูปแบบ': clean_(p.modeLabel), 'มาร่วมงาน': clean_(p.attending),
       'จำนวนคน': Number(p.guests) || 0, 'อาหาร': clean_(p.food), 'แพ้อาหาร/หมายเหตุ': clean_(p.allergy),
-      'คำอวยพร': clean_(p.message), 'แสดงบนเว็บ': status, 'สีการ์ด': PAPERS.indexOf(p.paper) >= 0 ? p.paper : 'blush',
-      'ตัวละคร': imgFormula, 'ลิงก์รูป': link, 'ค่าตัวละคร (JSON)': clean_(p.avatarConfig), 'mode': mode, 'ปักหมุด': false
+      'คำอวยพร': message, 'แสดงบนเว็บ': status, 'สีการ์ด': PAPERS.indexOf(p.paper) >= 0 ? p.paper : 'blush',
+      'ตัวละคร': imgFormula, 'ลิงก์รูป': link, 'ค่าตัวละคร (JSON)': clean_(p.avatarConfig) || prev('ค่าตัวละคร (JSON)'), 'mode': mode,
+      'ปักหมุด': updated ? prev('ปักหมุด') === true : false, 'rsvpId': rid, 'แก้ไขล่าสุด': updated ? new Date() : ''
     };
-    const row = new Array(sh.getLastColumn()).fill('');
+    const row = old ? old.slice() : new Array(sh.getLastColumn()).fill('');
+    while (row.length < sh.getLastColumn()) row.push('');
     Object.keys(v).forEach(k => { if (c[k]) row[c[k] - 1] = v[k]; });
-    sh.appendRow(row);
-    const r = sh.getLastRow();
-    sh.getRange(r, c['ปักหมุด']).insertCheckboxes();
+    if (updated) sh.getRange(r, 1, 1, row.length).setValues([row]);
+    else { sh.appendRow(row); r = sh.getLastRow(); }
+    sh.getRange(r, c['ปักหมุด']).insertCheckboxes().setValue(v['ปักหมุด']);
     sh.getRange(r, c['แสดงบนเว็บ']).setDataValidation(statusRule_());
     if (imgFormula) sh.setRowHeight(r, 110);
     clearCache_();
@@ -67,15 +88,15 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
-  notify_(p, mode, status);
-  return json_({ ok: true, status: status });
+  notify_(p, mode, status, updated);
+  return json_({ ok: true, status: status, updated: updated });
 }
 
 /* ================= ส่งคำอวยพรให้หน้าเว็บ (?action=wishes) ================= */
 // แสดงเฉพาะแถวที่ "แสดงบนเว็บ" = แสดง  เรียง: ปักหมุดก่อน แล้วใหม่ → เก่า
 function doGet(e) {
   const action = e && e.parameter && e.parameter.action;
-  if (action !== 'wishes') return json_({ ok: true, msg: 'RSVP endpoint is running' });
+  if (action !== 'wishes') return json_({ ok: true, msg: 'RSVP endpoint is running', version: VERSION, approval: REQUIRE_APPROVAL });
 
   const cache = CacheService.getScriptCache();
   const hit = cache.get('wishes');
@@ -213,7 +234,7 @@ function buildSummary_(sh, c) {
 }
 
 /* ============================ แจ้งเตือนทางอีเมล ============================ */
-function notify_(p, mode, status) {
+function notify_(p, mode, status, updated) {
   const to = recipient_();
   if (!to || !p) return;
   try {
@@ -223,12 +244,13 @@ function notify_(p, mode, status) {
       gift:   '[RSVP] ' + name + ' ร่วมอวยพรผ่านของขวัญ',
       wish:   '[คำอวยพร] ' + name
     }[mode] + (status === S_PENDING ? ' • รออนุมัติ' : '');
+    const subj = (updated ? '[แก้ไข] ' : '') + subject;
     const lines = ['ชื่อ: ' + name, 'รูปแบบ: ' + (p.modeLabel || mode)];
     if (mode === 'attend') lines.push('จำนวนคน: ' + (p.guests || 1), 'อาหาร: ' + (p.food || '-'), 'แพ้อาหาร/หมายเหตุ: ' + (p.allergy || '-'));
     if (p.message) lines.push('', 'คำอวยพร:', String(p.message).slice(0, 1000));
     if (status === S_PENDING) lines.push('', 'คำอวยพรนี้ "รออนุมัติ" — เปลี่ยนเป็น "แสดง" ในชีต หรือใช้เมนู 💌 งานแต่ง');
     lines.push('', 'เปิดชีต: ' + SpreadsheetApp.getActiveSpreadsheet().getUrl());
-    MailApp.sendEmail({ to: to, subject: subject, body: lines.join('\n'), name: 'Wedding RSVP' });
+    MailApp.sendEmail({ to: to, subject: subj, body: lines.join('\n'), name: 'Wedding RSVP' });
   } catch (err) { console.warn('notify failed: ' + err); }
 }
 function recipient_() {
