@@ -59,6 +59,7 @@ input,textarea{font-family:inherit}
 :focus-visible{outline:2px dashed var(--red);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+[hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .line-ico{color:var(--red)}
 
@@ -276,6 +277,56 @@ section{text-align:center;padding:34px 0}
 .thanks img{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;background:var(--blush);border:1.8px solid var(--red);object-fit:contain}
 .thanks b{font-family:var(--display);color:var(--red);font-size:1.3rem;display:block}
 
+/* RSVP modes */
+.rsvp-lead small{display:block;font-size:.8rem;opacity:.85;margin-top:6px}
+.modes{border:none;display:grid;gap:10px;margin:0 0 18px}
+.mode{display:flex;gap:12px;align-items:center;border:1.8px solid var(--red);border-radius:16px;padding:12px 14px;background:rgba(255,253,248,.6);cursor:pointer;position:relative;transition:background .2s,color .2s,transform .12s}
+.mode:active{transform:scale(.985)}
+.mode input{position:absolute;opacity:0;pointer-events:none}
+.mode svg{width:46px;height:46px;flex:none;color:var(--red)}
+.mode b{display:block;font-family:var(--display);font-weight:600;color:var(--red);font-size:1rem;line-height:1.3}
+.mode small{display:block;font-size:.78rem;line-height:1.4;margin-top:2px}
+.mode:has(input:checked){background:var(--red);color:var(--white);box-shadow:0 3px 0 var(--red-deep)}
+.mode:has(input:checked) b,.mode:has(input:checked) svg{color:var(--white)}
+.mode:has(input:focus-visible){outline:2px dashed var(--red);outline-offset:3px}
+.form .mode-body{display:none}
+.form[data-mode] .mode-body{display:block;animation:rise .35s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.form [data-show]{display:none}
+.form[data-mode=attend] [data-show~=attend],.form[data-mode=gift] [data-show~=gift]{display:block}
+.form .gift{margin:4px auto 20px}
+.gift-qr{width:180px;height:180px;object-fit:contain;margin:4px auto 10px;background:var(--white);border-radius:8px}
+.gift-bank{font-size:.85rem}
+.gift-acc{font-family:var(--display);letter-spacing:.06em;font-size:1.2rem;margin:0}
+.gift-name{font-size:.85rem;margin-bottom:12px}
+.form .gift .btn{width:auto;padding:10px 24px}
+.papers{display:flex;gap:10px;margin-top:4px}
+.papers label{width:34px;height:34px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px rgba(194,59,59,.35);cursor:pointer;position:relative}
+.papers input{position:absolute;opacity:0;pointer-events:none}
+.papers label:has(input:checked){box-shadow:0 0 0 2.5px var(--red)}
+.papers label:has(input:checked)::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--red)}
+.papers label:has(input:focus-visible){outline:2px dashed var(--red);outline-offset:3px}
+.check{display:flex;gap:8px;align-items:center;font-size:.82rem;margin:0 0 16px;cursor:pointer}
+.check input{accent-color:var(--red);width:18px;height:18px}
+.thanks .btn-row{margin-top:14px}
+
+/* Wish wall */
+.wall{columns:2;column-gap:14px;margin-top:26px;text-align:left}
+.wish{
+  break-inside:avoid;display:inline-block;width:100%;margin:0 0 20px;padding:22px 13px 12px;position:relative;
+  background:var(--c,#FBE3DD);border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.03),0 6px 14px rgba(120,60,40,.12);
+  transform:rotate(var(--r,0deg));cursor:pointer;animation:rise .4s ease both;
+}
+.wish::before{content:"";position:absolute;top:-9px;left:50%;width:58px;height:18px;transform:translateX(-50%) rotate(var(--t,-3deg));background:rgba(222,196,150,.75)}
+.wish p{font-size:.86rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
+.wish.open p{-webkit-line-clamp:unset;display:block}
+.wish-by{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1.5px dashed rgba(194,59,59,.3)}
+.wish-av{width:34px;height:34px;flex:none;border-radius:50%;background:var(--white);border:1.5px solid var(--red);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;color:var(--red);font-size:.9rem}
+.wish-av img{width:100%;height:100%;object-fit:contain}
+.wish-name{font-family:var(--script);color:var(--red);font-size:1.15rem;line-height:1.1;word-break:break-word}
+.wish-tag{display:block;font-family:var(--body);font-size:.66rem;color:var(--red-soft)}
+.wall-empty{font-size:.88rem;margin:18px auto 10px;max-width:30ch}
+
 footer{text-align:center;padding:10px 22px calc(80px + env(safe-area-inset-bottom,0px))}
 footer .script-h{font-size:2rem}
 .footer-logo{width:170px;margin-top:10px}
@@ -470,17 +521,6 @@ footer .script-h{font-size:2rem}
     <p>สำรองห้องพักไว้ที่ [ชื่อโรงแรม/รีสอร์ท] ใกล้สถานที่จัดงาน แจ้งชื่องาน "PALIDA &amp; PACHAYA Wedding" ตอนจองเพื่อรับส่วนลดพิเศษ</p>
     <h3>การเดินทาง</h3>
     <p>สถานที่จัดงานอยู่ห่างจากตัวเมืองประมาณ 30 นาที มีรถรับส่งฟรีสำหรับแขกที่พักโรงแรมที่แนะนำ และมีที่จอดรถภายในบริเวณงาน</p>
-
-    <div class="gift">
-      <svg class="gift-frame" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M30 22 C120 10 280 30 368 18 c14 -2 20 10 10 16 c-10 6 -16 -8 -2 -12 C392 60 380 200 386 262 c2 14 -10 20 -16 10 c-6 -10 8 -16 12 -2 C280 290 120 274 32 284 c-14 2 -20 -10 -10 -16 c10 -6 16 8 2 12 C10 220 22 90 14 36 c-2 -14 10 -20 16 -10 c6 10 -8 16 -12 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-      </svg>
-      <svg class="bow"><use href="#bow"/></svg>
-      <h3>WEDDING GIFT</h3>
-      <p>การมาร่วมงานของทุกคนคือของขวัญที่ยิ่งใหญ่ที่สุดสำหรับเราแล้ว หากท่านใดต้องการร่วมอวยพรเพิ่มเติม สามารถโอนผ่านช่องทางด้านล่างได้</p>
-      <div class="gift-acc" id="accText">[ชื่อบัญชี ธนาคาร เลขบัญชี]</div>
-      <button class="btn" id="copyAcc" type="button">คัดลอกเลขบัญชี</button>
-    </div>
   </section>
 
   <section id="attire">
@@ -522,33 +562,105 @@ footer .script-h{font-size:2rem}
 
   <section id="rsvp">
     <div class="rsvp-big" aria-hidden="true">RS<br>VP</div>
-    <h2 class="sr">ยืนยันการเข้าร่วมงาน</h2>
-    <p class="rsvp-lead">รบกวนตอบรับภายใน [วันที่] เพื่อให้เราเตรียมงานได้ครบทุกท่าน</p>
+    <h2 class="sr">ตอบรับคำเชิญ</h2>
+    <p class="rsvp-lead">ขอบคุณที่ร่วมยินดีกับเรา เลือกได้เลยว่าจะร่วมยินดีแบบไหน<br><small>รบกวนตอบรับภายใน [วันที่] เพื่อให้เราเตรียมงานได้ครบทุกท่าน</small></p>
     <div id="rsvpBox">
       <form class="form" id="rsvpForm" novalidate>
-        <div class="rsvp-who" id="rsvpWho"><img class="js-av" alt=""><span>ตอบรับในนาม <b class="js-name"></b> พร้อมตัวละครของคุณ</span></div>
-        <div class="field">
-          <label for="rName">ชื่อของคุณ</label>
-          <input type="text" id="rName" maxlength="60" autocomplete="name" required>
-        </div>
-        <div class="field">
-          <span class="lbl">จะมาร่วมงานไหม</span>
-          <div class="choice">
-            <label><input type="radio" name="attending" value="มา" checked>มาแน่นอน</label>
-            <label><input type="radio" name="attending" value="ไม่มา">ไม่สามารถมาได้</label>
+        <fieldset class="modes">
+          <legend class="sr">เลือกรูปแบบการร่วมยินดี</legend>
+          <label class="mode">
+            <input type="radio" name="mode" value="attend">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11l-1 10a4.5 4.5 0 0 1-9 0z"/><path d="M14.5 21v15M10 36h9"/><path d="M28 6h11l-1 10a4.5 4.5 0 0 1-9 0z"/><path d="M33.5 21v15M29 36h9"/><path d="M10.5 12h8.5M29.5 12h8.5"/><path d="M24 26c-1.6-2.4-5-1.2-4 1.2.7 1.6 4 3.8 4 3.8s3.3-2.2 4-3.8c1-2.4-2.4-3.6-4-1.2z"/></svg>
+            <span><b>ยินดีด้วย &amp; ไปร่วมงานแน่นอน</b><small>ยืนยันการมาร่วมงาน พร้อมบอกจำนวนคนและอาหาร</small></span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="gift">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="19" width="32" height="22" rx="2"/><rect x="6" y="13" width="36" height="7" rx="2"/><path d="M24 13v28"/><path d="M24 13c-3-6-11-7-11-2 0 3 6 2 11 2zM24 13c3-6 11-7 11-2 0 3-6 2-11 2z"/></svg>
+            <span><b>ยินดีด้วย &amp; ร่วมอวยพรผ่านของขวัญ</b><small>ไปร่วมงานไม่ได้ แต่ขอส่งของขวัญผ่านช่องทางโอน</small></span>
+          </label>
+          <label class="mode">
+            <input type="radio" name="mode" value="wish">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="12" width="36" height="26" rx="2"/><path d="M6 14l18 13 18-13"/><path d="M24 30c-1.6-2.4-5-1.2-4 1.2.7 1.6 4 3.8 4 3.8s3.3-2.2 4-3.8c1-2.4-2.4-3.6-4-1.2z" transform="translate(0 -12)"/></svg>
+            <span><b>ยินดีด้วย &amp; ฝากคำอวยพรออนไลน์</b><small>เขียนการ์ดอวยพรขึ้นสมุดอวยพรบนหน้าเว็บ</small></span>
+          </label>
+        </fieldset>
+
+        <div class="mode-body">
+          <div class="rsvp-who" id="rsvpWho"><img class="js-av" alt=""><span>ในนาม <b class="js-name"></b> พร้อมตัวละครของคุณ</span></div>
+          <div class="field">
+            <label for="rName">ชื่อของคุณ</label>
+            <input type="text" id="rName" maxlength="60" autocomplete="name" required>
           </div>
+
+          <div data-show="attend">
+            <div class="field">
+              <label for="rGuests">จำนวนผู้มาร่วมงาน (รวมตัวคุณ)</label>
+              <input type="number" id="rGuests" min="1" max="10" value="1" inputmode="numeric">
+            </div>
+            <div class="field">
+              <span class="lbl">อาหาร</span>
+              <div class="choice">
+                <label><input type="radio" name="food" value="ทานได้ทุกอย่าง" checked>ทานได้ทุกอย่าง</label>
+                <label><input type="radio" name="food" value="มังสวิรัติ/เจ">มังสวิรัติ / เจ</label>
+                <label><input type="radio" name="food" value="ฮาลาล">ฮาลาล</label>
+              </div>
+            </div>
+            <div class="field">
+              <label for="rAllergy">แพ้อาหาร / หมายเหตุ (ไม่บังคับ)</label>
+              <input type="text" id="rAllergy" maxlength="120">
+            </div>
+          </div>
+
+          <div data-show="gift">
+            <div class="gift">
+              <svg class="gift-frame" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M30 22 C120 10 280 30 368 18 c14 -2 20 10 10 16 c-10 6 -16 -8 -2 -12 C392 60 380 200 386 262 c2 14 -10 20 -16 10 c-6 -10 8 -16 12 -2 C280 290 120 274 32 284 c-14 2 -20 -10 -10 -16 c10 -6 16 8 2 12 C10 220 22 90 14 36 c-2 -14 10 -20 16 -10 c6 10 -8 16 -12 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+              </svg>
+              <svg class="bow"><use href="#bow"/></svg>
+              <h3>WEDDING GIFT</h3>
+              <p>ขอบคุณสำหรับความรักและคำอวยพร ท่านสามารถร่วมอวยพรผ่านช่องทางด้านล่างได้</p>
+              <img class="gift-qr" id="giftQr" alt="QR พร้อมเพย์สำหรับร่วมอวยพร" hidden>
+              <div class="gift-bank" id="giftBank"></div>
+              <div class="gift-acc" id="accText"></div>
+              <div class="gift-name" id="giftName"></div>
+              <button class="btn" id="copyAcc" type="button">คัดลอกเลขบัญชี</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="rMsg" id="rMsgLbl">คำอวยพรถึงบ่าวสาว (ไม่บังคับ)</label>
+            <textarea id="rMsg" rows="4" maxlength="500" placeholder="ขอให้รักกันแบบนี้ตลอดไป..."></textarea>
+          </div>
+          <div class="field paper-field">
+            <span class="lbl">สีการ์ดอวยพร</span>
+            <div class="papers" id="papers">
+              <label style="--c:#FBE3DD"><input type="radio" name="paper" value="blush" checked><span class="sr">ชมพู</span></label>
+              <label style="--c:#FFF3DA"><input type="radio" name="paper" value="cream"><span class="sr">ครีม</span></label>
+              <label style="--c:#E1ECF6"><input type="radio" name="paper" value="sky"><span class="sr">ฟ้า</span></label>
+              <label style="--c:#E4EEDC"><input type="radio" name="paper" value="sage"><span class="sr">เขียว</span></label>
+              <label style="--c:#ECE3F5"><input type="radio" name="paper" value="lilac"><span class="sr">ม่วง</span></label>
+            </div>
+          </div>
+          <label class="check"><input type="checkbox" id="rShow" checked> แสดงคำอวยพรบนสมุดอวยพรหน้าเว็บ</label>
+
+          <button class="btn" type="submit" id="rSubmit">ส่งคำตอบ</button>
+          <p class="status" id="rStatus" aria-live="polite"></p>
         </div>
-        <div class="field">
-          <label for="rGuests">จำนวนผู้มาร่วมงาน (รวมตัวคุณ)</label>
-          <input type="number" id="rGuests" min="1" max="10" value="1" inputmode="numeric">
-        </div>
-        <div class="field">
-          <label for="rMsg">ข้อความถึงบ่าวสาว (ไม่บังคับ)</label>
-          <textarea id="rMsg" rows="3" maxlength="500"></textarea>
-        </div>
-        <button class="btn" type="submit" id="rSubmit">ส่งคำตอบ</button>
-        <p class="status" id="rStatus" aria-live="polite"></p>
       </form>
+      <div class="thanks" id="rsvpThanks" hidden></div>
+    </div>
+  </section>
+
+  <svg class="wave"><use href="#wave"/></svg>
+
+  <section id="wishes">
+    <h2 class="script-h">Wishes</h2>
+    <div class="sub-h">สมุดอวยพรจากทุกคน</div>
+    <div class="wall" id="wall" aria-live="polite"></div>
+    <p class="wall-empty" id="wallEmpty" hidden>ยังไม่มีคำอวยพร มาเป็นคนแรกที่เขียนการ์ดให้เรากันนะ</p>
+    <div class="btn-row" style="margin-top:6px">
+      <button class="btn btn--ghost" id="wallMore" type="button" hidden>ดูคำอวยพรทั้งหมด</button>
+      <a class="btn btn--ghost" href="#rsvp" id="wallWrite">เขียนคำอวยพร</a>
     </div>
   </section>
 
@@ -578,7 +690,14 @@ var CONFIG = {
   RSVP_ENDPOINT: '',
   SHOW_AVATAR_GAME: true,
   SHOW_SKIP: true,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
-  EVENT_DATE: '2026-12-19T07:00:00+07:00'
+  EVENT_DATE: '2026-12-19T07:00:00+07:00',
+  // ช่องทางร่วมอวยพร (RSVP แบบที่ 2) — QR: วางรูปไว้ที่ path นี้ ถ้าไม่มีไฟล์จะซ่อนเอง
+  GIFT: {
+    BANK:   '[ธนาคาร]',
+    NUMBER: '[เลขบัญชี]',
+    NAME:   '[ชื่อบัญชี]',
+    QR:     'images/promptpay.png'
+  }
 };
 
 /* หมวดในเมนู — count ต้องตรงกับจำนวนไฟล์จริง
@@ -836,25 +955,56 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------------- story photos fallback ---------------- */
   $$('.shot img').forEach(function(im){ im.addEventListener('error',function(){ var p=im.parentNode; p.textContent=im.alt; }); });
 
-  /* ---------------- copy account ---------------- */
+  /* ---------------- gift account ---------------- */
+  $('#giftBank').textContent=CONFIG.GIFT.BANK;
+  $('#accText').textContent=CONFIG.GIFT.NUMBER;
+  $('#giftName').textContent=CONFIG.GIFT.NAME;
+  if(CONFIG.GIFT.QR){ var qr=$('#giftQr'); qr.onload=function(){ qr.hidden=false; }; qr.src=CONFIG.GIFT.QR; }
   $('#copyAcc').addEventListener('click',function(){
-    var txt=$('#accText').textContent.trim();
-    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){ toast('คัดลอกแล้ว'); },function(){ toast(txt); });
+    var txt=CONFIG.GIFT.NUMBER.replace(/[\s-]/g,'');
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){ toast('คัดลอกเลขบัญชีแล้ว'); },function(){ toast(CONFIG.GIFT.NUMBER); });
   });
 
   /* ---------------- RSVP → Google Sheet ---------------- */
-  var form=$('#rsvpForm'), st=$('#rStatus'), sub=$('#rSubmit');
+  var form=$('#rsvpForm'), st=$('#rStatus'), sub=$('#rSubmit'), msgIn=$('#rMsg');
+  var DEMO_KEY='wedding_rsvp_demo';
+  var MODES={
+    attend:{label:'มาร่วมงาน',     tag:'มาร่วมงาน',      btn:'ยืนยันมาร่วมงาน'},
+    gift:  {label:'ร่วมอวยพรของขวัญ', tag:'ส่งของขวัญมาอวยพร', btn:'ส่งคำอวยพร'},
+    wish:  {label:'อวยพรออนไลน์',    tag:'อวยพรออนไลน์',     btn:'ส่งการ์ดอวยพร'}
+  };
+  var PAPERS={blush:'#FBE3DD',cream:'#FFF3DA',sky:'#E1ECF6',sage:'#E4EEDC',lilac:'#ECE3F5'};
   function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+  function checked(n){ var el=form.querySelector('input[name='+n+']:checked'); return el?el.value:''; }
 
+  form.addEventListener('change',function(e){
+    if(e.target.name!=='mode') return;
+    var m=e.target.value, first=!form.dataset.mode;
+    form.dataset.mode=m; st.textContent='';
+    $('#rMsgLbl').textContent = m==='wish' ? 'คำอวยพรถึงบ่าวสาว' : 'คำอวยพรถึงบ่าวสาว (ไม่บังคับ)';
+    sub.textContent=MODES[m].btn;
+    if(first) setTimeout(function(){ $('.mode-body').scrollIntoView({behavior:'smooth',block:'start'}); },60);
+  });
+
+  form.addEventListener('input',function(){ st.textContent=''; });
   form.addEventListener('submit',function(e){
     e.preventDefault();
-    var name=$('#rName').value.trim();
+    var mode=form.dataset.mode;
+    if(!mode){ st.textContent='เลือกรูปแบบการร่วมยินดีก่อนนะ'; return; }
+    var name=$('#rName').value.trim(), message=msgIn.value.trim();
     if(!name){ st.textContent='กรุณากรอกชื่อ'; $('#rName').focus(); return; }
+    if(mode==='wish' && !message){ st.textContent='เขียนคำอวยพรสักนิดนะ'; msgIn.focus(); return; }
     var data={
+      mode:mode,
+      modeLabel:MODES[mode].label,
       name:name,
-      attending:form.querySelector('input[name=attending]:checked').value,
-      guests:$('#rGuests').value||'1',
-      message:$('#rMsg').value.trim(),
+      attending: mode==='attend'?'มา':'ไม่มา',
+      guests: mode==='attend'?String(Math.min(10,Math.max(1,parseInt($('#rGuests').value,10)||1))):'0',
+      food: mode==='attend'?checked('food'):'',
+      allergy: mode==='attend'?$('#rAllergy').value.trim():'',
+      message:message,
+      showOnWall: (message && $('#rShow').checked)?'แสดง':'ไม่แสดง',
+      paper:checked('paper')||'blush',
       avatarName: guest?guest.name:'',
       avatarConfig: guest?JSON.stringify({sel:guest.sel,colors:guest.colors}):'',
       avatarPng: (guest&&guest.thumb)?guest.thumb.split(',')[1]:''
@@ -864,23 +1014,81 @@ var STORE_KEY = 'wedding_guest_v1';
     var send;
     if(!CONFIG.RSVP_ENDPOINT){
       send=new Promise(function(res){
-        try{ var arr=JSON.parse(localStorage.getItem('wedding_rsvp_demo')||'[]'); arr.push(Object.assign({},data,{avatarPng:'',ts:Date.now()})); localStorage.setItem('wedding_rsvp_demo',JSON.stringify(arr)); }catch(err){}
+        try{ var arr=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]');
+          arr.push(Object.assign({},data,{avatarPng:'',avatar:guest?guest.thumb:'',ts:Date.now()}));
+          localStorage.setItem(DEMO_KEY,JSON.stringify(arr)); }catch(err){}
         setTimeout(res,400);
       });
     } else {
       send=fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});
     }
     send.then(function(){
-      var av=(guest&&(guest.img||guest.thumb))?'<img src="'+(guest.img||guest.thumb)+'" alt="">':'';
-      $('#rsvpBox').innerHTML='<div class="thanks">'+av+'<b>ขอบคุณ '+esc(name)+'</b><p>'+
-        (data.attending==='มา'?'เราตั้งตารอพบคุณในวันงาน':'ขอบคุณที่แจ้งให้เราทราบ')+'</p>'+
-        (CONFIG.RSVP_ENDPOINT?'':'<p style="font-size:.75rem;opacity:.7">(โหมดทดสอบ: ยังไม่ได้เชื่อม Google Sheet)</p>')+'</div>';
+      if(data.showOnWall==='แสดง'){
+        wishes.unshift({name:name,message:message,mode:mode,paper:data.paper,avatar:guest?(guest.thumb||guest.img):'',ts:Date.now()});
+        renderWall();
+      }
+      showThanks(data);
       burst();
     }).catch(function(){
       st.textContent='ส่งไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง';
-      sub.disabled=false; sub.textContent='ส่งคำตอบ';
-    });
+    }).then(function(){ sub.disabled=false; sub.textContent=MODES[mode].btn; });
   });
+
+  function showThanks(data){
+    var av=(guest&&(guest.img||guest.thumb))?'<img src="'+(guest.img||guest.thumb)+'" alt="">':'';
+    var line={
+      attend:'เราตั้งตารอพบคุณ'+(data.guests>1?' และผู้ติดตามอีก '+(data.guests-1)+' ท่าน':'')+' ในวันงาน',
+      gift:'ขอบคุณสำหรับของขวัญและคำอวยพร แม้ไม่ได้มาร่วมงาน แต่ใจของคุณมาถึงเราแล้ว',
+      wish:'การ์ดอวยพรของคุณถูกติดไว้ในสมุดอวยพรแล้ว'
+    }[data.mode];
+    var t=$('#rsvpThanks');
+    t.innerHTML=av+'<b>ขอบคุณ '+esc(data.name)+'</b><p>'+line+'</p>'+
+      (CONFIG.RSVP_ENDPOINT?'':'<p style="font-size:.75rem;opacity:.7">(โหมดทดสอบ: ยังไม่ได้เชื่อม Google Sheet)</p>')+
+      '<div class="btn-row">'+(data.showOnWall==='แสดง'?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
+      '<button class="btn btn--ghost" type="button" id="rAgain">ส่งคำตอบอีกครั้ง</button></div>';
+    form.hidden=true; t.hidden=false;
+    $('#rAgain').addEventListener('click',function(){ t.hidden=true; form.hidden=false; msgIn.value=''; });
+    t.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  /* ---------------- wish wall ---------------- */
+  var wall=$('#wall'), wishes=[], WALL_STEP=8, wallLimit=WALL_STEP;
+  function hash(s){ var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+  function wishCard(w,i){
+    var el=document.createElement('article'), h=hash(w.name+(w.ts||i));
+    el.className='wish';
+    el.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
+    el.style.setProperty('--r',((h%5)-2)*0.8+'deg');
+    el.style.setProperty('--t',((h>>3)%9-4)+'deg');
+    el.style.animationDelay=Math.min(i,8)*50+'ms';
+    var p=document.createElement('p'); p.textContent=w.message; el.appendChild(p);
+    var by=document.createElement('div'); by.className='wish-by';
+    var av=document.createElement('div'); av.className='wish-av'; av.textContent=(w.name||'?').trim().charAt(0).toUpperCase();
+    if(w.avatar){ var im=new Image(); im.alt=''; im.onload=function(){ av.textContent=''; av.appendChild(im); }; im.src=w.avatar; }
+    var nm=document.createElement('div'); nm.className='wish-name'; nm.textContent=w.name;
+    var tg=document.createElement('span'); tg.className='wish-tag'; tg.textContent=(MODES[w.mode]||MODES.wish).tag; nm.appendChild(tg);
+    by.appendChild(av); by.appendChild(nm); el.appendChild(by);
+    el.addEventListener('click',function(){ el.classList.toggle('open'); });
+    return el;
+  }
+  function renderWall(){
+    wall.innerHTML='';
+    wishes.slice(0,wallLimit).forEach(function(w,i){ wall.appendChild(wishCard(w,i)); });
+    $('#wallEmpty').hidden=wishes.length>0;
+    $('#wallMore').hidden=wishes.length<=wallLimit;
+  }
+  $('#wallMore').addEventListener('click',function(){ wallLimit+=WALL_STEP*2; renderWall(); });
+  function loadWishes(){
+    if(!CONFIG.RSVP_ENDPOINT){
+      try{ wishes=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]').filter(function(w){ return w.message&&w.showOnWall==='แสดง'; }).reverse(); }catch(e){ wishes=[]; }
+      renderWall(); return;
+    }
+    fetch(CONFIG.RSVP_ENDPOINT+(CONFIG.RSVP_ENDPOINT.indexOf('?')<0?'?':'&')+'action=wishes')
+      .then(function(r){ return r.json(); })
+      .then(function(j){ wishes=(j&&j.wishes)||[]; renderWall(); })
+      .catch(function(){ renderWall(); });
+  }
+  loadWishes();
 
   function burst(){
     var cols=['#C23B3B','#EFD3CB','#9F2C2E','#FFFDF8'];
