@@ -313,25 +313,8 @@ section{text-align:center;padding:34px 0}
 .check input{accent-color:var(--red);width:18px;height:18px}
 .thanks .btn-row{margin-top:14px}
 
-/* Wish wall */
-.wall{columns:2;column-gap:14px;margin-top:26px;text-align:left}
-.wish{
-  break-inside:avoid;display:inline-block;width:100%;margin:0 0 20px;padding:22px 13px 12px;position:relative;
-  background:var(--c,#FBE3DD);border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.03),0 6px 14px rgba(120,60,40,.12);
-  transform:rotate(var(--r,0deg));cursor:pointer;animation:rise .4s ease both;
-}
-.wish::before{content:"";position:absolute;top:-9px;left:50%;width:58px;height:18px;transform:translateX(-50%) rotate(var(--t,-3deg));background:rgba(222,196,150,.75)}
-.wish--pinned::before{background:rgba(194,59,59,.5)}
-.wish--pinned::after{content:"";position:absolute;top:8px;right:9px;width:14px;height:13px;background:var(--red);
-  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21C5 15 1 11 1 6.5A5.5 5.5 0 0 1 12 4a5.5 5.5 0 0 1 11 2.5C23 11 19 15 12 21z'/></svg>") center/contain no-repeat;
-          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'><path d='M12 21C5 15 1 11 1 6.5A5.5 5.5 0 0 1 12 4a5.5 5.5 0 0 1 11 2.5C23 11 19 15 12 21z'/></svg>") center/contain no-repeat}
-.wish p{font-size:.86rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
-.wish.open p{-webkit-line-clamp:unset;display:block}
-.wish-by{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1.5px dashed rgba(194,59,59,.3)}
-.wish-av{width:34px;height:34px;flex:none;border-radius:50%;background:var(--white);border:1.5px solid var(--red);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;color:var(--red);font-size:.9rem}
-.wish-av img{width:100%;height:100%;object-fit:contain}
-.wish-name{font-family:var(--script);color:var(--red);font-size:1.15rem;line-height:1.1;word-break:break-word}
-.wish-tag{display:block;font-family:var(--body);font-size:.66rem;color:var(--red-soft)}
+/* Wish wall (ตัวอย่างล่าสุด — การ์ดอยู่ใน js/wishcard.js) */
+.wall{columns:2;column-gap:14px;margin-top:30px;--wfs:12.5px}
 .wall-empty{font-size:.88rem;margin:18px auto 10px;max-width:30ch}
 
 footer{text-align:center;padding:10px 22px calc(80px + env(safe-area-inset-bottom,0px))}
@@ -667,9 +650,8 @@ footer .script-h{font-size:2rem}
     <div class="wall" id="wall" aria-live="polite"></div>
     <p class="wall-empty" id="wallEmpty" hidden>ยังไม่มีคำอวยพร มาเป็นคนแรกที่เขียนการ์ดให้เรากันนะ</p>
     <div class="btn-row" style="margin-top:6px">
-      <button class="btn btn--ghost" id="wallMore" type="button" hidden>ดูคำอวยพรทั้งหมด</button>
+      <a class="btn" href="wishes.html" id="wallMore" hidden>ดูคำอวยพรทั้งหมด</a>
       <a class="btn btn--ghost" href="#rsvp" id="wallWrite">เขียนคำอวยพร</a>
-      <a class="btn btn--ghost" href="wishes.html">ดูแบบเต็มจอ</a>
     </div>
   </section>
 
@@ -687,6 +669,7 @@ footer .script-h{font-size:2rem}
 <audio id="bgm" src="Forever Yours - Wayne Jones.mp3" loop preload="none"></audio>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="js/wishcard.js"></script>
 <script>
 /* =====================================================================
    CONFIG — แก้ค่าตรงนี้ที่เดียว
@@ -1103,32 +1086,18 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   /* ---------------- wish wall ---------------- */
-  var wall=$('#wall'), wishes=[], WALL_STEP=8, wallLimit=WALL_STEP;
-  function hash(s){ var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
-  function wishCard(w,i){
-    var el=document.createElement('article'), h=hash(w.name+(w.ts||i));
-    el.className='wish'+(w.pinned?' wish--pinned':'');
-    el.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
-    el.style.setProperty('--r',((h%5)-2)*0.8+'deg');
-    el.style.setProperty('--t',((h>>3)%9-4)+'deg');
-    el.style.animationDelay=Math.min(i,8)*50+'ms';
-    var p=document.createElement('p'); p.textContent=w.message; el.appendChild(p);
-    var by=document.createElement('div'); by.className='wish-by';
-    var av=document.createElement('div'); av.className='wish-av'; av.textContent=(w.name||'?').trim().charAt(0).toUpperCase();
-    if(w.avatar){ var im=new Image(); im.alt=''; im.onload=function(){ av.textContent=''; av.appendChild(im); }; im.src=w.avatar; }
-    var nm=document.createElement('div'); nm.className='wish-name'; nm.textContent=w.name;
-    var tg=document.createElement('span'); tg.className='wish-tag'; tg.textContent=(MODES[w.mode]||MODES.wish).tag; nm.appendChild(tg);
-    by.appendChild(av); by.appendChild(nm); el.appendChild(by);
-    el.addEventListener('click',function(){ el.classList.toggle('open'); });
-    return el;
-  }
+  var wall=$('#wall'), wishes=[], WALL_PREVIEW=4;   // หน้าหลักโชว์แค่ล่าสุด 4 ใบ ที่เหลือดูใน wishes.html
   function renderWall(){
     wall.innerHTML='';
-    wishes.slice(0,wallLimit).forEach(function(w,i){ wall.appendChild(wishCard(w,i)); });
+    wishes.slice(0,WALL_PREVIEW).forEach(function(w,i){
+      var c=WishCard.build(w); c.classList.add('drop'); c.style.animationDelay=i*60+'ms';
+      c.addEventListener('click',function(){ c.classList.toggle('open'); });
+      wall.appendChild(c);
+    });
     $('#wallEmpty').hidden=wishes.length>0;
-    $('#wallMore').hidden=wishes.length<=wallLimit;
+    var more=$('#wallMore'); more.hidden=!wishes.length;
+    more.textContent='ดูคำอวยพรทั้งหมด'+(wishes.length>WALL_PREVIEW?' ('+wishes.length+')':'');
   }
-  $('#wallMore').addEventListener('click',function(){ wallLimit+=WALL_STEP*2; renderWall(); });
   function loadWishes(){
     if(!CONFIG.RSVP_ENDPOINT){
       try{ wishes=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]').filter(function(w){ return w.message&&w.showOnWall==='แสดง'; }).reverse(); }catch(e){ wishes=[]; }
