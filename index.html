@@ -277,8 +277,8 @@ section{text-align:center;padding:34px 0}
 .form .btn{width:100%;padding:12px}
 .status{font-size:.82rem;min-height:1.3em;text-align:center;margin-top:8px;color:var(--red)}
 .thanks{text-align:center;padding:10px 0}
-.thanks img{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;background:var(--blush);border:1.8px solid var(--red);object-fit:contain}
-.thanks b{font-family:var(--display);color:var(--red);font-size:1.3rem;display:block}
+.thanks>img{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;background:var(--blush);border:1.8px solid var(--red);object-fit:contain}
+.thanks>b{font-family:var(--display);color:var(--red);font-size:1.3rem;display:block}
 
 /* RSVP modes */
 .rsvp-lead small{display:block;font-size:.8rem;opacity:.85;margin-top:6px}
@@ -312,6 +312,8 @@ section{text-align:center;padding:34px 0}
 .check{display:flex;gap:8px;align-items:center;font-size:.82rem;margin:0 0 16px;cursor:pointer}
 .check input{accent-color:var(--red);width:18px;height:18px}
 .thanks .btn-row{margin-top:14px}
+.my-card{max-width:250px;margin:16px auto 4px;--wfs:13px}
+.my-note{font-size:.78rem;opacity:.85}
 
 /* Wish wall (ตัวอย่างล่าสุด — การ์ดอยู่ใน js/wishcard.js) */
 .wall{columns:2;column-gap:14px;margin-top:30px;--wfs:12.5px}
@@ -792,7 +794,7 @@ var STORE_KEY = 'wedding_guest_v1';
     return [Math.round(f(h+1/3)*255),Math.round(f(h)*255),Math.round(f(h-1/3)*255)]; }
   function hex2hsl(hex){ return rgb2hsl(parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)); }
 
-  var tintCache={};
+  var tintCache={}, TINT_MAX=2048;
   function tint(url,hex){
     var key=url+'|'+hex;
     if(!tintCache[key]){
@@ -801,8 +803,9 @@ var STORE_KEY = 'wedding_guest_v1';
         o.onload=function(){
           setTimeout(function(){
             try{
-              var c=document.createElement('canvas'); c.width=o.naturalWidth; c.height=o.naturalHeight;
-              var x=c.getContext('2d'); x.drawImage(o,0,0);
+              var sc=Math.min(1,TINT_MAX/Math.max(o.naturalWidth,o.naturalHeight));
+              var c=document.createElement('canvas'); c.width=Math.round(o.naturalWidth*sc); c.height=Math.round(o.naturalHeight*sc);
+              var x=c.getContext('2d'); x.drawImage(o,0,0,c.width,c.height);
               var d=x.getImageData(0,0,c.width,c.height), a=d.data, t=hex2hsl(hex);
               // หาความสว่างของ "สีพื้น" ของภาพ (median ของพิกเซลที่มีสี) แล้วเทียบสัดส่วน
               // → สีพื้นกลายเป็นสีที่เลือกจริง ๆ, เส้นดำยังดำ, ไฮไลต์ขาวยังขาว
@@ -944,7 +947,7 @@ var STORE_KEY = 'wedding_guest_v1';
 
   $('#openBtn').addEventListener('click',function(){
     cover.classList.add('hide'); setMusic(true);
-    if(CONFIG.SHOW_AVATAR_GAME) openStage(); else document.body.classList.remove('locked');
+    if(CONFIG.SHOW_AVATAR_GAME && !guest) openStage(); else document.body.classList.remove('locked');
   });
   $('#skipBtn').addEventListener('click',closeStage);
   $('#randBtn').addEventListener('click',randomize);
@@ -959,6 +962,23 @@ var STORE_KEY = 'wedding_guest_v1';
       guest={name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), img:r[0], thumb:r[1], ts:Date.now()};
       saveGuest(guest); applyGuest(); closeStage();
     }).then(function(){ btn.disabled=false; btn.textContent='ใช้ตัวนี้เข้างาน'; });
+  });
+
+  // รูปตัวละครความละเอียดสูง พื้นโปร่งใส (ใช้ส่งเข้าชีต / ดาวน์โหลด / พิมพ์สติกเกอร์)
+  var AVATAR_UPLOAD=1500, AVATAR_DOWNLOAD=2000;
+  function hiResAvatar(size){
+    if(!guest) return Promise.resolve('');
+    sel=Object.assign({},DEFAULT_SEL,guest.sel||{}); colors=Object.assign({},guest.colors||{});
+    renderAll();
+    return compose(size).then(function(u){ return u||guest.img||guest.thumb||''; },function(){ return guest.img||guest.thumb||''; });
+  }
+  $('#dlAvatar').addEventListener('click',function(e){
+    if(!guest) return;
+    e.preventDefault(); var a=this; a.textContent='กำลังเตรียมรูป...';
+    hiResAvatar(AVATAR_DOWNLOAD).then(function(u){
+      var l=document.createElement('a'); l.href=u; l.download='my-wedding-avatar.png';
+      document.body.appendChild(l); l.click(); setTimeout(function(){ l.remove(); },1000);
+    }).then(function(){ a.textContent='บันทึกรูปตัวละคร'; });
   });
 
   function applyGuest(){
@@ -1013,11 +1033,17 @@ var STORE_KEY = 'wedding_guest_v1';
     var m=e.target.value, first=!form.dataset.mode;
     form.dataset.mode=m; st.textContent='';
     $('#rMsgLbl').textContent = m==='wish' ? 'คำอวยพรถึงบ่าวสาว' : 'คำอวยพรถึงบ่าวสาว (ไม่บังคับ)';
-    sub.textContent=MODES[m].btn;
+    sub.textContent=loadRsvp()?'บันทึกการแก้ไข':MODES[m].btn;
     if(first) setTimeout(function(){ $('.mode-body').scrollIntoView({behavior:'smooth',block:'start'}); },60);
   });
 
   form.addEventListener('input',function(){ st.textContent=''; });
+  // จำคำตอบของเบราว์เซอร์นี้ + id สำหรับ "แก้ไขคำตอบ" (ชีตจะอัปเดตแถวเดิม ไม่เพิ่มแถวซ้ำ)
+  var RSVP_KEY='wedding_rsvp_v1', RID_KEY='wedding_rsvp_id';
+  function rsvpId(){ try{ var id=localStorage.getItem(RID_KEY); if(!id){ id=Date.now().toString(36)+Math.random().toString(36).slice(2,10); localStorage.setItem(RID_KEY,id); } return id; }catch(e){ return ''; } }
+  function loadRsvp(){ try{ return JSON.parse(localStorage.getItem(RSVP_KEY)||'null'); }catch(e){ return null; } }
+  function saveRsvp(d){ try{ localStorage.setItem(RSVP_KEY,JSON.stringify(d)); }catch(e){} }
+
   form.addEventListener('submit',function(e){
     e.preventDefault();
     var mode=form.dataset.mode;
@@ -1025,7 +1051,9 @@ var STORE_KEY = 'wedding_guest_v1';
     var name=$('#rName').value.trim(), message=msgIn.value.trim();
     if(!name){ st.textContent='กรุณากรอกชื่อ'; $('#rName').focus(); return; }
     if(mode==='wish' && !message){ st.textContent='เขียนคำอวยพรสักนิดนะ'; msgIn.focus(); return; }
+    var editing=!!loadRsvp();
     var data={
+      rsvpId:rsvpId(),
       mode:mode,
       modeLabel:MODES[mode].label,
       name:name,
@@ -1038,52 +1066,83 @@ var STORE_KEY = 'wedding_guest_v1';
       paper:checked('paper')||'blush',
       avatarName: guest?guest.name:'',
       avatarConfig: guest?JSON.stringify({sel:guest.sel,colors:guest.colors}):'',
-      avatarPng: (guest&&guest.thumb)?guest.thumb.split(',')[1]:''
+      avatarPng:''
     };
-    sub.disabled=true; sub.textContent='กำลังส่ง...'; st.textContent='';
+    sub.disabled=true; st.textContent='';
+    sub.textContent = guest ? 'กำลังเตรียมรูปตัวละคร...' : 'กำลังส่ง...';
 
-    var send;
-    if(!CONFIG.RSVP_ENDPOINT){
-      send=new Promise(function(res){
-        try{ var arr=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]');
-          arr.push(Object.assign({},data,{avatarPng:'',avatar:guest?guest.thumb:'',ts:Date.now()}));
-          localStorage.setItem(DEMO_KEY,JSON.stringify(arr)); }catch(err){}
-        setTimeout(res,400);
-      });
-    } else {
-      send=fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});
-    }
-    var pending = CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง';
-    send.then(function(){
-      data.pending=pending;
-      if(data.showOnWall==='แสดง' && !pending){
-        wishes.unshift({name:name,message:message,mode:mode,paper:data.paper,avatar:guest?(guest.thumb||guest.img):'',ts:Date.now()});
-        renderWall();
+    var prep = (guest && CONFIG.RSVP_ENDPOINT) ? hiResAvatar(AVATAR_UPLOAD) : Promise.resolve('');
+    prep.then(function(png){
+      if(png && png.indexOf(',')>0) data.avatarPng=png.split(',')[1];
+      sub.textContent='กำลังส่ง...';
+      if(!CONFIG.RSVP_ENDPOINT){
+        return new Promise(function(res){
+          try{ var arr=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]').filter(function(r){ return r.rsvpId!==data.rsvpId; });
+            arr.push(Object.assign({},data,{avatarPng:'',avatar:guest?guest.thumb:'',ts:Date.now()}));
+            localStorage.setItem(DEMO_KEY,JSON.stringify(arr)); }catch(err){}
+          setTimeout(res,400);
+        });
       }
-      showThanks(data);
+      return fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});
+    }).then(function(){
+      var rec=Object.assign({},data,{avatarPng:'',avatarConfig:'',ts:Date.now(),
+        pending: CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง'});
+      saveRsvp(rec);
+      wishes=wishes.filter(function(w){ return !w._mine; });
+      if(rec.showOnWall==='แสดง' && !rec.pending){
+        wishes.unshift({name:name,message:message,mode:mode,paper:data.paper,avatar:guest?(guest.thumb||guest.img):'',ts:rec.ts,_mine:true});
+      }
+      renderWall();
+      showThanks(rec,{edited:editing});
       burst();
     }).catch(function(){
       st.textContent='ส่งไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง';
-    }).then(function(){ sub.disabled=false; sub.textContent=MODES[mode].btn; });
+    }).then(function(){ sub.disabled=false; sub.textContent=editing?'บันทึกการแก้ไข':MODES[mode].btn; });
   });
 
-  function showThanks(data){
-    var av=(guest&&(guest.img||guest.thumb))?'<img src="'+(guest.img||guest.thumb)+'" alt="">':'';
-    var line={
-      attend:'เราตั้งตารอพบคุณ'+(data.guests>1?' และผู้ติดตามอีก '+(data.guests-1)+' ท่าน':'')+' ในวันงาน',
+  function showThanks(rec,opt){
+    opt=opt||{};
+    var t=$('#rsvpThanks'); t.innerHTML='';
+    var src=guest&&(guest.img||guest.thumb);
+    if(src){ var im=new Image(); im.src=src; im.alt=''; t.appendChild(im); }
+    var h=document.createElement('b'); h.textContent=(opt.returning?'คุณตอบรับแล้ว ':'ขอบคุณ ')+rec.name; t.appendChild(h);
+    var p=document.createElement('p');
+    p.innerHTML={
+      attend:'ยืนยันมาร่วมงาน <b>'+rec.guests+' ท่าน</b>'+(rec.food?' · '+esc(rec.food):'')+'<br>เราตั้งตารอพบคุณในวันงาน',
       gift:'ขอบคุณสำหรับของขวัญและคำอวยพร แม้ไม่ได้มาร่วมงาน แต่ใจของคุณมาถึงเราแล้ว',
-      wish: data.pending?'ได้รับการ์ดอวยพรของคุณแล้ว บ่าวสาวจะนำขึ้นสมุดอวยพรเร็ว ๆ นี้':'การ์ดอวยพรของคุณถูกติดไว้ในสมุดอวยพรแล้ว'
-    }[data.mode];
-    if(data.pending && data.mode!=='wish') line+='<br><small>คำอวยพรของคุณจะขึ้นสมุดอวยพรหลังบ่าวสาวอ่านแล้ว</small>';
-    var t=$('#rsvpThanks');
-    t.innerHTML=av+'<b>ขอบคุณ '+esc(data.name)+'</b><p>'+line+'</p>'+
-      (CONFIG.RSVP_ENDPOINT?'':'<p style="font-size:.75rem;opacity:.7">(โหมดทดสอบ: ยังไม่ได้เชื่อม Google Sheet)</p>')+
-      '<div class="btn-row">'+(data.showOnWall==='แสดง'&&!data.pending?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
-      '<button class="btn btn--ghost" type="button" id="rAgain">ส่งคำตอบอีกครั้ง</button></div>';
+      wish:'ขอบคุณสำหรับการ์ดอวยพร'
+    }[rec.mode]+(opt.edited?'<br><small>(อัปเดตคำตอบแล้ว)</small>':'');
+    t.appendChild(p);
+    if(rec.message && rec.showOnWall==='แสดง' && window.WishCard){
+      var wrap=document.createElement('div'); wrap.className='my-card';
+      var c=WishCard.build({name:rec.name,message:rec.message,mode:rec.mode,paper:rec.paper,avatar:guest?(guest.thumb||guest.img):'',ts:rec.ts});
+      wrap.appendChild(c); t.appendChild(wrap);
+      var n=document.createElement('p'); n.className='my-note';
+      n.textContent = rec.pending ? 'การ์ดของคุณจะขึ้นสมุดอวยพรหลังบ่าวสาวอ่านแล้ว' : 'การ์ดของคุณอยู่ในสมุดอวยพรแล้ว';
+      t.appendChild(n);
+    }
+    if(!CONFIG.RSVP_ENDPOINT){ var d=document.createElement('p'); d.style.cssText='font-size:.75rem;opacity:.7'; d.textContent='(โหมดทดสอบ: ยังไม่ได้เชื่อม Google Sheet)'; t.appendChild(d); }
+    var row=document.createElement('div'); row.className='btn-row';
+    row.innerHTML=(rec.showOnWall==='แสดง'&&!rec.pending?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
+      '<button class="btn btn--ghost" type="button" id="rEdit">แก้ไขคำตอบ</button>';
+    t.appendChild(row);
     form.hidden=true; t.hidden=false;
-    $('#rAgain').addEventListener('click',function(){ t.hidden=true; form.hidden=false; msgIn.value=''; });
-    t.scrollIntoView({behavior:'smooth',block:'center'});
+    $('#rEdit').addEventListener('click',function(){ fillForm(rec); t.hidden=true; form.hidden=false; $('#rsvpForm').scrollIntoView({behavior:'smooth',block:'start'}); });
+    if(!opt.returning) t.scrollIntoView({behavior:'smooth',block:'center'});
   }
+
+  function fillForm(rec){
+    var r=form.querySelector('input[name=mode][value="'+rec.mode+'"]');
+    if(r){ r.checked=true; r.dispatchEvent(new Event('change',{bubbles:true})); }
+    $('#rName').value=rec.name||''; $('#rGuests').value=rec.guests>0?rec.guests:1; $('#rAllergy').value=rec.allergy||'';
+    msgIn.value=rec.message||''; $('#rShow').checked=rec.showOnWall==='แสดง'||!rec.message;
+    var f=form.querySelector('input[name=food][value="'+rec.food+'"]'); if(f) f.checked=true;
+    var pp=form.querySelector('input[name=paper][value="'+rec.paper+'"]'); if(pp) pp.checked=true;
+    sub.textContent='บันทึกการแก้ไข';
+  }
+
+  // เปิดเว็บอีกครั้ง → แสดงคำตอบเดิม พร้อมปุ่มแก้ไข
+  (function(){ var rec=loadRsvp(); if(rec && rec.mode) showThanks(rec,{returning:true}); })();
 
   /* ---------------- wish wall ---------------- */
   var wall=$('#wall'), wishes=[], WALL_PREVIEW=4;   // หน้าหลักโชว์แค่ล่าสุด 4 ใบ ที่เหลือดูใน wishes.html
