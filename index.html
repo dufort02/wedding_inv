@@ -726,6 +726,23 @@ var PALETTES = {
   // เสื้อ: สีเดิม + สีธีมงานจาก Attire Guide
   shirt: PALETTE.concat([['#6FA8DC','ฟ้าไฮเดรนเยีย'],['#E91E8C','ชมพูบานเย็น'],['#FF7F3F','ส้มพิกุล'],['#FFD166','เหลืองทอง'],['#FF9EC7','พีชอ่อน'],['#8E5FD9','ม่วงลาเวนเดอร์']])
 };
+/* เรียงไล่สีอัตโนมัติ: แดง→ส้ม→เหลือง→เขียว→ฟ้า→ม่วง→ชมพู แล้วตามด้วย ขาว→เทา→น้ำตาลเข้ม
+   (สีผม/สีตาเรียงเองด้วยมือ ไม่ต้องเรียงอัตโนมัติ) */
+function byHue(list){
+  function hsl(hex){ var r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255,
+    mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn,s=d?d/(1-Math.abs(2*l-1)):0,h=0;
+    if(d){ h= mx===r?((g-b)/d+6)%6 : mx===g?(b-r)/d+2 : (r-g)/d+4; h*=60; }
+    return {h:h,s:s,l:l}; }
+  function neutral(c){ return c.s<.2 || (c.l<.25 && c.s<.4); }
+  return list.slice().sort(function(a,b){
+    var A=hsl(a[0]),B=hsl(b[0]),nA=neutral(A),nB=neutral(B);
+    if(nA!==nB) return nA?1:-1;
+    if(nA) return B.l-A.l;                       // ขาว → เทา → เข้ม
+    return (Math.floor(A.h/20)-Math.floor(B.h/20)) || (A.l-B.l);   // ตามเฉดสี, เฉดใกล้กันเข้ม→อ่อน
+  });
+}
+PALETTE = byHue(PALETTE);
+PALETTES.shirt = byHue(PALETTES.shirt);
 var HAIR_PAIR = {hair:'back_hair', back_hair:'hair'};
 var STORE_KEY = 'wedding_guest_v1';
 
@@ -758,6 +775,7 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------------- avatar engine ---------------- */
   var win=$('#avWin'), layerEls={}, busy=0, loadedAny=false;
   var DEFAULT_SEL={}; LAYERS.forEach(function(L){ DEFAULT_SEL[L.key]=1; });
+  DEFAULT_SEL.outerwear=0;   // เปิดมาครั้งแรกไม่ใส่เสื้อนอก
   var sel=Object.assign({},DEFAULT_SEL), colors={};
 
   Z_ORDER.forEach(function(k,i){
