@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!--
-  สไลด์โชว์คำอวยพร — เปิดบนจอ/โปรเจกเตอร์ในงาน
+  หน้ารวมคำอวยพร — เปิดบนมือถือ หรือจอ/โปรเจกเตอร์ในงาน
+  • เริ่มต้นเป็น "บอร์ด" โชว์คำอวยพรทั้งหมด วางแบบสุ่ม เอียงบ้างตรงบ้าง (เลื่อนลงช้า ๆ เองถ้าล้นจอ)
+  • ▶ เล่นสไลด์โชว์ = โชว์ทีละใบเต็มจอ  ⏸ = หยุด  ▦ = กลับมาดูทั้งหมด  แตะการ์ดบนบอร์ด = เปิดใบนั้น
   • ดึงคำอวยพรที่ "แสดง" จาก Google Sheet (URL เดียวกับ RSVP_ENDPOINT ใน index.html — อ่านให้เอง)
-  • คำอวยพรใหม่จะแทรกขึ้นเป็นใบถัดไปอัตโนมัติ (เช็กทุก 45 วินาที)
-  • ปุ่ม:  → / Space = ถัดไป   ← = ย้อน   P = หยุด/เล่น   F หรือดับเบิลคลิก = เต็มจอ
-  • ?endpoint=<URL /exec>  ใช้แทนค่าจาก index.html ได้
+    คำอวยพรใหม่ที่อนุมัติจะเด้งขึ้นเอง (เช็กทุก 45 วินาที)
+  • คีย์บอร์ด: Space = เล่น/หยุด  ← → = ย้อน/ถัดไป  Esc = ดูทั้งหมด  F = เต็มจอ
+  • ?endpoint=<URL /exec> ใช้แทนค่าจาก index.html ได้   ?play=1 เปิดมาเป็นสไลด์โชว์เลย
 -->
 <html lang="th">
 <head>
@@ -17,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F3ECE0; --red:#C23B3B; --red-soft:#B5504C; --white:#FFFDF8;
+  --paper:#F3ECE0; --red:#C23B3B; --red-deep:#9F2C2E; --red-soft:#B5504C; --white:#FFFDF8;
   --script:'Dancing Script','Mali',cursive; --body:'Mali',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -27,85 +29,101 @@ body{
   font-family:var(--body);color:var(--red-soft);background-color:var(--paper);overflow:hidden;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .33 0 0 0 0 .22 0 0 0 .16 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 body.idle{cursor:none}
-.stage{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;padding:clamp(14px,3vh,36px) clamp(16px,4vw,56px)}
+.stage{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto}
 
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.top img{height:clamp(56px,11vh,120px);width:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(10px,2.4vh,28px) clamp(16px,4vw,56px) 0}
+.top a{display:block}
+.top img{height:clamp(48px,10vh,110px);width:auto}
+.top .ttl{text-align:right}
 .top h1{font-family:var(--script);color:var(--red);font-size:clamp(2rem,6vh,4rem);line-height:1}
+.top small{font-size:clamp(.75rem,1.8vh,1rem)}
 
-.center{display:flex;align-items:center;justify-content:center;min-height:0;perspective:1200px}
-.card{
-  position:relative;width:min(1000px,92vw);max-height:100%;display:flex;flex-direction:column;
-  background:var(--c,#FBE3DD);border-radius:6px;padding:clamp(34px,6vh,72px) clamp(22px,4vw,64px) clamp(20px,4vh,44px);
-  box-shadow:0 3px 0 rgba(0,0,0,.03),0 22px 50px rgba(120,60,40,.18);
-  transform:rotate(var(--r,0deg));opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1);
-}
-.card.in{opacity:1}
-.card.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
-.card::before{content:"";position:absolute;top:-16px;left:50%;width:140px;height:34px;transform:translateX(-50%) rotate(var(--t,-3deg));background:rgba(222,196,150,.8)}
-.card.pinned::before{background:rgba(194,59,59,.5)}
-.msg{
-  color:#7a3b35;font-size:var(--fs,clamp(1.05rem,min(4.4vh,3.6vw),2.9rem));line-height:1.6;white-space:pre-wrap;word-break:break-word;
-  overflow:hidden;text-align:center;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;justify-content:safe center;
-}
-.msg span{display:block;max-height:100%}
-.by{display:flex;align-items:center;justify-content:center;gap:clamp(12px,2vw,22px);margin-top:clamp(16px,3.5vh,36px);padding-top:clamp(14px,3vh,28px);border-top:2px dashed rgba(194,59,59,.3)}
-.av{width:clamp(56px,min(13vh,16vw),128px);height:clamp(56px,min(13vh,16vw),128px);flex:none;border-radius:50%;background:var(--white);border:2.5px solid var(--red);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--red);font-size:clamp(1.6rem,5vh,3rem)}
-.av img{width:100%;height:100%;object-fit:contain}
-.name{font-family:var(--script);color:var(--red);font-size:clamp(1.6rem,min(6.5vh,7vw),4.2rem);line-height:1.25;word-break:break-word}
-.tag{display:block;font-family:var(--body);font-size:clamp(.8rem,2vh,1.2rem);line-height:1.3;margin-top:2px;color:var(--red-soft)}
+/* ---------- board ---------- */
+.board{overflow-y:auto;overflow-x:hidden;min-height:0;padding:clamp(26px,4vh,44px) clamp(16px,4vw,56px) 140px;scrollbar-width:none}
+.board::-webkit-scrollbar{display:none}
+.cols{columns:auto clamp(150px,20vw,280px);column-gap:clamp(18px,2.4vw,36px);max-width:1800px;margin:0 auto;--wfs:clamp(13px,.55vw + 7px,17px)}
 
-.bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-.meta{font-size:clamp(.8rem,2vh,1.1rem)}
-.bar{width:min(320px,40vw);height:4px;background:rgba(194,59,59,.15);border-radius:4px;margin-top:8px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--red)}
-.qr{display:flex;align-items:center;gap:14px;text-align:right;font-size:clamp(.85rem,2.1vh,1.2rem);line-height:1.4}
-.qr b{display:block;color:var(--red);font-size:1.1em}
-.qr .code{width:clamp(84px,15vh,150px);height:clamp(84px,15vh,150px);background:#fff;padding:8px;border-radius:10px;box-shadow:0 0 0 2px var(--red)}
-.qr .code svg{width:100%;height:100%;display:block}
+/* ---------- slideshow ---------- */
+.center{display:flex;align-items:center;justify-content:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
+.wc.slide{opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.wc.slide.in{opacity:1}
+.wc.slide.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
 
-.empty{text-align:center}
-.empty p{font-size:clamp(1.2rem,3.5vh,2rem);margin-bottom:20px}
+.empty{text-align:center;align-self:center;padding:0 16px}
+.empty p{font-size:clamp(1.1rem,3.5vh,2rem);margin-bottom:20px}
 .empty .code{width:clamp(180px,32vh,320px);height:clamp(180px,32vh,320px);margin:0 auto;background:#fff;padding:12px;border-radius:14px;box-shadow:0 0 0 2px var(--red)}
 .empty .code svg{width:100%;height:100%;display:block}
 
-.hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--red);color:var(--white);padding:6px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .4s}
+/* ---------- controls + QR ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 clamp(16px,4vw,56px) clamp(12px,2.6vh,30px);pointer-events:none}
+.dock>*{pointer-events:auto}
+.ctrls{display:flex;align-items:center;gap:8px;background:rgba(255,253,248,.92);border:1.8px solid var(--red);border-radius:999px;padding:6px;box-shadow:0 6px 18px rgba(120,60,40,.15);transition:opacity .5s}
+body.idle .ctrls{opacity:0}
+.cb{height:44px;min-width:44px;border-radius:999px;color:var(--red);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-weight:600;font-size:.95rem}
+.cb svg{width:20px;height:20px}
+.cb:hover{background:rgba(239,211,203,.6)}
+.cb--main{background:var(--red);color:var(--white);padding:0 18px 0 14px;box-shadow:0 3px 0 var(--red-deep)}
+.cb--main:hover{background:var(--red-deep)}
+.cb:focus-visible{outline:2px dashed var(--red);outline-offset:2px}
+.bar{height:3px;width:100%;background:rgba(194,59,59,.15);border-radius:3px;overflow:hidden;position:absolute;left:18px;right:18px;bottom:3px;width:auto}
+.bar i{display:block;height:100%;width:0;background:var(--red)}
+.ctrls{position:relative}
+.qr{display:flex;align-items:center;gap:14px;text-align:right;font-size:clamp(.85rem,2vh,1.15rem);line-height:1.4;margin-left:auto}
+.qr b{display:block;color:var(--red);font-size:1.1em}
+.qr .code{width:clamp(84px,14vh,140px);height:clamp(84px,14vh,140px);background:#fff;padding:8px;border-radius:10px;box-shadow:0 0 0 2px var(--red)}
+.qr .code svg{width:100%;height:100%;display:block}
+.spacer{flex:1}
+
+.hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--red);color:var(--white);padding:6px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .4s;z-index:5}
 .hint.show{opacity:1}
-@media (max-width:640px){ .qr{display:none} .top h1{font-size:2rem} }
-@media (prefers-reduced-motion:reduce){ .card{transition:opacity .3s} }
+@media (max-width:700px){
+  .qr{display:none} .spacer{display:none} .dock{justify-content:center}
+  .cb span{display:none} .cb--main{padding:0 14px}
+  .top h1{font-size:2rem}
+}
+@media (prefers-reduced-motion:reduce){ .slide{transition:opacity .3s} }
 </style>
 </head>
 <body>
 <div class="stage">
   <header class="top">
-    <img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652">
-    <h1>Wishes</h1>
+    <a href="index.html" aria-label="กลับหน้าการ์ดเชิญ"><img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652"></a>
+    <div class="ttl"><h1>Wishes</h1><small id="count"></small></div>
   </header>
 
-  <main class="center" id="center">
-    <div class="empty" id="empty" hidden>
-      <p id="emptyMsg">กำลังโหลดคำอวยพร...</p>
-      <div class="code js-qr"></div>
-    </div>
-  </main>
+  <main class="board" id="board"><div class="cols" id="cols"></div></main>
+  <main class="center" id="center" hidden></main>
+  <div class="empty" id="empty" hidden>
+    <p id="emptyMsg">กำลังโหลดคำอวยพร...</p>
+    <div class="code js-qr"></div>
+  </div>
+</div>
 
-  <footer class="bottom">
-    <div class="meta"><span id="count"></span><div class="bar"><i id="bar"></i></div></div>
-    <div class="qr" id="qrBox"><span><b>สแกนเพื่อเขียนคำอวยพร</b>ขึ้นจอนี้ได้เลย</span><div class="code js-qr"></div></div>
-  </footer>
+<div class="dock">
+  <div class="spacer"></div>
+  <div class="ctrls" id="ctrls" hidden>
+    <button class="cb" id="bBoard" type="button" hidden aria-label="ดูทั้งหมด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>ดูทั้งหมด</span></button>
+    <button class="cb" id="bPrev" type="button" hidden aria-label="ก่อนหน้า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="cb cb--main" id="bPlay" type="button"><svg id="icPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icPause" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span id="playTxt">เล่นสไลด์โชว์</span></button>
+    <button class="cb" id="bNext" type="button" hidden aria-label="ถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button class="cb" id="bFull" type="button" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <div class="bar" id="barWrap" hidden><i id="bar"></i></div>
+  </div>
+  <div class="qr" id="qrBox"><span><b>สแกนเพื่อเขียนคำอวยพร</b>ขึ้นจอนี้ได้เลย</span><div class="code js-qr"></div></div>
 </div>
 <div class="hint" id="hint"></div>
 
 <script src="js/qrcode.js"></script>
+<script src="js/wishcard.js"></script>
 <script>
 (function(){
-  var PAPERS={blush:'#FBE3DD',cream:'#FFF3DA',sky:'#E1ECF6',sage:'#E4EEDC',lilac:'#ECE3F5'};
-  var TAGS={attend:'มาร่วมงาน',gift:'ส่งของขวัญมาอวยพร',wish:'อวยพรออนไลน์'};
   var REFRESH_MS=45000, DEMO_KEY='wedding_rsvp_demo';
   var $=function(s){ return document.querySelector(s); };
-  var center=$('#center'), empty=$('#empty');
-  var list=[], seen={}, queue=[], idx=-1, timer=null, paused=false, t0=0, dwell=0, endpoint='';
+  var board=$('#board'), cols=$('#cols'), center=$('#center'), empty=$('#empty');
+  var list=[], order={}, seenAny=false, endpoint='';
+  var view='board', playing=false, idx=-1, timer=null, t0=0, dwell=0, queue=[];
 
   /* ---------- QR ไปหน้าเชิญ ---------- */
   var siteUrl=location.href.replace(/[#?].*$/,'').replace(/wishes\.html$/,'')+'#rsvp';
@@ -115,7 +133,6 @@ body.idle{cursor:none}
     Array.prototype.forEach.call(document.querySelectorAll('.js-qr'),function(el){ el.innerHTML=svg; });
   }catch(e){ $('#qrBox').hidden=true; }
 
-  /* ---------- endpoint: ?endpoint= หรืออ่านจาก index.html ---------- */
   function findEndpoint(){
     var q=new URLSearchParams(location.search).get('endpoint');
     if(q) return Promise.resolve(q);
@@ -124,9 +141,10 @@ body.idle{cursor:none}
       .catch(function(){ return ''; });
   }
 
-  function key(w){ return (w.ts||'')+'|'+w.name+'|'+String(w.message).slice(0,40); }
-  function hash(s){ var h=0; for(var i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return Math.abs(h); }
+  var key=WishCard.key;
 
+
+  /* ---------- โหลด ---------- */
   function load(){
     var p;
     if(!endpoint){
@@ -139,87 +157,136 @@ body.idle{cursor:none}
         .then(function(r){ return r.json(); }).then(function(j){ return (j&&j.wishes)||[]; });
     }
     return p.then(function(ws){
-      var first=!list.length && !Object.keys(seen).length, fresh=[];
-      ws.forEach(function(w){ var k=key(w); if(!seen[k]){ seen[k]=1; if(!first) fresh.push(w); } });
-      // คงลำดับจากชีต (ปักหมุดก่อน, ใหม่ก่อน) แต่ถ้าถูกซ่อนในชีตก็เอาออกจากรอบด้วย
+      var fresh=[];
+      ws.forEach(function(w){
+        var k=key(w);
+        if(!(k in order)){ order[k] = seenAny ? -Date.now()-Math.random() : Math.random(); if(seenAny) fresh.push(k); }
+      });
+      seenAny=true;
+      // ลำดับสุ่มแต่คงที่: ปักหมุดก่อน, ใบใหม่ขึ้นบน, ที่เหลือสุ่ม
+      ws.sort(function(a,b){ return (b.pinned-a.pinned) || (order[key(a)]-order[key(b)]); });
+      var changed = ws.map(key).join('\n') !== list.map(key).join('\n');
       var cur=list[idx]; list=ws;
-      idx = cur ? Math.max(-1, list.findIndex(function(w){ return key(w)===key(cur); })) : -1;
-      queue=queue.filter(function(w){ return list.some(function(x){ return key(x)===key(w); }); }).concat(fresh);
-      render();
-    }).catch(function(){ if(!list.length){ $('#emptyMsg').textContent='โหลดคำอวยพรไม่ได้ จะลองใหม่อัตโนมัติ'; empty.hidden=false; } });
+      idx = cur ? list.findIndex(function(w){ return key(w)===key(cur); }) : -1;
+      queue = queue.filter(function(k){ return list.some(function(w){ return key(w)===k; }); })
+                   .concat(fresh);
+      render(changed, fresh);
+    }).catch(function(){ if(!list.length){ $('#emptyMsg').textContent='โหลดคำอวยพรไม่ได้ จะลองใหม่อัตโนมัติ'; showEmpty(true); } });
   }
 
-  function render(){
-    $('#count').textContent = list.length ? 'คำอวยพร '+list.length+' ใบ' : '';
-    if(!list.length){
-      $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — สแกนเพื่อเป็นคนแรกกันนะ';
-      empty.hidden=false; $('#qrBox').style.visibility='hidden';
-      var old=center.querySelector('.card'); if(old) old.remove();
-      clearTimeout(timer); timer=null; return;
-    }
-    empty.hidden=true; $('#qrBox').style.visibility='';
-    if(!timer && !paused) next();
+  function showEmpty(on){
+    empty.hidden=!on; $('#ctrls').hidden=on;
+    if(on){ board.hidden=true; center.hidden=true; $('#qrBox').style.visibility='hidden'; }
+    else { $('#qrBox').style.visibility=''; setView(view); }
   }
+
+  function render(changed, fresh){
+    $('#count').textContent = list.length ? 'คำอวยพร '+list.length+' ใบ' : '';
+    if(!list.length){ $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — สแกนเพื่อเป็นคนแรกกันนะ'; showEmpty(true); stop(); return; }
+    showEmpty(false);
+    if(changed) renderBoard(fresh||[]);
+    if(view==='slide' && playing && !timer) next();
+  }
+
+  /* ---------- บอร์ด ---------- */
+  function renderBoard(fresh){
+    cols.innerHTML='';
+    list.forEach(function(w,i){
+      var el=WishCard.build(w);
+      el.classList.add(fresh.indexOf(key(w))>=0?'glow':'drop');
+      el.style.animationDelay=Math.min(i,24)*45+'ms';
+      el.addEventListener('click',function(){ idx=list.indexOf(w); setView('slide'); show(w); });
+      cols.appendChild(el);
+    });
+  }
+
+  // เลื่อนลงช้า ๆ เมื่อการ์ดล้นจอ (หยุด 8 วิ ถ้ามีคนเลื่อนเอง)
+  var userHold=0, pauseUntil=0, pos=0, last=performance.now();
+  ['wheel','touchstart','keydown','mousedown'].forEach(function(ev){ board.addEventListener(ev,function(){ userHold=performance.now()+8000; pos=board.scrollTop; },{passive:true}); });
+  (function drift(now){
+    var dt=Math.min(100,now-last); last=now;
+    if(view==='board' && !board.hidden && now>userHold && now>pauseUntil){
+      var max=board.scrollHeight-board.clientHeight;
+      if(max>4){
+        pos+=dt*0.028;
+        if(pos>=max){ pos=max; pauseUntil=now+4000; setTimeout(function(){ board.scrollTo({top:0,behavior:'smooth'}); pos=0; pauseUntil=performance.now()+5000; },4000); }
+        board.scrollTop=pos;
+      }
+    }
+    requestAnimationFrame(drift);
+  })(performance.now());
+
+  /* ---------- สไลด์โชว์ ---------- */
+  function setView(v){
+    view=v;
+    board.hidden = v!=='board'; center.hidden = v!=='slide';
+    $('#bBoard').hidden=$('#bPrev').hidden=$('#bNext').hidden = v!=='slide';
+    $('#barWrap').hidden = !(v==='slide' && playing);
+    if(v==='board'){ stop(); var old=center.querySelector('.slide'); if(old) old.remove(); }
+    syncPlay();
+  }
+  function syncPlay(){
+    $('#icPlay').hidden=playing; $('#icPause').hidden=!playing;
+    $('#playTxt').textContent = playing ? 'หยุด' : (view==='slide' ? 'เล่นต่อ' : 'เล่นสไลด์โชว์');
+    $('#bPlay').setAttribute('aria-label',$('#playTxt').textContent);
+    $('#barWrap').hidden = !(view==='slide' && playing);
+  }
+  function play(){ if(!list.length) return; playing=true; if(view!=='slide'){ setView('slide'); next(); } else { syncPlay(); schedule(); } }
+  function stop(){ playing=false; clearTimeout(timer); timer=null; syncPlay(); }
+  function schedule(){ clearTimeout(timer); timer = playing ? setTimeout(next,dwell) : null; t0=performance.now(); }
 
   function show(w){
-    var old=center.querySelector('.card');
+    var old=center.querySelector('.slide');
     if(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); }
-    var h=hash(key(w)), el=document.createElement('article');
-    el.className='card'+(w.pinned?' pinned':'');
-    el.style.setProperty('--c',PAPERS[w.paper]||PAPERS.blush);
-    el.style.setProperty('--r',((h%5)-2)*0.6+'deg');
-    el.style.setProperty('--t',((h>>3)%9-4)+'deg');
+    var el=WishCard.build(w,{big:true}); el.classList.add('slide'); center.appendChild(el);
     var len=String(w.message).length;
-    if(len>320) el.style.setProperty('--fs','clamp(.9rem,min(2.8vh,2.6vw),1.9rem)');
-    else if(len>160) el.style.setProperty('--fs','clamp(1rem,min(3.5vh,3vw),2.3rem)');
-    var msg=document.createElement('div'); msg.className='msg'; var sp=document.createElement('span'); sp.textContent=w.message; msg.appendChild(sp);
-    var by=document.createElement('div'); by.className='by';
-    var av=document.createElement('div'); av.className='av'; av.textContent=(w.name||'?').trim().charAt(0).toUpperCase();
-    if(w.avatar){ var im=new Image(); im.alt=''; im.onload=function(){ av.textContent=''; av.appendChild(im); }; im.src=w.avatar; }
-    var nm=document.createElement('div'); nm.className='name'; nm.textContent=w.name;
-    var tg=document.createElement('span'); tg.className='tag'; tg.textContent=TAGS[w.mode]||TAGS.wish; nm.appendChild(tg);
-    by.appendChild(av); by.appendChild(nm); el.appendChild(msg); el.appendChild(by);
-    center.appendChild(el);
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('in'); }); });
-    dwell=Math.min(20000,Math.max(7000,5000+len*55)); t0=performance.now();
-    clearTimeout(timer); timer = paused ? null : setTimeout(next,dwell);
+    dwell=Math.min(20000,Math.max(7000,5000+len*55));
+    schedule();
   }
-
   function next(){
     if(!list.length) return;
-    var w;
-    if(queue.length){ w=queue.shift(); idx=list.findIndex(function(x){ return key(x)===key(w); }); }
-    else { idx=(idx+1)%list.length; w=list[idx]; }
+    var w=null;
+    while(queue.length && !w){ var k=queue.shift(); w=list.find(function(x){ return key(x)===k; })||null; }
+    if(w) idx=list.indexOf(w); else { idx=(idx+1)%list.length; w=list[idx]; }
     show(w);
   }
   function prev(){ if(!list.length) return; idx=(idx-1+list.length)%list.length; show(list[idx]); }
 
   (function tick(){
-    var p = timer&&!paused ? Math.min(1,(performance.now()-t0)/dwell) : (paused?parseFloat($('#bar').style.width)/100||0:0);
-    $('#bar').style.width=(p*100)+'%'; requestAnimationFrame(tick);
+    $('#bar').style.width = (playing&&timer ? Math.min(1,(performance.now()-t0)/dwell)*100 : 0)+'%';
+    requestAnimationFrame(tick);
   })();
 
+  /* ---------- ปุ่ม / คีย์บอร์ด ---------- */
   var hintT;
   function hint(t){ var h=$('#hint'); h.textContent=t; h.classList.add('show'); clearTimeout(hintT); hintT=setTimeout(function(){ h.classList.remove('show'); },1400); }
-  function togglePause(){ paused=!paused; if(paused){ clearTimeout(timer); timer=null; hint('หยุดชั่วคราว'); } else { hint('เล่นต่อ'); next(); } }
-  function fullscreen(){ var d=document; if(!d.fullscreenElement) d.documentElement.requestFullscreen&&d.documentElement.requestFullscreen().catch(function(){}); else d.exitFullscreen(); }
+  function fullscreen(){ var d=document; if(!d.fullscreenElement){ if(d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function(){}); } else d.exitFullscreen(); }
+  function togglePlay(){ if(playing){ stop(); hint('หยุดชั่วคราว'); } else play(); }
+  $('#bPlay').addEventListener('click',togglePlay);
+  $('#bNext').addEventListener('click',function(){ next(); });
+  $('#bPrev').addEventListener('click',function(){ prev(); });
+  $('#bBoard').addEventListener('click',function(){ setView('board'); });
+  $('#bFull').addEventListener('click',fullscreen);
+  center.addEventListener('click',function(e){ if(e.target.closest('.slide')) next(); });
   document.addEventListener('keydown',function(e){
-    if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); next(); }
-    else if(e.key==='ArrowLeft') prev();
-    else if(e.key==='p'||e.key==='P') togglePause();
+    if(e.target.closest&&e.target.closest('button')&&(e.key===' '||e.key==='Enter')) return;
+    if(e.key===' '){ e.preventDefault(); togglePlay(); }
+    else if(e.key==='ArrowRight'){ if(view!=='slide') setView('slide'); next(); }
+    else if(e.key==='ArrowLeft'){ if(view!=='slide') setView('slide'); prev(); }
+    else if(e.key==='Escape') setView('board');
     else if(e.key==='f'||e.key==='F') fullscreen();
   });
-  document.addEventListener('dblclick',fullscreen);
-  center.addEventListener('click',function(){ next(); });
 
-  var idleT; function wake(){ document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(function(){ document.body.classList.add('idle'); },2500); }
-  document.addEventListener('mousemove',wake); wake();
+  var idleT; function wake(){ document.body.classList.remove('idle'); clearTimeout(idleT); idleT=setTimeout(function(){ document.body.classList.add('idle'); },3000); }
+  ['mousemove','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev,wake,{passive:true}); }); wake();
 
-  // กันจอดับระหว่างเปิดทิ้งไว้
   function keepAwake(){ try{ navigator.wakeLock&&navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
   keepAwake(); document.addEventListener('visibilitychange',function(){ if(!document.hidden) keepAwake(); });
 
-  findEndpoint().then(function(ep){ endpoint=ep; return load(); }).then(function(){ setInterval(load,REFRESH_MS); });
+  var autoPlay=new URLSearchParams(location.search).get('play')==='1';
+  findEndpoint().then(function(ep){ endpoint=ep; return load(); })
+    .then(function(){ if(autoPlay) play(); setInterval(load,REFRESH_MS); });
 })();
 </script>
 </body>
