@@ -144,7 +144,7 @@ input,textarea{font-family:inherit}
 .name-row label{font-size:.8rem;display:block}
 .name-row input{
   width:100%;border:none;border-bottom:1.8px solid var(--red);background:transparent;
-  font-size:1rem;color:var(--red);padding:8px 2px 4px 2px;line-height: 1.5;font-weight:600;text-align:center;
+  font-size:1rem;color:var(--red);padding:2px 2px 0;line-height:2.3;font-weight:600;text-align:center;   /* line-height สูง: ช่องกรอกตัดวรรณยุกต์ที่ซ้อนบนสระ (ฟอนต์ Mali) ถ้าบรรทัดเตี้ย */
 }
 .name-row input:focus{outline:none;background:rgba(239,211,203,.35)}
 .name-err{font-size:.78rem;color:var(--red);min-height:1.2em;text-align:center}
@@ -166,6 +166,7 @@ input,textarea{font-family:inherit}
   display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--red);position:relative;
 }
 .opt img{width:100%;height:100%;object-fit:contain}
+.opt.can-color::after{content:"";position:absolute;right:5px;bottom:5px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--white);box-shadow:0 0 0 1px rgba(194,59,59,.4);background:conic-gradient(#e55039,#f0a500,#b8e994,#5dade2,#c7ace4,#f8a5c2,#e55039)}
 .opt.on{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
 .opt .fallback{display:none}
 .opt.noimg .fallback{display:block}
@@ -265,6 +266,8 @@ section{text-align:center;padding:34px 0}
 .field input[type=text],.field input[type=number],.field textarea{
   width:100%;border:none;border-bottom:1.8px solid var(--red);background:transparent;color:var(--red);font-size:1rem;padding:4px 2px;resize:vertical;
 }
+.field input[type=text],.field input[type=number]{padding:0 2px;line-height:2.3}   /* กันวรรณยุกต์บนสระโดนตัด */
+.field textarea{line-height:1.8}
 .field input:focus,.field textarea:focus{outline:none;background:rgba(239,211,203,.35)}
 .choice{display:flex;gap:8px;flex-wrap:wrap}
 .choice label{border:1.5px solid var(--red);border-radius:999px;padding:4px 16px;font-size:.9rem;color:var(--red);cursor:pointer}
@@ -743,6 +746,7 @@ var CONFIG = {
   // คำอวยพรต้องให้แอดมินอนุมัติก่อนขึ้นเว็บ — ตั้งให้ตรงกับ REQUIRE_APPROVAL ใน Code.gs
   WISH_APPROVAL: true,
   SHOW_AVATAR_GAME: true,
+  SHOW_MUSIC: false,          // ปุ่มเพลง + เล่นเพลงตอนเปิดการ์ด (true = เปิดใช้)
   SHOW_SKIP: true,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
   EVENT_DATE: '2026-12-19T07:00:00+07:00',
   // ช่องทางร่วมอวยพร (RSVP แบบที่ 2) — QR: วางรูปไว้ที่ path นี้ ถ้าไม่มีไฟล์จะซ่อนเอง
@@ -765,9 +769,10 @@ var LAYERS = [
   {key:'shirt',            label:'เสื้อ',         count:7,  thumb:'shirt',      color:true},
   {key:'outerwear',        label:'เสื้อนอก',      count:2,  thumb:'outerwear',  color:true, removable:true},
   {key:'hair_accessories', label:'ที่คาดผม',      count:6,  thumb:'hair_acc',   color:true, removable:true},
-  {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc'},
-  {key:'accessories',      label:'เครื่องประดับ', count:5,  thumb:'acc',        removable:true}
+  {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc',   color:[1,2,5,6,10,11,12,13]},
+  {key:'accessories',      label:'เครื่องประดับ', count:5,  thumb:'acc',        color:[3,4], removable:true}
 ];
+/* color: true = ทุกชิ้นเปลี่ยนสีได้ | [เลข,...] = เฉพาะชิ้นที่ระบุ (ชิ้นสีดำล้วนเปลี่ยนสีไม่ได้) */
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
 var Z_ORDER = ['back_hair','body','eyes','mouth','face_accessories','shirt','outerwear','accessories','hair','hair_accessories'];
 /* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
@@ -828,6 +833,7 @@ var STORE_KEY = 'wedding_guest_v1';
     musicBtn.classList.toggle('playing',on); musicBtn.setAttribute('aria-pressed',String(on));
   }
   musicBtn.addEventListener('click',function(){ setMusic(bgm.paused); });
+  if(!CONFIG.SHOW_MUSIC) musicBtn.hidden=true;
 
   /* ---------------- avatar engine ---------------- */
   var win=$('#avWin'), layerEls={}, busy=0, loadedAny=false;
@@ -900,6 +906,7 @@ var STORE_KEY = 'wedding_guest_v1';
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
     var url=srcFor(k,n), c=colors[k];
+    if(c && LAYER_BY_KEY[k] && !canColor(LAYER_BY_KEY[k],n)) c=null;   // ชิ้นนี้เปลี่ยนสีไม่ได้ → ใช้สีเดิม
     if(!c){ im.src=url; return; }
     busy++; win.classList.add('busy');
     tint(url,c).then(function(out){ if(im._tok===tok) im.src=out; })
@@ -948,10 +955,12 @@ var STORE_KEY = 'wedding_guest_v1';
         var fb=document.createElement('span'); fb.className='fallback'; fb.textContent=n;
         b.appendChild(img); b.appendChild(fb);
       }
+      if(Array.isArray(L.color) && canColor(L,n)) b.classList.add('can-color');
       if(sel[L.key]===n) b.classList.add('on');
       b.addEventListener('click',function(){
         sel[L.key]=n; renderLayer(L.key);
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
+        if(Array.isArray(L.color)) buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
       });
       gridEl.appendChild(b);
     });
@@ -959,10 +968,13 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   function paletteFor(L){ return PALETTES[L.key] || PALETTES[HAIR_PAIR[L.key]] || PALETTE; }
+  var LAYER_BY_KEY={}; LAYERS.forEach(function(L){ LAYER_BY_KEY[L.key]=L; });
+  function canColor(L,n){ return !!L && !!n && (L.color===true || (Array.isArray(L.color) && L.color.indexOf(n)>=0)); }
   function buildPalette(){
     var L=current;
-    paletteEl.classList.toggle('show',!!L.color);
-    if(!L.color) return;
+    var ok=canColor(L,sel[L.key]);
+    paletteEl.classList.toggle('show',ok);
+    if(!ok) return;
     $('#paletteLabel').textContent='สี'+L.label+(HAIR_PAIR[L.key]?' (ผมหน้าและหลังเปลี่ยนพร้อมกัน)':'');
     dotsEl.innerHTML='';
     var reset=document.createElement('button'); reset.type='button'; reset.className='dot dot--reset'; reset.textContent='↺';
@@ -987,7 +999,7 @@ var STORE_KEY = 'wedding_guest_v1';
       delete colors[L.key];
     });
     LAYERS.forEach(function(L){
-      if(L.color && L.key!=='back_hair' && Math.random()<.5){
+      if(canColor(L,sel[L.key]) && L.key!=='back_hair' && Math.random()<.5){
         var pal=paletteFor(L), hex=pal[Math.floor(Math.random()*pal.length)][0];
         colors[L.key]=hex; if(HAIR_PAIR[L.key]) colors[HAIR_PAIR[L.key]]=hex;
       }
@@ -1027,7 +1039,7 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   $('#openBtn').addEventListener('click',function(){
-    cover.classList.add('hide'); setMusic(true);
+    cover.classList.add('hide'); if(CONFIG.SHOW_MUSIC) setMusic(true);
     if(CONFIG.SHOW_AVATAR_GAME && !guest) openStage(); else document.body.classList.remove('locked');
   });
   $('#skipBtn').addEventListener('click',closeStage);
