@@ -958,9 +958,11 @@ var STORE_KEY = 'wedding_guest_v1';
     if(!name){ $('#nameErr').textContent='ใส่ชื่อก่อนนะ จะได้ขึ้นบนบัตรเชิญ'; nameIn.classList.remove('shake'); void nameIn.offsetWidth; nameIn.classList.add('shake'); nameIn.focus(); return; }
     $('#nameErr').textContent='';
     var btn=this; btn.disabled=true; btn.textContent='กำลังบันทึก...';
+    var prevName=guest?guest.name:'';
     Promise.all([compose(600),compose(256)]).then(function(r){
       guest={name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), img:r[0], thumb:r[1], ts:Date.now()};
-      saveGuest(guest); applyGuest(); closeStage();
+      saveGuest(guest); applyGuest(prevName); closeStage();
+      syncRsvpToGuest(prevName);   // เคยตอบ RSVP แล้ว → อัปเดตชื่อ/ตัวละครในคำตอบให้เอง
     }).then(function(){ btn.disabled=false; btn.textContent='ใช้ตัวนี้เข้างาน'; });
   });
 
@@ -981,7 +983,7 @@ var STORE_KEY = 'wedding_guest_v1';
     }).then(function(){ a.textContent='บันทึกรูปตัวละคร'; });
   });
 
-  function applyGuest(){
+  function applyGuest(prevName){
     if(!guest) return;
     $('#pass').classList.add('show');
     $$('.js-name').forEach(function(e){ e.textContent=guest.name; });
@@ -989,7 +991,7 @@ var STORE_KEY = 'wedding_guest_v1';
     $$('.js-av').forEach(function(e){ if(src) e.src=src; else e.removeAttribute('src'); });
     var dl=$('#dlAvatar'); if(src){ dl.href=src; dl.style.display=''; } else dl.style.display='none';
     $('#rsvpWho').classList.add('show');
-    var rn=$('#rName'); if(!rn.value) rn.value=guest.name;
+    var rn=$('#rName'); if(!rn.value || rn.value===prevName) rn.value=guest.name;
   }
   applyGuest();
 
@@ -1052,29 +1054,33 @@ var STORE_KEY = 'wedding_guest_v1';
     if(!name){ st.textContent='กรุณากรอกชื่อ'; $('#rName').focus(); return; }
     if(mode==='wish' && !message){ st.textContent='เขียนคำอวยพรสักนิดนะ'; msgIn.focus(); return; }
     var editing=!!loadRsvp();
-    var data={
-      rsvpId:rsvpId(),
-      mode:mode,
-      modeLabel:MODES[mode].label,
-      name:name,
-      attending: mode==='attend'?'มา':'ไม่มา',
+    var data=buildData({mode:mode,name:name,message:message,
       guests: mode==='attend'?String(Math.min(10,Math.max(1,parseInt($('#rGuests').value,10)||1))):'0',
-      food: mode==='attend'?checked('food'):'',
-      allergy: mode==='attend'?$('#rAllergy').value.trim():'',
-      message:message,
-      showOnWall: (message && $('#rShow').checked)?'แสดง':'ไม่แสดง',
-      paper:checked('paper')||'blush',
+      food: mode==='attend'?checked('food'):'', allergy: mode==='attend'?$('#rAllergy').value.trim():'',
+      showOnWall:(message && $('#rShow').checked)?'แสดง':'ไม่แสดง', paper:checked('paper')||'blush'});
+    sub.disabled=true; st.textContent='';
+    sub.textContent = guest ? 'กำลังเตรียมรูปตัวละคร...' : 'กำลังส่ง...';
+    sendRsvp(data,function(){ sub.textContent='กำลังส่ง...'; })
+      .then(function(){ finishRsvp(data,{edited:editing}); burst(); })
+      .catch(function(){ st.textContent='ส่งไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง'; })
+      .then(function(){ sub.disabled=false; sub.textContent=editing?'บันทึกการแก้ไข':MODES[mode].btn; });
+  });
+
+  function buildData(v){
+    return {
+      rsvpId:rsvpId(), mode:v.mode, modeLabel:MODES[v.mode].label, name:v.name,
+      attending: v.mode==='attend'?'มา':'ไม่มา', guests:v.guests, food:v.food||'', allergy:v.allergy||'',
+      message:v.message||'', showOnWall:v.showOnWall, paper:v.paper||'blush',
       avatarName: guest?guest.name:'',
       avatarConfig: guest?JSON.stringify({sel:guest.sel,colors:guest.colors}):'',
       avatarPng:''
     };
-    sub.disabled=true; st.textContent='';
-    sub.textContent = guest ? 'กำลังเตรียมรูปตัวละคร...' : 'กำลังส่ง...';
-
+  }
+  function sendRsvp(data,onPrepared){
     var prep = (guest && CONFIG.RSVP_ENDPOINT) ? hiResAvatar(AVATAR_UPLOAD) : Promise.resolve('');
-    prep.then(function(png){
+    return prep.then(function(png){
       if(png && png.indexOf(',')>0) data.avatarPng=png.split(',')[1];
-      sub.textContent='กำลังส่ง...';
+      if(onPrepared) onPrepared();
       if(!CONFIG.RSVP_ENDPOINT){
         return new Promise(function(res){
           try{ var arr=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]').filter(function(r){ return r.rsvpId!==data.rsvpId; });
@@ -1084,21 +1090,31 @@ var STORE_KEY = 'wedding_guest_v1';
         });
       }
       return fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});
-    }).then(function(){
-      var rec=Object.assign({},data,{avatarPng:'',avatarConfig:'',ts:Date.now(),
-        pending: CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง'});
-      saveRsvp(rec);
-      wishes=wishes.filter(function(w){ return !w._mine; });
-      if(rec.showOnWall==='แสดง' && !rec.pending){
-        wishes.unshift({name:name,message:message,mode:mode,paper:data.paper,avatar:guest?(guest.thumb||guest.img):'',ts:rec.ts,_mine:true});
-      }
-      renderWall();
-      showThanks(rec,{edited:editing});
-      burst();
-    }).catch(function(){
-      st.textContent='ส่งไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง';
-    }).then(function(){ sub.disabled=false; sub.textContent=editing?'บันทึกการแก้ไข':MODES[mode].btn; });
-  });
+    });
+  }
+  function finishRsvp(data,opt){
+    var old=loadRsvp();
+    var rec=Object.assign({},data,{avatarPng:'',avatarConfig:'',ts:(old&&old.ts)||Date.now(),
+      pending: CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง' &&
+               !(old && !old.pending && old.message===data.message && old.showOnWall==='แสดง')});   // ข้อความเดิมที่อนุมัติแล้ว ไม่ต้องรอใหม่
+    saveRsvp(rec);
+    wishes=wishes.filter(function(w){ return !w._mine; });
+    if(rec.showOnWall==='แสดง' && !rec.pending){
+      wishes.unshift({name:rec.name,message:rec.message,mode:rec.mode,paper:rec.paper,avatar:guest?(guest.thumb||guest.img):'',ts:rec.ts,_mine:true});
+    }
+    renderWall();
+    showThanks(rec,opt);
+  }
+
+  // แต่งตัว/เปลี่ยนชื่อใหม่หลังตอบ RSVP แล้ว → ส่งอัปเดตแถวเดิมให้อัตโนมัติ
+  function syncRsvpToGuest(prevName){
+    var rec=loadRsvp(); if(!rec || !rec.mode || !guest) return;
+    var name = (!rec.name || rec.name===prevName) ? guest.name : rec.name;   // ถ้าเคยพิมพ์ชื่ออื่นเองใน RSVP ใช้ชื่อนั้นต่อ
+    var data=buildData({mode:rec.mode,name:name,message:rec.message,guests:rec.guests,food:rec.food,allergy:rec.allergy,showOnWall:rec.showOnWall,paper:rec.paper});
+    toast('กำลังอัปเดตชื่อและตัวละครในคำตอบของคุณ...');
+    sendRsvp(data).then(function(){ finishRsvp(data,{edited:true,returning:true}); toast('อัปเดตคำตอบแล้ว'); },
+                        function(){ toast('อัปเดตคำตอบไม่สำเร็จ ลองกด "แก้ไขคำตอบ" อีกครั้งนะ'); });
+  }
 
   function showThanks(rec,opt){
     opt=opt||{};
