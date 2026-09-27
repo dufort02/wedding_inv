@@ -27,7 +27,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Itim&family=Mitr:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#F3ECE0;
@@ -134,6 +134,14 @@ input,textarea{font-family:inherit}
   background:radial-gradient(circle at 50% 40%,#FBF4EA 0%,var(--blush) 100%);
 }
 .av-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;visibility:hidden}
+.av-name{position:absolute;left:5%;right:5%;bottom:3%;z-index:40;text-align:center;white-space:nowrap;overflow:visible;pointer-events:none;   /* ไม่ตัดขอบ: วรรณยุกต์บนสระบางฟอนต์อยู่สูง */
+  color:var(--red);line-height:1.9;-webkit-text-stroke:.2em #fff;paint-order:stroke fill;text-shadow:0 2px 6px rgba(120,60,40,.25)}
+.name-style{margin-top:10px}
+.name-style .lbl{font-size:.75rem;display:block;margin-bottom:6px}
+.ns-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.ns-chips button{border:1.5px solid var(--red);border-radius:999px;padding:2px 12px;color:var(--red);background:var(--white);font-size:1rem;line-height:1.6}
+.ns-chips button[aria-checked="true"]{background:var(--red);color:var(--white)}
+.ns-chips button.ns-none{font-size:.8rem}
 .av-busy{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(255,253,248,.45);z-index:50}
 .av-window.busy .av-busy{display:flex}
 .av-busy svg{width:42px;animation:spin 1s linear infinite;color:var(--red)}
@@ -447,11 +455,16 @@ footer .script-h{font-size:2rem}
               <svg viewBox="0 0 66 44"><use href="#bow"/></svg>
             </div>
             <div class="av-missing">ยังไม่พบรูปตัวละคร<br>ตรวจสอบโฟลเดอร์ images/ หรือค่า AVATAR_BASE</div>
+            <div class="av-name" id="avName" aria-hidden="true"></div>
           </div>
           <div class="name-row">
             <label for="guestName">ชื่อที่จะแสดงบนบัตร</label>
             <input id="guestName" type="text" maxlength="40" autocomplete="name" placeholder="เช่น พี่แจ๋ว / Edward">
             <div class="name-err" id="nameErr" aria-live="polite"></div>
+            <div class="name-style" id="nameStyle" hidden>
+              <span class="lbl">ชื่อบนรูปที่บันทึก</span>
+              <div class="ns-chips" id="nsChips" role="radiogroup" aria-label="ฟอนต์ชื่อบนรูป"></div>
+            </div>
           </div>
         </div>
         <div class="stage-actions">
@@ -746,7 +759,8 @@ var CONFIG = {
   // คำอวยพรต้องให้แอดมินอนุมัติก่อนขึ้นเว็บ — ตั้งให้ตรงกับ REQUIRE_APPROVAL ใน Code.gs
   WISH_APPROVAL: true,
   SHOW_AVATAR_GAME: true,
-  SHOW_MUSIC: false,          // ปุ่มเพลง + เล่นเพลงตอนเปิดการ์ด (true = เปิดใช้)
+  SHOW_MUSIC: false,
+  NAME_ON_AVATAR: true,       // ให้แขกเลือกฟอนต์ใส่ชื่อลงรูปตัวละคร (เฉพาะรูปที่ดาวน์โหลด) — false = ปิด          // ปุ่มเพลง + เล่นเพลงตอนเปิดการ์ด (true = เปิดใช้)
   SHOW_SKIP: true,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
   EVENT_DATE: '2026-12-19T07:00:00+07:00',
   // ช่องทางร่วมอวยพร (RSVP แบบที่ 2) — QR: วางรูปไว้ที่ path นี้ ถ้าไม่มีไฟล์จะซ่อนเอง
@@ -1011,16 +1025,19 @@ var STORE_KEY = 'wedding_guest_v1';
     new Promise(function(r){ im.addEventListener('load',r,{once:true}); im.addEventListener('error',r,{once:true}); }); }
   function waitIdle(){ return new Promise(function(r){ (function chk(){ busy?setTimeout(chk,60):r(); })(); }); }
 
-  function compose(size){
+  function compose(size,nameOpt){
     return waitIdle().then(function(){ return Promise.all(Z_ORDER.map(function(k){ return waitImg(layerEls[k]); })); })
     .then(function(){
       var c=document.createElement('canvas'); c.width=c.height=size; var x=c.getContext('2d'), drew=false;
       Z_ORDER.forEach(function(k){ var im=layerEls[k];
         if(im.getAttribute('src') && im.style.visibility!=='hidden' && im.naturalWidth){ x.drawImage(im,0,0,size,size); drew=true; } });
       if(!drew) return null;
-      try{ return c.toDataURL('image/png'); }catch(e){ return null; }
+      return (nameOpt ? drawName(x,size,nameOpt.name,nameOpt.style) : Promise.resolve()).then(function(){
+        try{ return c.toDataURL('image/png'); }catch(e){ return null; }
+      });
     });
   }
+
 
   /* ---------------- flow ---------------- */
   var cover=$('#cover'), stage=$('#stage'), nameIn=$('#guestName');
@@ -1029,6 +1046,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function openStage(){
     if(AVATAR_TEST) $('#avTest').hidden=true;
     if(guest){ sel=Object.assign({},DEFAULT_SEL,guest.sel||{}); colors=Object.assign({},guest.colors||{}); nameIn.value=guest.name||''; }
+    if(CONFIG.NAME_ON_AVATAR) setNameStyle(guest&&guest.nameStyle||'none');
     renderAll(); buildGrid();
     setTimeout(function(){ if(!loadedAny) win.classList.add('empty'); },2500);
     document.body.classList.add('locked'); stage.classList.add('show');
@@ -1053,7 +1071,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var btn=this; btn.disabled=true; btn.textContent='กำลังบันทึก...';
     var prevName=guest?guest.name:'';
     Promise.all([compose(600),compose(256)]).then(function(r){
-      guest={name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), img:r[0], thumb:r[1], ts:Date.now()};
+      guest={name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), nameStyle:nameStyle, img:r[0], thumb:r[1], ts:Date.now()};
       saveGuest(guest); applyGuest(prevName); closeStage();
       if(AVATAR_TEST) showAvTest();
       else syncRsvpToGuest(prevName);   // เคยตอบ RSVP แล้ว → อัปเดตชื่อ/ตัวละครในคำตอบให้เอง
@@ -1062,15 +1080,67 @@ var STORE_KEY = 'wedding_guest_v1';
 
   // รูปตัวละครความละเอียดสูง พื้นโปร่งใส (ใช้ส่งเข้าชีต / ดาวน์โหลด / พิมพ์สติกเกอร์)
   var AVATAR_UPLOAD=1500, AVATAR_DOWNLOAD=2000;
-  function hiResAvatar(size){
+  /* ---------- ชื่อบนรูปตัวละคร (CONFIG.NAME_ON_AVATAR) ---------- */
+  var NAME_FONTS=[
+    {id:'none',   label:'ไม่ใส่'},
+    {id:'itim',   label:'น่ารัก',   family:'Itim',    weight:400},
+    {id:'mitr',   label:'มินิมอล', family:'Mitr',    weight:600}
+  ];
+  var nameStyle='none';
+  function nameFont(id){ for(var i=0;i<NAME_FONTS.length;i++) if(NAME_FONTS[i].id===id) return NAME_FONTS[i]; return NAME_FONTS[0]; }
+  function updateNamePreview(){
+    var el=$('#avName'), f=nameFont(nameStyle), txt=nameIn.value.trim();
+    if(!CONFIG.NAME_ON_AVATAR || f.id==='none' || !txt){ el.textContent=''; return; }
+    el.textContent=txt; el.style.fontFamily="'"+f.family+"',Mali,sans-serif"; el.style.fontWeight=f.weight;
+    var fs=win.clientWidth*0.12; el.style.fontSize=fs+'px';
+    for(var k=0;k<20 && el.scrollWidth>el.clientWidth;k++){ fs*=0.92; el.style.fontSize=fs+'px'; }
+  }
+  function setNameStyle(id){
+    id=nameFont(id).id;   // ฟอนต์ที่ถูกเอาออกแล้ว → กลับเป็น "ไม่ใส่"
+    nameStyle=id;
+    $$('#nsChips button').forEach(function(b){ b.setAttribute('aria-checked',String(b.dataset.id===id)); });
+    var f=nameFont(id); if(f.family && document.fonts) document.fonts.load(f.weight+' 40px "'+f.family+'"',nameIn.value||'ก').then(updateNamePreview,updateNamePreview);
+    updateNamePreview();
+  }
+  if(CONFIG.NAME_ON_AVATAR){
+    $('#nameStyle').hidden=false;
+    NAME_FONTS.forEach(function(f){
+      var b=document.createElement('button'); b.type='button'; b.dataset.id=f.id; b.setAttribute('role','radio'); b.textContent=f.label;
+      if(f.family){ b.style.fontFamily="'"+f.family+"',Mali,sans-serif"; b.style.fontWeight=f.weight; } else b.className='ns-none';
+      b.addEventListener('click',function(){ setNameStyle(f.id); });
+      $('#nsChips').appendChild(b);
+    });
+    nameIn.addEventListener('input',updateNamePreview);
+    window.addEventListener('resize',updateNamePreview);
+    setNameStyle('none');
+  }
+  // วาดชื่อลงแคนวาส (ตัวแดงขอบขาวแบบสติกเกอร์ ใต้ตัวละคร)
+  function drawName(x,size,name,styleId){
+    var f=nameFont(styleId);
+    if(!CONFIG.NAME_ON_AVATAR || !f.family || !name) return Promise.resolve();
+    var load = document.fonts ? document.fonts.load(f.weight+' '+Math.round(size*.12)+'px "'+f.family+'"',name).catch(function(){}) : Promise.resolve();
+    return load.then(function(){
+      var fs=size*0.12, font=function(){ return f.weight+' '+fs+'px "'+f.family+'",Mali,sans-serif'; };
+      x.font=font(); var w=x.measureText(name).width;
+      if(w>size*0.88){ fs*=size*0.88/w; x.font=font(); }
+      var m=x.measureText(name), desc=m.actualBoundingBoxDescent||fs*.25;
+      var y=size*0.955-desc;
+      x.textAlign='center'; x.textBaseline='alphabetic'; x.lineJoin='round'; x.miterLimit=2;
+      x.shadowColor='rgba(120,60,40,.25)'; x.shadowBlur=fs*.12; x.shadowOffsetY=fs*.04;
+      x.lineWidth=fs*.22; x.strokeStyle='#fff'; x.strokeText(name,size/2,y);
+      x.shadowColor='transparent'; x.fillStyle='#C23B3B'; x.fillText(name,size/2,y);
+    });
+  }
+
+  function hiResAvatar(size,withName){
     if(!guest) return Promise.resolve('');
     sel=Object.assign({},DEFAULT_SEL,guest.sel||{}); colors=Object.assign({},guest.colors||{});
     renderAll();
-    return compose(size).then(function(u){ return u||guest.img||guest.thumb||''; },function(){ return guest.img||guest.thumb||''; });
+    return compose(size, withName?{name:guest.name,style:guest.nameStyle}:null).then(function(u){ return u||guest.img||guest.thumb||''; },function(){ return guest.img||guest.thumb||''; });
   }
   function downloadAvatar(a){
     a.textContent='กำลังเตรียมรูป...';
-    hiResAvatar(AVATAR_DOWNLOAD).then(function(u){
+    hiResAvatar(AVATAR_DOWNLOAD,true).then(function(u){
       var l=document.createElement('a'); l.href=u; l.download='my-wedding-avatar.png';
       document.body.appendChild(l); l.click(); setTimeout(function(){ l.remove(); },1000);
     }).then(function(){ a.textContent='บันทึกรูปตัวละคร'; });
