@@ -27,7 +27,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Charm:wght@700&family=Itim&family=Pattaya&family=Mitr:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Itim&family=Mitr:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#F3ECE0;
@@ -134,7 +134,7 @@ input,textarea{font-family:inherit}
   background:radial-gradient(circle at 50% 40%,#FBF4EA 0%,var(--blush) 100%);
 }
 .av-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;visibility:hidden}
-.av-name{position:absolute;left:5%;right:5%;bottom:3%;z-index:40;text-align:center;white-space:nowrap;overflow:visible;pointer-events:none;   /* ไม่ตัดขอบ: วรรณยุกต์ของ Charm อยู่สูงมาก */
+.av-name{position:absolute;left:5%;right:5%;bottom:3%;z-index:40;text-align:center;white-space:nowrap;overflow:visible;pointer-events:none;   /* ไม่ตัดขอบ: วรรณยุกต์บนสระบางฟอนต์อยู่สูง */
   color:var(--red);line-height:1.9;-webkit-text-stroke:.2em #fff;paint-order:stroke fill;text-shadow:0 2px 6px rgba(120,60,40,.25)}
 .name-style{margin-top:10px}
 .name-style .lbl{font-size:.75rem;display:block;margin-bottom:6px}
@@ -1083,9 +1083,7 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------- ชื่อบนรูปตัวละคร (CONFIG.NAME_ON_AVATAR) ---------- */
   var NAME_FONTS=[
     {id:'none',   label:'ไม่ใส่'},
-    {id:'charm',  label:'หรู',     family:'Charm',   weight:700},
     {id:'itim',   label:'น่ารัก',   family:'Itim',    weight:400},
-    {id:'pattaya',label:'สนุก',    family:'Pattaya', weight:400},
     {id:'mitr',   label:'มินิมอล', family:'Mitr',    weight:600}
   ];
   var nameStyle='none';
@@ -1098,6 +1096,7 @@ var STORE_KEY = 'wedding_guest_v1';
     for(var k=0;k<20 && el.scrollWidth>el.clientWidth;k++){ fs*=0.92; el.style.fontSize=fs+'px'; }
   }
   function setNameStyle(id){
+    id=nameFont(id).id;   // ฟอนต์ที่ถูกเอาออกแล้ว → กลับเป็น "ไม่ใส่"
     nameStyle=id;
     $$('#nsChips button').forEach(function(b){ b.setAttribute('aria-checked',String(b.dataset.id===id)); });
     var f=nameFont(id); if(f.family && document.fonts) document.fonts.load(f.weight+' 40px "'+f.family+'"',nameIn.value||'ก').then(updateNamePreview,updateNamePreview);
