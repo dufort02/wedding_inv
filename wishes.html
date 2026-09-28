@@ -8,7 +8,7 @@
   • คีย์บอร์ด: Space = เล่น/หยุด  ← → = ย้อน/ถัดไป  Esc = ดูทั้งหมด  F = เต็มจอ
   • ?endpoint=<URL /exec> ใช้แทนค่าจาก index.html ได้   ?play=1 เปิดมาเป็นสไลด์โชว์เลย
 -->
-<html lang="th">
+<html lang="th" data-theme="1" data-theme-switch="on">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,10 +85,12 @@ body.idle .ctrls{opacity:0}
 }
 @media (prefers-reduced-motion:reduce){ .slide{transition:opacity .3s} }
 </style>
+<link rel="stylesheet" href="css/themes.css">
+<script src="js/themes.js"></script>
 </head>
 <body>
 <div class="stage">
-  <header class="top">
+  <header class="top wishes-top">
     <a href="index.html" aria-label="กลับหน้าการ์ดเชิญ"><img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652"></a>
     <div class="ttl"><h1>Wishes</h1><small id="count"></small></div>
   </header>
@@ -226,7 +228,7 @@ body.idle .ctrls{opacity:0}
     syncPlay();
   }
   function syncPlay(){
-    $('#icPlay').hidden=playing; $('#icPause').hidden=!playing;
+    $('#icPlay').toggleAttribute('hidden',playing); $('#icPause').toggleAttribute('hidden',!playing);   // SVG ไม่มี .hidden ต้องใช้ attribute
     $('#playTxt').textContent = playing ? 'หยุด' : (view==='slide' ? 'เล่นต่อ' : 'เล่นสไลด์โชว์');
     $('#bPlay').setAttribute('aria-label',$('#playTxt').textContent);
     $('#barWrap').hidden = !(view==='slide' && playing);
