@@ -8,7 +8,7 @@ html[data-theme="3"]{--ink:#2F2D55;--ink-soft:rgba(47,45,85,.14);--t3-pink:#E83E
 
 /* ---------- ของตกแต่ง (สติกเกอร์) ---------- */
 .t-host{position:relative}
-html:not([data-theme="1"]) main{overflow-x:clip}
+html:not([data-theme="1"]) body{overflow-x:clip}   /* ตัดที่ขอบจอ ไม่ใช่ขอบคอลัมน์ — จอคอมจะเห็นสติกเกอร์ครบ */
 html:not([data-theme="1"]) section>*:not(.tdeco){position:relative;z-index:1}
 .tdeco{position:absolute;pointer-events:none;z-index:0;overflow:visible;filter:drop-shadow(2px 3px 0 var(--ink-soft))}
 .d-tl,.d-tr{top:-22px;width:54px;height:54px}   /* อยู่ช่องว่างเหนือหัวข้อ ไม่ทับตัวอักษร */
