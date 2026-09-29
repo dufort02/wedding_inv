@@ -197,3 +197,28 @@ html[data-theme="3"] .wc--pol .wc-tag{color:var(--t3-coral);opacity:1}
 html[data-theme="2"] .illus--venue{color:var(--ink);--roof:#C23B3B;--roof-op:.28}
 html[data-theme="3"] .illus--venue{color:var(--ink);--roof:var(--t3-gold);--roof-op:1}
 
+/* Couple + แผนที่ ตามธีม */
+html[data-theme="2"] .cp-photo,html[data-theme="3"] .cp-photo{border:2.5px solid var(--ink);box-shadow:5px 5px 0 var(--ink)}
+html[data-theme="2"] .cp-photo::before{top:-9px;width:18px;height:18px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 35%,#f08a8a,#C23B3B 55%,#7d1f22);box-shadow:0 2px 3px rgba(0,0,0,.3)}
+html[data-theme="2"] .cp-role{background:var(--ink)}
+html[data-theme="2"] .cp-role::before{content:"✈ "}
+html[data-theme="2"] .cp-facts li{border-color:var(--ink);border-style:dashed}
+html[data-theme="2"] .route-map,html[data-theme="3"] .route-map{color:var(--ink)}
+html[data-theme="2"] .rm-bg{fill:#FBF6EC;stroke-width:2.5}
+html[data-theme="2"] .rm-pin path{fill:#C23B3B}
+/* ธีม 3: แนะนำตัวแบบ "นักแสดงนำ" — รูปในเฟรมฟิล์ม */
+html[data-theme="3"] .cp-photo{background-color:var(--ink);padding:16px 8px;
+  background-image:linear-gradient(90deg,var(--paper) 0 7px,transparent 7px 15px),linear-gradient(90deg,var(--paper) 0 7px,transparent 7px 15px);
+  background-size:15px 5px,15px 5px;background-position:4px 5px,4px calc(100% - 5px);background-repeat:repeat-x}
+html[data-theme="3"] .cp-photo::before{display:none}
+html[data-theme="3"] .cp-ini{inset:16px 8px}
+html[data-theme="3"] .cp-role{background:var(--ink);color:var(--t3-gold)}
+html[data-theme="3"] .cp-role::before{content:"★ "}
+html[data-theme="3"] .couple::before{content:"★ STARRING ★";grid-column:1/-1;font-family:var(--display);font-weight:700;letter-spacing:.3em;font-size:.8rem;color:var(--t3-goldd);margin-bottom:6px}
+html[data-theme="3"] .cp-facts li{border:2px solid var(--ink);border-style:solid;background:var(--t3-gold);color:var(--ink)}
+html[data-theme="3"] .rm-bg{fill:var(--t3-board);stroke-width:3}
+html[data-theme="3"] .rm-road{stroke:var(--t3-gold)}
+html[data-theme="3"] .rm-pin path{fill:var(--red)}
+html[data-theme="3"] .rm-time rect{fill:var(--red)}
+

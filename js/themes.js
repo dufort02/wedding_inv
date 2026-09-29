@@ -80,6 +80,7 @@
     '2':[
       ['#cover','t2-sign','d-cover-tl'],['#cover','t2-compass','d-cover-br'],['#cover','t2-pin','d-cover-tr'],
       ['.hero','t2-pin','d-tl'],['.hero','t2-map','d-tr d-wide'],
+      ['#couple','t2-pin','d-tr'],
       ['#countdown','t2-compass','d-tr'],
       ['#savethedate','t2-phone','d-tl d-tall'],
       ['#location','t2-sign','d-ml d-big'],['#location','t2-pin','d-mr'],
@@ -94,6 +95,7 @@
     '3':[
       ['#cover','t3-popcorn','d-cover-br'],
       ['.hero','t3-clapper','d-tl'],['.hero','t3-glasses','d-tr d-wide'],
+      ['#couple','t3-clapper','d-tl'],
       ['#countdown','t3-play','d-tr'],
       ['#savethedate','t3-ticket','d-tl d-wide'],
       ['#location','t3-camera','d-ml d-big'],['#location','t3-popcorn','d-mr'],
@@ -107,7 +109,7 @@
     ]
   };
   // ธีม 3: ดาว + ขดกระดาษสี โรยตามขอบแต่ละส่วน (ตำแหน่งคงที่ ไม่สุ่มใหม่ทุกครั้ง)
-  var SPRINKLE_AT=['#cover','.hero','#countdown','#savethedate','#location','#program','#details','#attire','#story','#rsvp','#wishes'];
+  var SPRINKLE_AT=['#cover','.hero','#couple','#countdown','#savethedate','#location','#program','#details','#attire','#story','#rsvp','#wishes'];
   var SPRINKLES=[['t3-star',YEL],['t3-chev',PUR],['t3-star',GOLDD],['t3-star',YEL],['t3-chev',PUR],['t3-star',PINK]];
 
   // วันที่ใน Save the Date: หัวใจ → หมุด (ธีม 2) / ดาวระเบิด (ธีม 3)
