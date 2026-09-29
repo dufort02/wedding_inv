@@ -4,11 +4,14 @@
    ทั้งสองธีม: เส้นขอบหนา + เงาแข็งแบบคอมิก — ฟอนต์/การจัดวาง/พื้นหลังเหมือนธีม 1 */
 
 html[data-theme="2"]{--ink:#3b2b25;--ink-soft:rgba(59,43,37,.14)}
-html[data-theme="3"]{--ink:#2F2D55;--ink-soft:rgba(47,45,85,.14);--t3-pink:#E83E6C;--t3-teal:#2EC4B6;--t3-yel:#FFD23F;--t3-pur:#8E6CEF}
+/* ธีม 3 = โรงหนังวินเทจ: ดำฟิล์ม / ครีมจอหนัง / แดงป้ายไฟ / ทองตั๋ว / เขียวเครื่องฉาย / โคอรัล / ไม้กรอบบอร์ด */
+html[data-theme="3"]{--ink:#2B2A27;--ink-soft:rgba(43,42,39,.16);--paper:#F3EADB;--red:#B8312F;--red-deep:#8E2422;--red-soft:#6E4B41;--blush:#F1DCC4;
+  --t3-gold:#F2C46D;--t3-goldd:#B8862E;--t3-teal:#16968A;--t3-coral:#EE6B53;--t3-wood:#B98A5A;--t3-board:#EDE3CF;
+  --t3-pink:var(--red);--t3-yel:var(--t3-gold)}
 
 /* ---------- ของตกแต่ง (สติกเกอร์) ---------- */
 .t-host{position:relative}
-html:not([data-theme="1"]) main{overflow-x:clip}
+html:not([data-theme="1"]) body{overflow-x:clip}   /* ตัดที่ขอบจอ ไม่ใช่ขอบคอลัมน์ — จอคอมจะเห็นสติกเกอร์ครบ */
 html:not([data-theme="1"]) section>*:not(.tdeco){position:relative;z-index:1}
 .tdeco{position:absolute;pointer-events:none;z-index:0;overflow:visible;filter:drop-shadow(2px 3px 0 var(--ink-soft))}
 .d-tl,.d-tr{top:-22px;width:54px;height:54px}   /* อยู่ช่องว่างเหนือหัวข้อ ไม่ทับตัวอักษร */
@@ -60,7 +63,7 @@ html:not([data-theme="1"]) .script-h{text-shadow:2px 2px 0 var(--ink-soft)}
 html:not([data-theme="1"]) .pass::before,html:not([data-theme="1"]) .pass::after{border-color:var(--ink);border-width:2.5px}
 .tdeco-passhead{margin:-16px -16px 14px;padding:7px 12px;border-radius:15px 15px 0 0;border-bottom:2.5px dashed var(--ink);
   font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.12em;color:var(--white);background:var(--ink);text-align:center}
-html[data-theme="3"] .tdeco-passhead{background:var(--t3-pink);color:#fff;text-shadow:1px 1px 0 var(--ink)}
+html[data-theme="3"] .tdeco-passhead{background:var(--ink);color:var(--t3-gold);border-bottom-color:var(--t3-gold)}
 
 /* ================= ธีม 2: Journey ================= */
 html[data-theme="2"] .timeline{
@@ -79,44 +82,104 @@ html[data-theme="2"] .wc{border:2px solid var(--ink);box-shadow:4px 4px 0 var(--
 html[data-theme="2"] .wc-pm{border-style:dashed;border-color:var(--ink);color:var(--ink);opacity:.7}
 html[data-theme="2"] .wc--post .wc-msg{background:repeating-linear-gradient(transparent 0 calc(1.75em - 1px),rgba(59,43,37,.18) calc(1.75em - 1px) 1.75em)}
 
-/* ================= ธีม 3: Premiere ================= */
-html[data-theme="3"] .count{display:inline-block;padding:.12em .45em;margin-top:14px;border-radius:14px;color:var(--t3-yel);background:var(--ink);
-  font-size:clamp(2rem,10vw,3rem);text-shadow:2px 2px 0 var(--t3-pink);
-  box-shadow:0 0 0 6px var(--ink),5px 5px 0 6px rgba(47,45,85,.25);
-  border:3px dotted var(--t3-yel)}
+/* ================= ธีม 3: Premiere (โรงหนังวินเทจ) ================= */
+/* ----- หน้าปก: ตั๋วในแถบฟิล์ม (แทนหัวข้อ + เส้นหัวใจ + โลโก้) ----- */
+html[data-theme="3"] #cover .cover-title,
+html[data-theme="3"] #cover .thread,
+html[data-theme="3"] #cover .cover-logo,
+html[data-theme="3"] #cover .cover-date{display:none}
+.t3-cover{width:min(400px,92vw);margin:0 auto 22px}
+.t3-film{background:var(--ink);padding:24px 0;position:relative;border-radius:6px;box-shadow:5px 5px 0 var(--ink-soft)}
+.t3-film::before,.t3-film::after{content:"";position:absolute;left:10px;right:10px;height:11px;background:repeating-linear-gradient(90deg,var(--paper) 0 11px,transparent 11px 26px)}
+.t3-film::before{top:6px}.t3-film::after{bottom:6px}
+.t3-tix{display:grid;grid-template-columns:40px 1fr 56px;gap:7px;padding:0 9px}
+.t3-tix>div{background:var(--paper);border-radius:3px}
+.t3-stub{display:flex;align-items:center;justify-content:center;
+  -webkit-mask:radial-gradient(circle 9px at 0 50%,transparent 96%,#000);mask:radial-gradient(circle 9px at 0 50%,transparent 96%,#000)}
+.t3-stub span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-weight:600;letter-spacing:.24em;font-size:.72rem;color:var(--red)}
+.t3-main{text-align:center;padding:14px 10px 12px}
+.t3-ns{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,7.5vw,2.1rem);letter-spacing:.06em;line-height:1;color:var(--ink)}
+.t3-logo{width:86%;max-height:22vh;object-fit:contain;margin:6px auto 0;display:block}
+.t3-date{font-family:var(--display);font-weight:600;letter-spacing:.2em;font-size:.82rem;color:var(--ink);border-top:3px solid var(--ink);margin-top:8px;padding-top:6px}
+.t3-date-th{font-size:.72rem;color:var(--red-soft);margin-top:2px}
+.t3-bar{display:flex;align-items:center;justify-content:center;flex-direction:column;padding:10px 0;
+  -webkit-mask:radial-gradient(circle 9px at 100% 50%,transparent 96%,#000);mask:radial-gradient(circle 9px at 100% 50%,transparent 96%,#000)}
+.t3-bar b{display:block;width:30px;flex:1;min-height:90px;max-height:150px;
+  background:repeating-linear-gradient(0deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 13px)}
+.t3-bar span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:.6rem;letter-spacing:.2em;margin-top:6px;color:var(--ink)}
+@media (max-height:680px){ .t3-logo{max-height:16vh} .t3-cover{margin-bottom:12px} }
+
+/* ----- ตัวแบ่ง / นับถอยหลัง (แบบเดิม สีใหม่) / วันที่ ----- */
+html[data-theme="3"] .count{display:inline-block;padding:.12em .45em;margin-top:14px;border-radius:14px;color:var(--t3-gold);background:var(--ink);
+  font-size:clamp(2rem,10vw,3rem);text-shadow:2px 2px 0 var(--red);
+  box-shadow:0 0 0 6px var(--ink),5px 5px 0 6px var(--ink-soft);border:3px dotted var(--t3-gold)}
 html[data-theme="3"] .count-labels{margin-top:14px}
 html[data-theme="3"] .std-heart{width:84px;height:80px}
 html[data-theme="3"] .std-heart span{margin-top:0}
-html[data-theme="3"] .timeline{padding-left:48px;
-  background:linear-gradient(var(--paper) 0 8px,transparent 8px 16px) 9px 0/6px 16px repeat-y,
-             linear-gradient(var(--paper) 0 8px,transparent 8px 16px) 23px 0/6px 16px repeat-y,
-             linear-gradient(var(--ink),var(--ink)) 6px 0/26px 100% no-repeat}
-html[data-theme="3"] .timeline li::before{left:-44px;top:2px;width:20px;height:20px;border:none;border-radius:0;background:var(--t3-yel);
-  -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat;
-          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat}
-html[data-theme="3"] .gift-frame{color:var(--t3-pink)}
-/* เรื่องราว: แถบแดงเดิม → แผ่นฟิล์มมีรูหนามเตย */
+html[data-theme="3"] .std-month,html[data-theme="3"] .std-time{text-shadow:2px 2px 0 var(--t3-gold)}
+html[data-theme="3"] .venue-name::before{content:"SHOWING AT";display:block;font-family:var(--display);font-size:.66rem;letter-spacing:.3em;color:var(--t3-goldd);margin-bottom:2px}
+html[data-theme="3"] .gift-frame{color:var(--t3-goldd)}
+
+/* ----- กำหนดการ: บอร์ด NOW SHOWING (อ้างอิงบอร์ดหน้าโรงหนัง) ----- */
+html[data-theme="3"] ol.timeline{display:none}
+.t3-board{max-width:420px;margin:22px auto 0;padding:18px 16px 12px;text-align:center;position:relative;
+  background-color:var(--t3-board);border:11px solid var(--t3-wood);border-radius:4px;
+  box-shadow:inset 0 0 0 2px #9a6d42,6px 6px 0 var(--ink-soft);
+  background-image:repeating-linear-gradient(transparent 0 31px,rgba(43,42,39,.12) 31px 32px)}
+.t3-board-h{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,7.6vw,2.6rem);letter-spacing:.03em;white-space:nowrap;line-height:1;color:var(--ink)}
+.t3-board-by{font-family:var(--script);font-size:1.35rem;color:var(--ink);margin-top:2px}
+.t3-stars{color:var(--red);letter-spacing:.6em;font-size:.8rem;margin:4px 0 6px;padding-left:.6em}
+.t3-stars b{color:var(--ink)}
+.t3-row{display:grid;grid-template-columns:auto 1fr auto;align-items:baseline;gap:8px;text-align:left;color:var(--ink);padding-top:6px}
+.t3-row.is-red{color:var(--red)}
+.t3-sc{font-family:var(--display);font-size:.62rem;letter-spacing:.12em;opacity:.55}
+.t3-ti{font-family:var(--display);font-weight:600;font-size:clamp(.88rem,3.9vw,1.02rem);line-height:1.5}
+.t3-tm{font-family:var(--display);font-weight:600;font-size:1.25rem;letter-spacing:.04em}
+.t3-desc{text-align:left;font-size:.76rem;color:var(--red-soft);padding:0 0 4px 38px;line-height:1.5}
+
+/* ----- เรื่องราว: แถบฟิล์มแนวตั้ง (ดำ รูหนามเตยครีม) ----- */
 html[data-theme="3"] .strip{padding:10px 18px 0;background-color:var(--ink);
   background-image:linear-gradient(var(--paper) 0 7px,transparent 7px 16px),linear-gradient(var(--paper) 0 7px,transparent 7px 16px);
   background-size:6px 16px,6px 16px;background-position:5px 6px,calc(100% - 5px) 6px;background-repeat:repeat-y}
-html[data-theme="3"] .strip::before{background:var(--t3-yel);opacity:.85}
-html[data-theme="3"] .std-month,html[data-theme="3"] .std-time{text-shadow:2px 2px 0 var(--t3-yel)}
-/* การ์ดอวยพร: เทปกาว → สติกเกอร์ดาว, โพลารอยด์ → เฟรมฟิล์ม, โปสการ์ด → ตั๋วหนัง */
-html[data-theme="3"] .wc::before{top:-.9em;width:1.9em;height:1.9em;transform:translateX(-50%) rotate(var(--t,-3deg));background:var(--t3-yel);
+html[data-theme="3"] .strip::before{background:var(--t3-gold);opacity:.9}
+html[data-theme="3"] .story-cap b{font-family:var(--display);letter-spacing:.06em}
+
+/* ----- บัตรเชิญ: ตั๋วทอง + ต้นขั้ว แถว/ที่นั่ง ----- */
+html[data-theme="3"] .pass{background:var(--t3-gold);padding-right:96px}
+html[data-theme="3"] .pass::before,html[data-theme="3"] .pass::after{background:var(--paper)}
+html[data-theme="3"] .pass .pass-av{background:#F7E3B8;border-color:var(--ink)}
+html[data-theme="3"] .pass small{color:var(--ink)}
+html[data-theme="3"] .pass .pass-name{color:var(--ink)}
+.t3-seat{position:absolute;top:33px;right:0;bottom:0;width:84px;border-left:3px dashed var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--display);color:var(--ink);line-height:1}
+.t3-seat small{font-size:.6rem;letter-spacing:.2em;margin-top:6px}
+.t3-seat b{font-size:1.9rem;font-weight:700}
+html[data-theme="3"] .pass-actions{flex-direction:column;align-items:flex-start}
+html[data-theme="3"] .tdeco-passhead{margin-right:-96px}
+
+/* ----- การ์ดอวยพร = รีวิวบนตั๋วทอง (★★★★★) ----- */
+html[data-theme="3"] .wc::before{top:-.9em;width:1.9em;height:1.9em;transform:translateX(-50%) rotate(var(--t,-3deg));background:var(--t3-gold);
   -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat;
-          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat}
-html[data-theme="3"] .wc.pinned::before{background:var(--t3-pink)}
+          mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat;
+  filter:drop-shadow(0 1px 0 var(--ink))}
+html[data-theme="3"] .wc.pinned::before{background:var(--red)}
 html[data-theme="3"] .wc{border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+html[data-theme="3"] .wc-msg::before{content:"★★★★★";display:block;color:var(--red);letter-spacing:.14em;font-size:.85em;line-height:1.6;margin-bottom:.1em}
+/* โปสการ์ด → ตั๋วทองกรอบคู่ */
+html[data-theme="3"] .wc--post{background:var(--t3-gold);border-radius:6px;
+  box-shadow:inset 0 0 0 .35em var(--t3-gold),inset 0 0 0 .45em var(--t3-goldd),4px 4px 0 var(--ink)}
+html[data-theme="3"] .wc--post .wc-msg{background:none}
+html[data-theme="3"] .wc-pm{display:none}
+html[data-theme="3"] .wc-stamp{filter:drop-shadow(0 1px 0 var(--ink))}
+html[data-theme="3"] .wc--post .wc-name{color:var(--ink)}
+/* โพลารอยด์ → เฟรมฟิล์มดำ */
 html[data-theme="3"] .wc--pol{background-color:var(--ink);padding:1.1em .7em 1.4em;
   background-image:linear-gradient(90deg,var(--paper) 0 .45em,transparent .45em 1em),linear-gradient(90deg,var(--paper) 0 .45em,transparent .45em 1em);
   background-size:1em .35em,1em .35em;background-position:.3em .35em,.3em calc(100% - .35em);background-repeat:repeat-x}
-html[data-theme="3"] .wc--pol .wc-name{color:var(--t3-yel)}
-html[data-theme="3"] .wc--pol .wc-msg{color:#fff}
-html[data-theme="3"] .wc--pol .wc-tag{color:var(--t3-teal);opacity:1}
-html[data-theme="3"] .wc--post{border-left:2.5px dashed var(--ink);border-radius:10px}
-html[data-theme="3"] .wc--post .wc-msg{background:none}
-html[data-theme="3"] .wc-stamp{filter:drop-shadow(0 1px 0 var(--ink))}
-html[data-theme="3"] .wc-pm{border-radius:6px;border-color:var(--t3-pink);color:var(--t3-pink);opacity:.9}
+html[data-theme="3"] .wc--pol .wc-name{color:var(--t3-gold)}
+html[data-theme="3"] .wc--pol .wc-msg{color:var(--paper)}
+html[data-theme="3"] .wc--pol .wc-msg::before{color:var(--t3-gold)}
+html[data-theme="3"] .wc--pol .wc-tag{color:var(--t3-coral);opacity:1}
 
 /* ---------- ปุ่มสลับธีม (ทดสอบ) ---------- */
 .tswitch{position:fixed;left:6px;top:50%;transform:translateY(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:3px;
