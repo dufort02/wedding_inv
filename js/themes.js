@@ -115,7 +115,7 @@
     '2':'<path d="M37 63S9 38 9 22C9 10 21 3 37 3s28 7 28 19c0 16-28 41-28 41z" fill="#C23B3B" stroke="'+INK2+'" stroke-width="2.6" stroke-linejoin="round"/>',
     '3':'<path d="M37 2l7 12 13-5-1 14 14 3-9 11 9 11-14 3 1 14-13-5-7 12-7-12-13 5 1-14-14-3 9-11-9-11 14-3-1-14 13 5z" fill="#C23B3B" stroke="'+INK3+'" stroke-width="2.4" stroke-linejoin="round"/>'
   };
-  var PASS_HEAD={'2':'✈ BOARDING PASS · P ♥ P · 19.12.26','3':'★ ADMIT ONE · PREMIERE · 19.12.26 ★'};
+  var PASS_HEAD={'2':'✈ BOARDING PASS · P ♥ P · 19.12.26'};   // ธีม 3 ใช้ตั๋วทองแบบ mockup (buildT3)
 
   function el(tag,cls,html){ var e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
   function icon(sym,cls,color){
@@ -159,7 +159,10 @@
     }
     // บัตรเชิญ → ต้นขั้วตั๋ว แถว/ที่นั่ง (ตกแต่งเฉย ๆ)
     Array.prototype.forEach.call(document.querySelectorAll('.pass'),function(p){
-      p.appendChild(el('div','t3x t3-seat','<small>ROW</small><b>A</b><small>SEAT</small><b>19</b>'));
+      var row=p.querySelector('.pass-row'), nm=p.querySelector('.pass-name'); if(!row||!nm) return;
+      nm.before(el('div','t3x t3-admit','ADMIT ONE · PREMIERE'));
+      nm.after(el('div','t3x t3-meta','19 DEC 2026 · THE BARNERY'));
+      row.appendChild(el('div','t3x t3-seat','<small>ROW</small><b>A</b><small>SEAT</small><b>19</b>'));
     });
   }
   function clearT3(){
