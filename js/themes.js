@@ -15,7 +15,7 @@
   if(fromUrl){ try{ localStorage.setItem(KEY,fromUrl); }catch(e){} }
   root.setAttribute('data-theme',theme);
 
-  var INK2='#3b2b25', INK3='#2F2D55', PINK='#E83E6C', TEAL='#2EC4B6', YEL='#FFD23F', PUR='#8E6CEF';
+  var INK2='#3b2b25', INK3='#2B2A27', PINK='#B8312F', TEAL='#16968A', YEL='#F2C46D', PUR='#EE6B53', GOLDD='#B8862E';   // ธีม 3: ดำฟิล์ม / แดงป้ายไฟ / เขียวเครื่องฉาย / ทองตั๋ว / โคอรัล
 
   /* ---------------- ลายเส้น (SVG symbols) ---------------- */
   var SPRITE='<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true">'+
@@ -48,7 +48,7 @@
     '<path d="M378 30s-9-10-9-16a9 9 0 0 1 18 0c0 6-9 16-9 16z" fill="#fff" stroke-width="2.4"/><circle cx="378" cy="14" r="3" stroke-width="2"/></g></symbol>'+
   // ===== ธีม 3: Premiere (สีสด ขอบกรมท่า) =====
   '<symbol id="t3-star" viewBox="0 0 24 24"><path d="M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z" fill="currentColor"/></symbol>'+
-  '<symbol id="t3-squig" viewBox="0 0 44 30"><path d="M4 24C9 5 23 4 19 15s9 12 13-1 9-8 8-3" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></symbol>'+
+  '<symbol id="t3-chev" viewBox="0 0 60 24"><path d="M2 2l16 10L2 22zM21 2l16 10-16 10zM40 2l16 10-16 10z" fill="currentColor"/></symbol>'+
   '<symbol id="t3-clapper" viewBox="0 0 100 92"><g stroke="'+INK3+'" stroke-width="2" stroke-linejoin="round">'+
     '<rect x="8" y="38" width="84" height="50" rx="5" fill="'+INK3+'"/><rect x="18" y="58" width="64" height="12" rx="3" fill="#fff" stroke="none"/>'+
     '<rect x="8" y="38" width="84" height="12" fill="'+INK3+'"/><path d="M16 38h10l-8 12H8zM36 38h10l-8 12H28zM56 38h10l-8 12H48zM76 38h10l-8 12H68z" fill="#fff" stroke="none"/>'+
@@ -92,12 +92,12 @@
       ['.wishes-top .ttl','t2-compass','d-sm']
     ],
     '3':[
-      ['#cover','t3-mega','d-cover-tl'],['#cover','t3-popcorn','d-cover-br'],['#cover','t3-clapper','d-cover-tr'],
+      ['#cover','t3-popcorn','d-cover-br'],
       ['.hero','t3-clapper','d-tl'],['.hero','t3-glasses','d-tr d-wide'],
       ['#countdown','t3-play','d-tr'],
       ['#savethedate','t3-ticket','d-tl d-wide'],
       ['#location','t3-camera','d-ml d-big'],['#location','t3-popcorn','d-mr'],
-      ['#program','t3-mega','d-tr d-wide'],
+      ['#program','t3-clapper','d-tr'],
       ['#attire','t3-glasses','d-tl d-wide'],
       ['#story','t3-clapper','d-tr'],
       ['#rsvp','t3-ticket','d-tl d-wide'],
@@ -108,14 +108,14 @@
   };
   // ธีม 3: ดาว + ขดกระดาษสี โรยตามขอบแต่ละส่วน (ตำแหน่งคงที่ ไม่สุ่มใหม่ทุกครั้ง)
   var SPRINKLE_AT=['#cover','.hero','#countdown','#savethedate','#location','#program','#details','#attire','#story','#rsvp','#wishes'];
-  var SPRINKLES=[['t3-star',YEL],['t3-squig',PUR],['t3-star',TEAL],['t3-squig',TEAL],['t3-star',PINK],['t3-squig',YEL],['t3-star',PUR]];
+  var SPRINKLES=[['t3-star',YEL],['t3-chev',PUR],['t3-star',GOLDD],['t3-star',YEL],['t3-chev',PUR],['t3-star',PINK]];
 
   // วันที่ใน Save the Date: หัวใจ → หมุด (ธีม 2) / ดาวระเบิด (ธีม 3)
   var DATE_SHAPE={
     '2':'<path d="M37 63S9 38 9 22C9 10 21 3 37 3s28 7 28 19c0 16-28 41-28 41z" fill="#C23B3B" stroke="'+INK2+'" stroke-width="2.6" stroke-linejoin="round"/>',
     '3':'<path d="M37 2l7 12 13-5-1 14 14 3-9 11 9 11-14 3 1 14-13-5-7 12-7-12-13 5 1-14-14-3 9-11-9-11 14-3-1-14 13 5z" fill="#C23B3B" stroke="'+INK3+'" stroke-width="2.4" stroke-linejoin="round"/>'
   };
-  var PASS_HEAD={'2':'✈ BOARDING PASS · P ♥ P · 19.12.26','3':'★ ADMIT ONE · WEDDING PREMIERE · 19.12.26 ★'};
+  var PASS_HEAD={'2':'✈ BOARDING PASS · P ♥ P · 19.12.26','3':'★ ADMIT ONE · PREMIERE · 19.12.26 ★'};
 
   function el(tag,cls,html){ var e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
   function icon(sym,cls,color){
@@ -123,10 +123,55 @@
     var d=document.createElement('div'); d.innerHTML=s; return d.firstChild;
   }
 
+  /* ---------- ธีม 3: ชิ้นจาก mockup (สร้างจากเนื้อหาในหน้า ลบทิ้งเมื่อเปลี่ยนธีม) ---------- */
+  function buildT3(){
+    // หน้าปก → ตั๋วในแถบฟิล์ม
+    var cover=document.getElementById('cover'), logo=cover&&cover.querySelector('.cover-logo');
+    if(cover && logo){
+      var date=(cover.querySelector('.cover-date')||{}).textContent||'';
+      var t=el('div','t3x t3-cover',
+        '<div class="t3-film"><div class="t3-tix">'+
+          '<div class="t3-stub"><span>NOW SHOWING</span></div>'+
+          '<div class="t3-main"><div class="t3-ns">A LOVE STORY</div></div>'+
+          '<div class="t3-bar"><b></b><span>19122569</span></div>'+
+        '</div></div>');
+      var main=t.querySelector('.t3-main'), im=logo.cloneNode(); im.className='t3-logo'; main.appendChild(im);
+      main.appendChild(el('div','t3-date','SAT · 19 · DEC · 2026'));
+      if(date) main.appendChild(el('div','t3-date-th',date));
+      logo.before(t);
+      var ob=document.getElementById('openBtn'); if(ob){ ob.dataset.t3orig=ob.textContent; ob.textContent='รับตั๋ว · เปิดคำเชิญ'; }
+    }
+    // กำหนดการ → บอร์ด NOW SHOWING (อ่านจากรายการเดิม — แก้กำหนดการที่ <ol class="timeline"> ที่เดียว)
+    var ol=document.querySelector('ol.timeline');
+    if(ol){
+      var b=el('div','t3x t3-board','<div class="t3-board-h">NOW SHOWING</div><div class="t3-board-by">Palida &amp; Pachaya Film Co.</div><div class="t3-stars">★<b>★</b>★</div>');
+      Array.prototype.forEach.call(ol.children,function(li,i){
+        var q=function(c){ var n=li.querySelector(c); return n?n.textContent.trim():''; };
+        var r=el('div','t3-row'+(i%2?'':' is-red'));
+        r.appendChild(el('span','t3-sc','SC.'+String(i+1).padStart(2,'0')));
+        r.appendChild(el('span','t3-ti')); r.lastChild.textContent=q('.tl-title');
+        r.appendChild(el('span','t3-tm')); r.lastChild.textContent=q('.tl-time').replace(/\s*น\.?$/,'');
+        var d=el('div','t3-desc'); d.textContent=q('.tl-desc');
+        b.appendChild(r); b.appendChild(d);
+      });
+      b.appendChild(el('div','t3-stars','★<b>★</b>★'));
+      ol.before(b);
+    }
+    // บัตรเชิญ → ต้นขั้วตั๋ว แถว/ที่นั่ง (ตกแต่งเฉย ๆ)
+    Array.prototype.forEach.call(document.querySelectorAll('.pass'),function(p){
+      p.appendChild(el('div','t3x t3-seat','<small>ROW</small><b>A</b><small>SEAT</small><b>19</b>'));
+    });
+  }
+  function clearT3(){
+    Array.prototype.forEach.call(document.querySelectorAll('.t3x'),function(n){ n.remove(); });
+    var ob=document.getElementById('openBtn'); if(ob && ob.dataset.t3orig){ ob.textContent=ob.dataset.t3orig; delete ob.dataset.t3orig; }
+  }
+
   var stdOriginal=null;
   function apply(t){
     root.setAttribute('data-theme',t);
     Array.prototype.forEach.call(document.querySelectorAll('.tdeco,.tdeco-div,.tdeco-passhead'),function(n){ n.remove(); });
+    clearT3(); if(t==='3') buildT3();
     // ตัวแบ่งส่วน
     Array.prototype.forEach.call(document.querySelectorAll('svg.wave'),function(w){
       if(t==='2'){ var d=el('div','tdeco-div tdeco-div--trail','<svg viewBox="0 0 400 46" preserveAspectRatio="xMidYMid meet"><use href="#t2-trail"/></svg>'); w.after(d); }
@@ -141,8 +186,8 @@
         host.classList.add('t-host');
         for(var k=0;k<2;k++){
           var sp=SPRINKLES[(si*2+k)%SPRINKLES.length], side=(si+k)%2?'l':'r';
-          var n=icon(sp[0],'d-spr',sp[1]); var sz=sp[0]==='t3-star'?13+((si+k)%3)*4:20;
-          n.style.width=n.style.height=sz+'px';
+          var n=icon(sp[0],'d-spr',sp[1]); var sz=sp[0]==='t3-star'?13+((si+k)%3)*4:34;
+          n.style.width=sz+'px'; n.style.height=(sp[0]==='t3-chev'?sz*.4:sz)+'px';
           n.style[side==='l'?'left':'right']=(-18+((si*7+k*5)%8))+'px';   // อยู่ในขอบข้าง ไม่ทับข้อความ
           n.style.top=(18+((si*23+k*31)%64))+'%';
           n.style.transform='rotate('+(((si*37+k*53)%60)-30)+'deg)';
