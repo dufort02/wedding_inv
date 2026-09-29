@@ -144,18 +144,22 @@ html[data-theme="3"] .strip{padding:10px 18px 0;background-color:var(--ink);
 html[data-theme="3"] .strip::before{background:var(--t3-gold);opacity:.9}
 html[data-theme="3"] .story-cap b{font-family:var(--display);letter-spacing:.06em}
 
-/* ----- บัตรเชิญ: ตั๋วทอง + ต้นขั้ว แถว/ที่นั่ง ----- */
-html[data-theme="3"] .pass{background:var(--t3-gold);padding-right:96px}
-html[data-theme="3"] .pass::before,html[data-theme="3"] .pass::after{background:var(--paper)}
-html[data-theme="3"] .pass .pass-av{background:#F7E3B8;border-color:var(--ink)}
-html[data-theme="3"] .pass small{color:var(--ink)}
-html[data-theme="3"] .pass .pass-name{color:var(--ink)}
-.t3-seat{position:absolute;top:33px;right:0;bottom:0;width:84px;border-left:3px dashed var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;
+/* ----- บัตรเชิญ: ตั๋วทองแบบ mockup (ตัวตั๋ว = .pass-row, ปุ่มอยู่ใต้ตั๋ว) ----- */
+html[data-theme="3"] .pass{background:none;border:none;box-shadow:none;padding:0;max-width:380px}
+html[data-theme="3"] .pass::before,html[data-theme="3"] .pass::after{display:none}
+html[data-theme="3"] .pass-row{position:relative;gap:14px;background:var(--t3-gold);border:2.5px solid var(--ink);border-radius:12px;
+  box-shadow:5px 5px 0 var(--ink);padding:14px 88px 14px 12px;min-height:124px}
+html[data-theme="3"] .pass-row small{display:none}
+html[data-theme="3"] .pass .pass-av{width:86px;height:86px;background:#F7E3B8;border:2.5px solid var(--ink)}
+html[data-theme="3"] .pass .pass-name{color:var(--ink);font-size:1.45rem}
+.t3-admit,.t3-meta{font-family:var(--display);font-weight:600;letter-spacing:.1em;font-size:clamp(.6rem,2.6vw,.7rem);line-height:1.5;color:var(--ink);text-transform:uppercase}
+.t3-admit{white-space:nowrap}
+.t3-meta{letter-spacing:.08em;opacity:.75}
+.t3-seat{position:absolute;top:0;right:0;bottom:0;width:76px;border-left:3px dashed var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-family:var(--display);color:var(--ink);line-height:1}
-.t3-seat small{font-size:.6rem;letter-spacing:.2em;margin-top:6px}
-.t3-seat b{font-size:1.9rem;font-weight:700}
-html[data-theme="3"] .pass-actions{flex-direction:column;align-items:flex-start}
-html[data-theme="3"] .tdeco-passhead{margin-right:-96px}
+.t3-seat small{display:block!important;font-size:.62rem;font-weight:600;letter-spacing:.2em;margin-top:6px}
+.t3-seat b{font-size:2rem;font-weight:700}
+html[data-theme="3"] .pass-actions{margin-top:16px}
 
 /* ----- การ์ดอวยพร = รีวิวบนตั๋วทอง (★★★★★) ----- */
 html[data-theme="3"] .wc::before{top:-.9em;width:1.9em;height:1.9em;transform:translateX(-50%) rotate(var(--t,-3deg));background:var(--t3-gold);
@@ -188,3 +192,8 @@ html[data-theme="3"] .wc--pol .wc-tag{color:var(--t3-coral);opacity:1}
 .tswitch button{width:28px;height:28px;border-radius:50%;border:none;background:none;font-weight:700;color:#3b2b25;cursor:pointer;font-family:inherit}
 .tswitch button[aria-pressed="true"]{background:#C23B3B;color:#fff}
 @media print{.tswitch{display:none}}
+
+/* ภาพสถานที่ (The Barnery) ตามธีม */
+html[data-theme="2"] .illus--venue{color:var(--ink);--roof:#C23B3B;--roof-op:.28}
+html[data-theme="3"] .illus--venue{color:var(--ink);--roof:var(--t3-gold);--roof-op:1}
+

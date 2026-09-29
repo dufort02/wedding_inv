@@ -228,6 +228,8 @@ section{text-align:center;padding:34px 0}
 .std-time{font-family:var(--display);font-weight:600;color:var(--red);letter-spacing:.1em;font-size:1.15rem}
 
 .illus{width:min(250px,70vw);margin:10px auto 6px;color:var(--red)}
+.illus--venue{width:min(320px,86vw)}
+.illus--venue .roof{fill:var(--roof,currentColor);fill-opacity:var(--roof-op,.35)}
 .venue-name{font-weight:700;color:var(--red);font-size:1.1rem}
 .venue-addr{font-size:.9rem;margin-bottom:14px}
 .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -545,20 +547,24 @@ footer .script-h{font-size:2rem}
   <section id="location">
     <h2 class="script-h">Location</h2>
     <div class="sub-h">สถานที่จัดงาน</div>
-    <svg class="illus" viewBox="0 0 250 160" aria-hidden="true">
-      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M60 128 L60 76 L125 34 L190 76 L190 128"/>
-        <path d="M48 84 L125 30 L202 84"/>
-        <path d="M104 128 L104 92 L146 92 L146 128"/>
-        <path d="M104 92 L146 128 M146 92 L104 128"/>
-        <circle cx="125" cy="64" r="9"/>
-        <path d="M125 55 L125 73 M116 64 L134 64"/>
-        <path d="M20 128 C20 100 28 88 34 88 C40 88 48 100 48 128"/><path d="M34 100 L34 136"/>
-        <path d="M210 128 C210 106 216 96 222 96 C228 96 234 106 234 128"/><path d="M222 108 L222 136"/>
-        <path d="M8 136 C60 132 190 132 242 136"/>
-        <path d="M112 148 c4 -4 10 -4 14 0 M130 154 c4 -4 10 -4 14 0 M98 156 c4 -4 10 -4 14 0"/>
+    <svg class="illus illus--venue" viewBox="0 290 1280 740" aria-hidden="true">
+      <!-- The Barnery (วาดจากรูปสถานที่จริง) — สีตามธีมผ่าน currentColor / --roof -->
+      <path class="roof" d="M88 708 640 400 1192 708 1030 698 675 515H605L248 698z"/>
+      <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M398 515 640 357 882 515" stroke-width="14"/>
+        <path d="M70 706 640 388 1210 706" stroke-width="8"/>
+        <path d="M605 512 640 410 675 512" stroke-width="4" opacity=".6"/>
+        <path d="M262 700 605 515H675L1018 700V915H262z" stroke-width="8"/>
+        <path d="M300 688H990M262 735H1018M353 650V875M447 600V875M543 548V875M640 515V875M735 547V875M830 598V875M925 649V875" stroke-width="7"/>
+        <path d="M291 812l18-26M303 816l10-14M386 812l18-26M398 816l10-14M481 812l18-26M493 816l10-14M576 812l18-26M588 816l10-14M671 812l18-26M683 816l10-14M766 812l18-26M778 816l10-14M481 642l18-26M493 646l10-14M576 612l18-26M588 616l10-14M671 612l18-26M683 616l10-14M766 642l18-26M778 646l10-14M386 672l18-26M398 676l10-14M861 672l18-26M873 676l10-14" stroke-width="4"/>
+        <path d="M75 712V912M1205 712V912" stroke-width="7"/>
+        <path d="M1080 772h40M1078 787c14-10 30 8 46-4s20 6 26 0M1088 800h56" stroke-width="5"/>
+        <path d="M30 925H1250" stroke-width="6"/>
+        <path d="M78 950H480M686 950H1236M26 980H356M588 980H1252M10 1012H280M516 1012H1264" stroke-width="15"/>
       </g>
-      <use href="#bow" x="105" y="16" width="40" height="26"/>
+      <path fill="currentColor" d="M262 875H1018V915H262zM830 738H1018V915H830z"/>
+      <path d="M925 740V910M353 878v32M447 878v32M543 878v32M640 878v32M735 878v32" stroke="var(--paper,#fff)" stroke-width="4" stroke-linecap="round"/>
+      <use href="#bow" x="590" y="300" width="100" height="66"/>
     </svg>
     <div class="venue-name">The Barnery</div>
     <div class="venue-addr">Nong Saeng District, Saraburi</div>
