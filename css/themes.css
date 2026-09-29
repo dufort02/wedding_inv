@@ -192,3 +192,8 @@ html[data-theme="3"] .wc--pol .wc-tag{color:var(--t3-coral);opacity:1}
 .tswitch button{width:28px;height:28px;border-radius:50%;border:none;background:none;font-weight:700;color:#3b2b25;cursor:pointer;font-family:inherit}
 .tswitch button[aria-pressed="true"]{background:#C23B3B;color:#fff}
 @media print{.tswitch{display:none}}
+
+/* ภาพสถานที่ (The Barnery) ตามธีม */
+html[data-theme="2"] .illus--venue{color:var(--ink);--roof:#C23B3B;--roof-op:.28}
+html[data-theme="3"] .illus--venue{color:var(--ink);--roof:var(--t3-gold);--roof-op:1}
+
