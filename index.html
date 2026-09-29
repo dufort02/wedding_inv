@@ -1090,7 +1090,7 @@ var STORE_KEY = 'wedding_guest_v1';
       if(!warnedTint){ warnedTint=true; toast('เปลี่ยนสีได้เมื่อเปิดผ่านเว็บ (https) เท่านั้น'); } })
     .then(function(){ busy--; if(!busy) win.classList.remove('busy'); });
   }
-  function renderAll(){ Z_ORDER.forEach(renderLayer); }
+  function renderAll(){ if(typeof syncFaceAccZ==='function') syncFaceAccZ(); Z_ORDER.forEach(renderLayer); }
 
   /* ---------------- menu ---------------- */
   var tabsEl=$('#tabs'), gridEl=$('#optGrid'), paletteEl=$('#palette'), dotsEl=$('#dots'), current=LAYERS[0];
@@ -1117,7 +1117,12 @@ var STORE_KEY = 'wedding_guest_v1';
         showVipTab(); toast('✨ ปลดล็อกชุดพิเศษแล้ว'); vipTab.click(); }
     });
   })();
-  function renderSpecialSet(){ ['shi_back','shi_front'].concat(SPECIAL_REPLACES).forEach(renderLayer); }
+  // ชุดพิเศษมีผิวหน้าในภาพ → ย้าย "ของบนหน้า" ขึ้นไปอยู่เหนือหน้าพิเศษ (ใต้ที่คาดผม)
+  function syncFaceAccZ(){
+    var fa=layerEls.face_accessories; if(!fa) return;
+    fa.style.zIndex = sel.special ? Z_ORDER.indexOf('hair_accessories')+1 : Z_ORDER.indexOf('face_accessories')+1;
+  }
+  function renderSpecialSet(){ syncFaceAccZ(); ['shi_back','shi_front'].concat(SPECIAL_REPLACES).forEach(renderLayer); }
 
   // หาไฟล์ที่อัปโหลดเพิ่ม: ลองเลขถัดจาก count ไปเรื่อย ๆ จนกว่าจะไม่เจอไฟล์ (ไม่ต้องแก้ count ในโค้ด)
   function discoverMore(L){
@@ -1213,7 +1218,7 @@ var STORE_KEY = 'wedding_guest_v1';
     return waitIdle().then(function(){ return Promise.all(Z_ORDER.map(function(k){ return waitImg(layerEls[k]); })); })
     .then(function(){
       var c=document.createElement('canvas'); c.width=c.height=size; var x=c.getContext('2d'), drew=false;
-      Z_ORDER.forEach(function(k){ var im=layerEls[k];
+      Z_ORDER.slice().sort(function(a,b){ return (+layerEls[a].style.zIndex)-(+layerEls[b].style.zIndex) || Z_ORDER.indexOf(a)-Z_ORDER.indexOf(b); }).forEach(function(k){ var im=layerEls[k];   // วาดตาม z-index จริง
         if(im.getAttribute('src') && im.style.visibility!=='hidden' && im.naturalWidth){ x.drawImage(im,0,0,size,size); drew=true; } });
       if(!drew) return null;
       return (nameOpt ? drawName(x,size,nameOpt.name,nameOpt.style) : Promise.resolve()).then(function(){
