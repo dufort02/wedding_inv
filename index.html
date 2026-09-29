@@ -195,6 +195,46 @@ section{text-align:center;padding:34px 0}
 .hero .cover-title{font-size:clamp(2.2rem,10vw,3.2rem)}
 .hero-names{font-family:var(--display);font-weight:600;font-size:1.45rem;color:var(--red);letter-spacing:.14em;margin-top:18px}
 .hero-logo{width:min(320px,78vw);margin-top:16px}
+.title-pair{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,22px)}
+.title-pair .cover-title{text-align:left;font-size:clamp(1.8rem,8.4vw,3rem);flex:none}
+.title-pair .hero-logo{width:min(46%,230px);margin:0;flex:0 1 auto}
+
+/* Couple */
+.couple{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:start;margin-top:24px}
+.cp{text-align:center}
+.cp-photo{position:relative;width:min(100%,170px);aspect-ratio:4/5;margin:0 auto 12px;background:var(--white);padding:7px 7px 22px;
+  box-shadow:0 2px 0 rgba(0,0,0,.03),0 8px 18px rgba(120,60,40,.14);transform:rotate(-2.5deg)}
+.cp:last-child .cp-photo{transform:rotate(2.5deg)}
+.cp-photo::before{content:"";position:absolute;top:-10px;left:50%;width:60px;height:20px;transform:translateX(-50%) rotate(-4deg);background:rgba(222,196,150,.8);z-index:2}
+.cp-photo img{width:100%;height:100%;object-fit:cover;display:block;position:relative;z-index:1;background:var(--blush)}
+.cp-ini{position:absolute;inset:7px 7px 22px;display:flex;align-items:center;justify-content:center;background:var(--blush);color:var(--red);font-family:var(--script);font-size:3rem}
+.cp-role{display:inline-block;font-family:var(--display);font-weight:600;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--white);background:var(--red);border-radius:999px;padding:2px 10px}
+.cp-name{font-family:var(--script);color:var(--red);font-size:2rem;line-height:1.3;margin-top:4px}
+.cp-nick{font-size:.76rem;opacity:.85}
+.cp-bio{font-size:.82rem;line-height:1.55;margin:8px 0}
+.cp-facts{list-style:none;display:flex;flex-direction:column;gap:4px;font-size:.74rem}
+.cp-facts li{border:1.5px dashed rgba(194,59,59,.4);border-radius:999px;padding:2px 8px}
+.cp-and{font-family:var(--script);color:var(--red);font-size:2.6rem;align-self:center;margin-top:-60px}
+.cp-quote{font-family:var(--script);color:var(--red);font-size:1.3rem;margin-top:20px;line-height:1.4}
+
+/* แผนที่การเดินทาง (โดยประมาณ) */
+.route-map{max-width:360px;margin:14px auto 4px;color:var(--red)}
+.route-map svg{width:100%;height:auto;display:block;overflow:visible}
+.route-map figcaption{font-size:.7rem;text-align:center;opacity:.75;margin-top:4px}
+.rm-bg{fill:var(--white);stroke:currentColor;stroke-width:2}
+.rm-field path{fill:none;stroke:currentColor;stroke-width:1.5;opacity:.25;stroke-linecap:round}
+.rm-river{fill:none;stroke:#8FB8D8;stroke-width:6;stroke-linecap:round;opacity:.6}
+.rm-road{fill:none;stroke:var(--blush);stroke-width:10;stroke-linecap:round}
+.rm-road--main{stroke-width:13}
+.rm-route{fill:none;stroke:currentColor;stroke-width:2.6;stroke-dasharray:7 6;stroke-linecap:round}
+.route-map text{font-family:var(--body);font-size:12px;fill:currentColor}
+.route-map .rm-small{font-size:9.5px;opacity:.8}
+.rm-town circle{fill:var(--white);stroke:currentColor;stroke-width:2.4}
+.rm-town text{font-weight:600}
+.rm-time rect{fill:currentColor}.rm-time text{fill:var(--white);text-anchor:middle;font-weight:600;font-size:11px}
+.rm-pin path{fill:currentColor;stroke:var(--white);stroke-width:2}.rm-pin circle{fill:var(--white)}
+.rm-venue{font-family:var(--display)!important;font-weight:700;font-size:13px!important}
+.rm-compass circle{fill:var(--white);stroke:currentColor;stroke-width:1.6}.rm-compass path{fill:currentColor}.rm-compass text{text-anchor:middle;font-size:9px;font-weight:700}
 .hero-date{margin-bottom:18px}
 .hero-msg{max-width:34ch;margin:0 auto}
 
@@ -494,8 +534,10 @@ footer .script-h{font-size:2rem}
 <main id="main">
 
   <section class="hero">
-    <h1 class="cover-title">WE'RE<br>GETTING<br>MARRIED!</h1>
-    <img class="logo hero-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
+    <div class="title-pair">
+      <h1 class="cover-title">WE'RE<br>GETTING<br>MARRIED!</h1>
+      <img class="logo hero-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
+    </div>
     <div class="hero-date">เสาร์ที่ 19 ธันวาคม 2569</div>
 
     <div class="pass" id="pass">
@@ -514,6 +556,34 @@ footer .script-h{font-size:2rem}
     </div>
 
     <p class="hero-msg" style="margin-top:22px">-///-</p>
+  </section>
+
+
+  <svg class="wave"><use href="#wave"/></svg>
+
+  <section id="couple">
+    <h2 class="script-h">The Couple</h2>
+    <div class="sub-h">ทำความรู้จักบ่าวสาว</div>
+    <div class="couple">
+      <article class="cp">
+        <div class="cp-photo"><img src="images/couple_1.jpg" alt="Palida" loading="lazy"><span class="cp-ini">P</span></div>
+        <div class="cp-role">[เจ้าสาว]</div>
+        <div class="cp-name">Palida</div>
+        <div class="cp-nick">[ชื่อจริง นามสกุล] · [ชื่อเล่น]</div>
+        <p class="cp-bio">[แนะนำตัวสั้น ๆ 1–2 บรรทัด เช่น นิสัย งานอดิเรก]</p>
+        <ul class="cp-facts"><li>☕ [ชอบ...]</li><li>✈️ [ฝันอยากไป...]</li></ul>
+      </article>
+      <div class="cp-and" aria-hidden="true">&amp;</div>
+      <article class="cp">
+        <div class="cp-photo"><img src="images/couple_2.jpg" alt="Pachaya" loading="lazy"><span class="cp-ini">P</span></div>
+        <div class="cp-role">[เจ้าบ่าว]</div>
+        <div class="cp-name">Pachaya</div>
+        <div class="cp-nick">[ชื่อจริง นามสกุล] · [ชื่อเล่น]</div>
+        <p class="cp-bio">[แนะนำตัวสั้น ๆ 1–2 บรรทัด เช่น นิสัย งานอดิเรก]</p>
+        <ul class="cp-facts"><li>🎮 [ชอบ...]</li><li>🍜 [ของโปรด...]</li></ul>
+      </article>
+    </div>
+    <p class="cp-quote">"[ประโยคสั้น ๆ ของเราสองคน เช่น จากเพื่อนร่วมทางสู่คู่ชีวิต]"</p>
   </section>
 
   <svg class="wave"><use href="#wave"/></svg>
@@ -544,10 +614,23 @@ footer .script-h{font-size:2rem}
 
   <svg class="wave"><use href="#wave"/></svg>
 
+  <section id="program">
+    <h2 class="script-h">Wedding Timeline</h2>
+    <div class="sub-h">กำหนดการ 19.12.2569</div>
+    <ol class="timeline">
+      <li><div class="tl-time">07:00 น.</div><div class="tl-title">ขบวนขันหมาก</div><div class="tl-desc">ขบวนขันหมากนำเตรียมการ</div></li>
+      <li><div class="tl-time">08:30 น.</div><div class="tl-title">พิธีหมั้น</div><div class="tl-desc">มอบของหมั้นและสินสอด</div></li>
+      <li><div class="tl-time">10:00 น.</div><div class="tl-title">พิธีรดน้ำสังข์</div><div class="tl-desc">พิธีรดน้ำจากผู้ใหญ่ที่เคารพนับถือ</div></li>
+      <li><div class="tl-time">11:00 น.</div><div class="tl-title">งานเลี้ยงฉลองมงคลสมรส</div><div class="tl-desc">งานเลี้ยงและร่วมแสดงความยินดีกับคู่บ่าวสาว</div></li>
+    </ol>
+  </section>
+
+  <svg class="wave"><use href="#wave"/></svg>
+
   <section id="location">
     <h2 class="script-h">Location</h2>
     <div class="sub-h">สถานที่จัดงาน</div>
-    <svg class="illus illus--venue" viewBox="0 290 1280 740" aria-hidden="true">
+    <svg class="illus illus--venue" viewBox="0 340 1280 690" aria-hidden="true">
       <!-- The Barnery (วาดจากรูปสถานที่จริง) — สีตามธีมผ่าน currentColor / --roof -->
       <path class="roof" d="M88 708 640 400 1192 708 1030 698 675 515H605L248 698z"/>
       <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -564,7 +647,6 @@ footer .script-h{font-size:2rem}
       </g>
       <path fill="currentColor" d="M262 875H1018V915H262zM830 738H1018V915H830z"/>
       <path d="M925 740V910M353 878v32M447 878v32M543 878v32M640 878v32M735 878v32" stroke="var(--paper,#fff)" stroke-width="4" stroke-linecap="round"/>
-      <use href="#bow" x="590" y="300" width="100" height="66"/>
     </svg>
     <div class="venue-name">The Barnery</div>
     <div class="venue-addr">Nong Saeng District, Saraburi</div>
@@ -576,19 +658,6 @@ footer .script-h{font-size:2rem}
 
   <svg class="wave"><use href="#wave"/></svg>
 
-  <section id="program">
-    <h2 class="script-h">Wedding Timeline</h2>
-    <div class="sub-h">กำหนดการ 19.12.2569</div>
-    <ol class="timeline">
-      <li><div class="tl-time">07:00 น.</div><div class="tl-title">ขบวนขันหมาก</div><div class="tl-desc">ขบวนขันหมากนำเตรียมการ</div></li>
-      <li><div class="tl-time">08:30 น.</div><div class="tl-title">พิธีหมั้น</div><div class="tl-desc">มอบของหมั้นและสินสอด</div></li>
-      <li><div class="tl-time">10:00 น.</div><div class="tl-title">พิธีรดน้ำสังข์</div><div class="tl-desc">พิธีรดน้ำจากผู้ใหญ่ที่เคารพนับถือ</div></li>
-      <li><div class="tl-time">11:00 น.</div><div class="tl-title">งานเลี้ยงฉลองมงคลสมรส</div><div class="tl-desc">งานเลี้ยงและร่วมแสดงความยินดีกับคู่บ่าวสาว</div></li>
-    </ol>
-  </section>
-
-  <svg class="wave"><use href="#wave"/></svg>
-
   <section id="details" class="details">
     <h2 class="script-h" style="text-align:center">Wedding Details</h2>
     <div class="sub-h" style="text-align:center">ข้อมูลสำหรับแขก</div>
@@ -596,6 +665,28 @@ footer .script-h{font-size:2rem}
     <p>สำรองห้องพักไว้ที่ [ชื่อโรงแรม/รีสอร์ท] ใกล้สถานที่จัดงาน แจ้งชื่องาน "PALIDA &amp; PACHAYA Wedding" ตอนจองเพื่อรับส่วนลดพิเศษ</p>
     <h3>การเดินทาง</h3>
     <p>สถานที่จัดงานอยู่ห่างจากตัวเมืองประมาณ 30 นาที มีรถรับส่งฟรีสำหรับแขกที่พักโรงแรมที่แนะนำ และมีที่จอดรถภายในบริเวณงาน</p>
+    <figure class="route-map" aria-label="แผนที่การเดินทางโดยประมาณ">
+      <svg viewBox="0 0 360 230" role="img">
+        <title>แผนที่โดยประมาณ: กรุงเทพฯ ขึ้นถนนพหลโยธินถึงสระบุรี แล้วต่อไป The Barnery อำเภอหนองแซง</title>
+        <rect class="rm-bg" x="4" y="4" width="352" height="222" rx="14"/>
+        <g class="rm-field"><path d="M20 196c30-8 50 4 80-4M230 40c24-6 40 6 62-2M250 206c26-6 44 4 80-6"/></g>
+        <path class="rm-river" d="M14 150c40-10 60 12 96 2s50-28 86-18 44 26 80 16 44-20 70-14"/>
+        <path class="rm-road rm-road--main" d="M60 214C80 180 120 160 160 140S238 104 262 70"/>
+        <path class="rm-road" d="M262 70C230 64 196 56 162 48S112 44 92 50"/>
+        <path class="rm-route" d="M60 214C80 180 120 160 160 140S238 104 262 70C230 64 196 56 162 48S112 44 92 50"/>
+        <g class="rm-town"><circle cx="262" cy="70" r="7"/><text x="274" y="66">สระบุรี</text><text class="rm-small" x="274" y="80">ตัวเมือง</text></g>
+        <g class="rm-town"><circle cx="60" cy="214" r="6"/><text x="74" y="219">จาก กรุงเทพฯ</text></g>
+        <text class="rm-small rm-hwy" x="170" y="160" transform="rotate(-30 170 160)">ถ.พหลโยธิน (ทล.1)</text>
+        <g class="rm-time"><rect x="150" y="18" width="80" height="22" rx="11"/><text x="190" y="33">~30 นาที</text></g>
+        <g class="rm-pin" transform="translate(92 50)">
+          <path d="M0 0c0 0-15-17-15-27a15 15 0 0 1 30 0c0 10-15 27-15 27z"/><circle cy="-27" r="5.5"/>
+        </g>
+        <text class="rm-venue" x="40" y="86">The Barnery</text>
+        <text class="rm-small" x="40" y="100">อ.หนองแซง</text>
+        <g class="rm-compass" transform="translate(326 196)"><circle r="16"/><path d="M0-12 5 0 0 12-5 0z"/><text y="-19">N</text></g>
+      </svg>
+      <figcaption>แผนที่โดยประมาณ · ใช้ปุ่ม Google Maps ด้านบนเพื่อนำทางจริง</figcaption>
+    </figure>
   </section>
 
   <section id="attire">
@@ -609,27 +700,6 @@ footer .script-h{font-size:2rem}
       <div class="sw"><i style="background:#FFD166"></i>เหลืองทอง</div>
       <div class="sw"><i style="background:#FF9EC7"></i>พีชอ่อน</div>
       <div class="sw"><i style="background:#8E5FD9"></i>ม่วงลาเวนเดอร์</div>
-    </div>
-  </section>
-
-  <svg class="wave"><use href="#wave"/></svg>
-
-  <section id="story">
-    <h2 class="script-h">Love Story</h2>
-    <div class="sub-h">ภาพระหว่างทาง</div>
-    <div class="story">
-      <div class="strip">
-        <div class="shot"><img src="01n.jpg" alt="ครั้งแรกที่เจอกัน" loading="lazy"></div>
-        <div class="shot"><img src="20170201_204855.jpg" alt="เล่นด้วยกัน" loading="lazy"></div>
-        <div class="shot"><img src="IMG_1281.JPG" alt="ทริปด้วยกัน" loading="lazy"></div>
-        <div class="shot"><img src="DSC02671.JPG" alt="วันที่ขอแต่งงาน" loading="lazy"></div>
-      </div>
-      <div class="story-cap">
-        <div><b>[ปี]</b>ครั้งแรกที่เจอกัน ไม่รู้เลยว่าจะเป็นจุดเริ่มต้นของเรื่องราวดี ๆ</div>
-        <div><b>2560</b>เริ่มออกไปเล่นสนุกด้วยกัน แบ่งปันเสียงหัวเราะ</div>
-        <div><b>[ปี]</b>ทริปแรกด้วยกัน ความทรงจำที่ไม่มีวันลืม</div>
-        <div><b>[ปี]</b>วันที่ขอแต่งงาน และคำตอบว่า "ตกลง"</div>
-      </div>
     </div>
   </section>
 
@@ -736,6 +806,27 @@ footer .script-h{font-size:2rem}
     <div class="btn-row" style="margin-top:6px">
       <a class="btn" href="wishes.html" id="wallMore" hidden>ดูคำอวยพรทั้งหมด</a>
       <a class="btn btn--ghost" href="#rsvp" id="wallWrite">เขียนคำอวยพร</a>
+    </div>
+  </section>
+
+  <svg class="wave"><use href="#wave"/></svg>
+
+  <section id="story">
+    <h2 class="script-h">Gallery</h2>
+    <div class="sub-h">ภาพระหว่างทางของเรา</div>
+    <div class="story">
+      <div class="strip">
+        <div class="shot"><img src="01n.jpg" alt="ครั้งแรกที่เจอกัน" loading="lazy"></div>
+        <div class="shot"><img src="20170201_204855.jpg" alt="เล่นด้วยกัน" loading="lazy"></div>
+        <div class="shot"><img src="IMG_1281.JPG" alt="ทริปด้วยกัน" loading="lazy"></div>
+        <div class="shot"><img src="DSC02671.JPG" alt="วันที่ขอแต่งงาน" loading="lazy"></div>
+      </div>
+      <div class="story-cap">
+        <div><b>[ปี]</b>ครั้งแรกที่เจอกัน ไม่รู้เลยว่าจะเป็นจุดเริ่มต้นของเรื่องราวดี ๆ</div>
+        <div><b>2560</b>เริ่มออกไปเล่นสนุกด้วยกัน แบ่งปันเสียงหัวเราะ</div>
+        <div><b>[ปี]</b>ทริปแรกด้วยกัน ความทรงจำที่ไม่มีวันลืม</div>
+        <div><b>[ปี]</b>วันที่ขอแต่งงาน และคำตอบว่า "ตกลง"</div>
+      </div>
     </div>
   </section>
 
@@ -1199,6 +1290,12 @@ var STORE_KEY = 'wedding_guest_v1';
     $('#count').textContent = pad(Math.floor(d/864e5),2)+':'+pad(Math.floor(d%864e5/36e5),2)+':'+pad(Math.floor(d%36e5/6e4),2)+':'+pad(Math.floor(d%6e4/1e3),2);
   }
   tick(); setInterval(tick,1000);
+
+  /* ---------------- couple photos: ไม่มีไฟล์ → แสดงตัวอักษรแทน ---------------- */
+  $$('.cp-photo img').forEach(function(im){
+    function gone(){ im.remove(); }
+    im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
+  });
 
   /* ---------------- story photos fallback ---------------- */
   $$('.shot img').forEach(function(im){ im.addEventListener('error',function(){ var p=im.parentNode; p.textContent=im.alt; }); });
