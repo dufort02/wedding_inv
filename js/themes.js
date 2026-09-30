@@ -14,6 +14,16 @@
   var theme = fromUrl || (switchOn && saved) || root.getAttribute('data-theme') || '1';
   if(fromUrl){ try{ localStorage.setItem(KEY,fromUrl); }catch(e){} }
   root.setAttribute('data-theme',theme);
+  if(switchOn) root.setAttribute('data-theme-switch','on');
+
+  /* บัตรเชิญธีม 1 (ID CARD): data-idc="pink" (ตามรูปต้นแบบ) | "red" (ปรับโทนธีม 1) — ตั้งค่าเริ่มที่ <html data-idc>
+     ตอนเปิดปุ่มสลับธีม จะมีปุ่มสลับแบบบัตรอยู่ข้างบัตรด้วย (จำค่าไว้ในเครื่อง) */
+  var IKEY='wedding_idcard', idc=null; try{ idc=switchOn && localStorage.getItem(IKEY); }catch(e){}
+  root.setAttribute('data-idc', idc || root.getAttribute('data-idc') || 'pink');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('.idc-sw button'); if(!b) return;
+    root.setAttribute('data-idc',b.dataset.idc); try{ localStorage.setItem(IKEY,b.dataset.idc); }catch(e){}
+  });
 
   var INK2='#3b2b25', INK3='#2B2A27', PINK='#B8312F', TEAL='#16968A', YEL='#F2C46D', PUR='#EE6B53', GOLDD='#B8862E';   // ธีม 3: ดำฟิล์ม / แดงป้ายไฟ / เขียวเครื่องฉาย / ทองตั๋ว / โคอรัล
 
