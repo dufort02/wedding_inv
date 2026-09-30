@@ -175,6 +175,8 @@ input,textarea{font-family:inherit}
 }
 .opt img{width:100%;height:100%;object-fit:contain}
 .opt.can-color::after{content:"";position:absolute;right:5px;bottom:5px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--white);box-shadow:0 0 0 1px rgba(194,59,59,.4);background:conic-gradient(#e55039,#f0a500,#b8e994,#5dade2,#c7ace4,#f8a5c2,#e55039)}
+.uni-row{display:flex;align-items:center;gap:8px;width:100%;margin-bottom:6px}
+.uni-lbl{font-size:.78rem;min-width:7.5em}
 .opt-note{grid-column:1/-1;font-size:.78rem;text-align:center;margin:0 0 4px;color:var(--red)}
 .tab--special{border-style:dashed}
 .opt.on{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
@@ -261,6 +263,12 @@ section{text-align:center;padding:34px 0}
 
 .count{font-family:var(--display);font-weight:500;color:var(--red);font-size:clamp(2.4rem,12vw,3.4rem);letter-spacing:.02em;line-height:1.1;margin-top:12px}
 .count-labels{display:grid;grid-template-columns:repeat(4,1fr);max-width:300px;margin:4px auto 0;font-size:.72rem}
+/* ธีม 1: ตัวเลขแต่ละหลักอยู่ในกรอบมุมโค้ง */
+html[data-theme="1"] .count{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:4px;max-width:300px;margin:16px auto 0;font-size:clamp(1.7rem,8vw,2.3rem)}
+html[data-theme="1"] .cd-n{display:block;background:var(--white);border:2px solid var(--red);border-radius:16px;padding:.18em 0 .12em;
+  box-shadow:0 3px 0 rgba(194,59,59,.18),inset 0 -.12em 0 rgba(239,211,203,.55);font-variant-numeric:tabular-nums}
+html[data-theme="1"] .cd-sep{font-size:.7em;opacity:.7}
+html[data-theme="1"] .count-labels{max-width:300px;margin-top:8px;column-gap:18px}
 
 .std-row{display:flex;justify-content:center;align-items:center;gap:clamp(14px,5vw,26px);margin:18px 0 8px;font-family:var(--display);font-weight:600;font-size:1.3rem;color:var(--red)}
 .std-heart{position:relative;width:74px;height:66px;display:flex;align-items:center;justify-content:center;color:var(--white)}
@@ -932,7 +940,7 @@ var LAYERS = [
   {key:'back_hair',        label:'ผมด้านหลัง',   count:9,  thumb:'back_hair',  color:true},
   {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
-  {key:'shirt',            label:'เสื้อ',         count:7,  thumb:'shirt',      color:true},
+  {key:'shirt',            label:'เสื้อ',         count:8,  thumb:'shirt',      color:true, noColor:[8]},
   {key:'outerwear',        label:'เสื้อนอก',      count:2,  thumb:'outerwear',  color:true, removable:true},
   {key:'hair_accessories', label:'ที่คาดผม',      count:6,  thumb:'hair_acc',   color:true, removable:true},
   {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc',   color:[1,2,5,6,10,11,12,13], removable:true},
@@ -940,11 +948,16 @@ var LAYERS = [
 ];
 /* color: true = ทุกชิ้นเปลี่ยนสีได้ | [เลข,...] = เฉพาะชิ้นที่ระบุ (ชิ้นสีดำล้วนเปลี่ยนสีไม่ได้) */
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
-var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','shirt','outerwear','accessories','hair','shi_front','hair_accessories'];
+var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','uni_bottom','uni_belt','shirt','outerwear','accessories','hair','shi_front','hair_accessories'];
 /* ชุดพิเศษ (ซ่อน): หน้า+ผม+ตา+ปาก 1 ภาพ (shi_hair_N.png) + ผมหลัง (shi_back_hair_N.png) — เปลี่ยนสีไม่ได้
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
 var SPECIAL_REPLACES = ['hair','back_hair','eyes','mouth'];
+/* ชุดนักเรียน (เสื้อตัวที่ 8): เสื้อขาวเปลี่ยนสีไม่ได้ · เลือกสีเข็มขัด/กางเกงจากชุดที่กำหนด
+   ไฟล์: shirt_8.png + shirt_8_belt_<สี>.png + shirt_8_bottom_<สี>.png */
+var UNIFORM = {shirt:8,
+  belt:  [['black','ดำ','#1c1c1c'],['brown','น้ำตาล','#7a3535']],
+  bottom:[['black','ดำ','#1c1c1c'],['brown','น้ำตาล','#4a2e20'],['navy','กรม','#1b2350']]};
 /* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
 var PALETTE = [['#f7d794','เหลืองพาสเทล'],['#f8a5c2','ชมพู'],['#c7ace4','ม่วงพาสเทล'],['#778beb','น้ำเงินพาสเทล'],['#b8e994','เขียวพาสเทล'],['#e55039','แดงส้ม'],
                ['#5dade2','ฟ้า'],['#f0a500','ส้มทอง'],['#ffffff','ขาว'],['#555555','เทาเข้ม'],['#3b2a24','น้ำตาลเข้ม'],['#c23b3b','แดง']];
@@ -1013,6 +1026,7 @@ var STORE_KEY = 'wedding_guest_v1';
   DEFAULT_SEL.hair_accessories=0; 
   DEFAULT_SEL.accessories=0; 
   DEFAULT_SEL.special=0;
+  DEFAULT_SEL.uniBelt='black'; DEFAULT_SEL.uniBottom='black';
   var sel=Object.assign({},DEFAULT_SEL), colors={};
 
   Z_ORDER.forEach(function(k,i){
@@ -1026,6 +1040,8 @@ var STORE_KEY = 'wedding_guest_v1';
   function srcFor(k,n){
     if(k==='shi_front'||k==='special') return CONFIG.AVATAR_BASE+'shi_hair_'+n+'.png';
     if(k==='shi_back') return CONFIG.AVATAR_BASE+'shi_back_hair_'+n+'.png';
+    if(k==='uni_belt') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_belt_'+n+'.png';
+    if(k==='uni_bottom') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_bottom_'+n+'.png';
     return CONFIG.AVATAR_BASE + (k==='body' ? 'body_1.png' : k+'_'+n+'.png');
   }
   function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'icons/' + L.thumb + '_' + n + '_thumb.png'; }
@@ -1078,6 +1094,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function renderLayer(k){
     var im=layerEls[k]; if(!im) return;
     var n = k==='body' ? 1 : (k==='shi_front'||k==='shi_back') ? sel.special : sel[k];
+    if(k==='uni_belt'||k==='uni_bottom') n = sel.shirt===UNIFORM.shirt ? (k==='uni_belt'?sel.uniBelt:sel.uniBottom) : 0;
     if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ผมหลัง/ตา/ปาก
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
@@ -1161,6 +1178,7 @@ var STORE_KEY = 'wedding_guest_v1';
         if(L===SPECIAL){ sel.special=n; renderSpecialSet(); buildGrid(); return; }
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
+        if(L.key==='shirt'){ renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(Array.isArray(L.color)) buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
       });
@@ -1171,9 +1189,10 @@ var STORE_KEY = 'wedding_guest_v1';
 
   function paletteFor(L){ return PALETTES[L.key] || PALETTES[HAIR_PAIR[L.key]] || PALETTE; }
   var LAYER_BY_KEY={}; LAYERS.forEach(function(L){ LAYER_BY_KEY[L.key]=L; });
-  function canColor(L,n){ return !!L && !!n && (L.color===true || (Array.isArray(L.color) && L.color.indexOf(n)>=0)); }
+  function canColor(L,n){ return !!L && !!n && !(L.noColor && L.noColor.indexOf(n)>=0) && (L.color===true || (Array.isArray(L.color) && L.color.indexOf(n)>=0)); }
   function buildPalette(){
     var L=current;
+    if(L.key==='shirt' && sel.shirt===UNIFORM.shirt){ buildUniformPalette(); return; }
     var ok=canColor(L,sel[L.key]) && !(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0);
     paletteEl.classList.toggle('show',ok);
     if(!ok) return;
@@ -1190,6 +1209,22 @@ var STORE_KEY = 'wedding_guest_v1';
       dotsEl.appendChild(d);
     });
   }
+  function buildUniformPalette(){
+    paletteEl.classList.add('show');
+    $('#paletteLabel').textContent='ชุดนักเรียน — เสื้อสีขาว เลือกสีเข็มขัดและกางเกง/กระโปรง';
+    dotsEl.innerHTML='';
+    [['uniBelt','เข็มขัด',UNIFORM.belt,'uni_belt'],['uniBottom','กางเกง/กระโปรง',UNIFORM.bottom,'uni_bottom']].forEach(function(row){
+      var r=document.createElement('div'); r.className='uni-row';
+      var lb=document.createElement('span'); lb.className='uni-lbl'; lb.textContent=row[1]; r.appendChild(lb);
+      row[2].forEach(function(c){
+        var d=document.createElement('button'); d.type='button'; d.className='dot'+(sel[row[0]]===c[0]?' on':''); d.style.background=c[2];
+        d.setAttribute('aria-label',row[1]+'สี'+c[1]); d.title=c[1];
+        d.addEventListener('click',function(){ sel[row[0]]=c[0]; renderLayer(row[3]); buildUniformPalette(); });
+        r.appendChild(d);
+      });
+      dotsEl.appendChild(r);
+    });
+  }
   function applyColor(k,hex){
     [k,HAIR_PAIR[k]].forEach(function(key){ if(!key) return; if(hex) colors[key]=hex; else delete colors[key]; renderLayer(key); });
     buildPalette();
@@ -1197,6 +1232,8 @@ var STORE_KEY = 'wedding_guest_v1';
 
   function randomize(){
     sel.special=0;
+    var pick=function(a){ return a[Math.floor(Math.random()*a.length)][0]; };
+    sel.uniBelt=pick(UNIFORM.belt); sel.uniBottom=pick(UNIFORM.bottom);
     LAYERS.forEach(function(L){
       sel[L.key] = (L.removable && Math.random()<.3) ? 0 : 1+Math.floor(Math.random()*L.count);
       delete colors[L.key];
@@ -1377,7 +1414,8 @@ var STORE_KEY = 'wedding_guest_v1';
   function pad(n,l){ n=String(n); while(n.length<l) n='0'+n; return n; }
   function tick(){
     var d=Math.max(0,target-Date.now());
-    $('#count').textContent = pad(Math.floor(d/864e5),2)+':'+pad(Math.floor(d%864e5/36e5),2)+':'+pad(Math.floor(d%36e5/6e4),2)+':'+pad(Math.floor(d%6e4/1e3),2);
+    var parts=[pad(Math.floor(d/864e5),2),pad(Math.floor(d%864e5/36e5),2),pad(Math.floor(d%36e5/6e4),2),pad(Math.floor(d%6e4/1e3),2)];
+    $('#count').innerHTML = parts.map(function(v){ return '<span class="cd-n">'+v+'</span>'; }).join('<span class="cd-sep">:</span>');
   }
   tick(); setInterval(tick,1000);
 
