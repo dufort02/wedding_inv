@@ -75,7 +75,7 @@ input,textarea{font-family:inherit}
 .btn--ghost:active{transform:none;background:var(--blush)}
 .script-h{font-family:var(--script);color:var(--red);font-size:2.4rem;line-height:1.1;font-weight:700}
 .sub-h{font-size:.85rem;color:var(--red-soft);opacity:.85;margin-top:2px}
-.wave{display:block;width:100%;height:34px;color:var(--red)}
+.wave{display:block;width:100%;max-width:440px;height:auto;aspect-ratio:400/64;margin:0 auto;color:var(--red)}
 
 /* ---------- COVER ---------- */
 #cover{
@@ -437,8 +437,15 @@ footer .script-h{font-size:2rem}
 
 <!-- ===== reusable line art ===== -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="wave" viewBox="0 0 400 34" preserveAspectRatio="none">
-    <path d="M0 20 C28 8 50 30 82 18 S126 6 146 16 c10 6 6 17 -3 13 c-9 -4 -1 -17 12 -12 C182 26 204 8 236 18 S284 32 306 18 c10 -7 20 1 13 10 c-7 7 -18 -3 -6 -12 C336 10 366 28 400 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- เส้นคั่นธีม 1: ด้ายแดง (แรงบันดาลใจ Your Name) — ซ้ายไขว้เป็นเลขแปด ปลายห้อย · คลื่นยาวช้า · ขวาผูกโบว์ -->
+  <symbol id="wave" viewBox="0 0 400 64" preserveAspectRatio="xMidYMid meet">
+    <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M48 34C100 24 120 60 176 52S246 18 290 26 334 46 352 40"/>
+      <path d="M48 34C38 34 34 26 26 26S12 32 14 36 24 44 32 38 40 28 46 30"/><path d="M14 36c-4 4-6 10-4 16"/>
+      <path d="M352 40c4-2 8-4 10-8"/><path d="M362 32c-10-12-26-14-24-4 2 9 16 8 24 4z"/><path d="M362 32c6-15 22-20 24-10 1 9-14 11-24 10z"/>
+      <path d="M360 34c-3 8-8 15-14 20"/><path d="M364 34c5 8 12 13 20 16"/>
+    </g>
+    <circle cx="362" cy="33" r="2.6" fill="currentColor"/>
   </symbol>
 
   <!-- ไอคอนกำหนดการ (ธีม 1) -->
