@@ -8,7 +8,7 @@
   รูปภาพเรื่องราว: 01n.jpg, 20170201_204855.jpg, IMG_1281.JPG, DSC02671.JPG (วางไว้โฟลเดอร์เดียวกับไฟล์นี้)
   เพลง: Forever Yours - Wayne Jones.mp3
 -->
-<html lang="th" data-theme="1" data-theme-switch="on">
+<html lang="th" data-theme="1" data-idc="pink" data-theme-switch="on">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -261,6 +261,64 @@ section{text-align:center;padding:34px 0}
 .pass-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
 .pass-actions .btn--ghost{font-size:.8rem;padding:5px 14px}
 
+/* ---------- บัตรเชิญธีม 1: ID CARD (2 แบบ สลับด้วย data-idc="pink|red" ที่ <html>) ---------- */
+.idc-head,.idc-dots,.idc-sw,.idc-pen,.lbl-s{display:none}
+html[data-theme="1"]{
+  --ic-line:#1E1A1A;--ic-bw:3px;--ic-paper:#FFFFFF;--ic-head:#FF5EC4;--ic-txt:#1E1A1A;
+  --ic-ph:radial-gradient(circle at 50% 42%,#FFF1F1 0%,#FFD3D3 80%);--ic-phb:transparent;
+  --ic-pill:#FDA9F5;--ic-pilltx:#1E1A1A;--ic-btn:#FF3131;--ic-btntx:#fff;--ic-btn2:#FF3131;--ic-btn2tx:#fff;--ic-btnsh:none;
+  --ic-star:#FFE03D;--ic-ring:#9C8CF2;--ic-spark:#F5A3C8;--ic-wave:#7FB2F2;
+  --ic-f1:#8DB9FF;--ic-f2:#F7A2E6;--ic-f3:#FFE58A;--ic-f4:#FFFFFF;--ic-fc:#FFFFFF;
+  --ic-d1:#8DB9FF;--ic-d2:#FF5EC4;--ic-pen1:#FFD166;--ic-pen2:#F58FC0;--ic-pen3:#FFE3F1;
+}
+html[data-theme="1"][data-idc="red"]{
+  --ic-line:var(--red);--ic-bw:2px;--ic-paper:var(--white);--ic-head:var(--red);--ic-txt:var(--red-deep);
+  --ic-ph:radial-gradient(circle at 50% 42%,#FBF4EA 0%,var(--blush) 90%);--ic-phb:var(--red);
+  --ic-pill:var(--blush);--ic-pilltx:var(--red);--ic-btn:var(--red);--ic-btntx:var(--white);--ic-btn2:var(--white);--ic-btn2tx:var(--red);--ic-btnsh:0 3px 0 var(--red-deep);
+  --ic-star:#E8B85C;--ic-ring:var(--blush);--ic-spark:var(--blush);--ic-wave:rgba(255,253,248,.75);
+  --ic-f1:var(--white);--ic-f2:var(--blush);--ic-f3:var(--white);--ic-f4:var(--blush);--ic-fc:#E8B85C;
+  --ic-d1:var(--red);--ic-d2:var(--red);--ic-pen1:#E8B85C;--ic-pen2:var(--red);--ic-pen3:var(--blush);
+}
+html[data-theme="1"] .pass{
+  container-type:inline-size;max-width:400px;padding:0 20px 16px;border:var(--ic-bw) solid var(--ic-line);border-radius:26px;
+  background:var(--ic-paper);color:var(--ic-txt);grid-template-columns:38% 1fr;column-gap:16px;align-items:start;
+  box-shadow:0 10px 24px rgba(120,60,40,.12)}
+html[data-theme="1"] .pass.show{display:grid}
+html[data-theme="1"] .pass::before,html[data-theme="1"] .pass::after{display:none}
+html[data-theme="1"] .pass-row{display:contents}
+html[data-theme="1"] .idc-head{display:block;grid-column:1/-1;position:relative;height:calc(22cqi + 10px);margin:0 -20px;background:var(--ic-head);
+  border-radius:calc(26px - var(--ic-bw)) calc(26px - var(--ic-bw)) 0 0}
+.idc-head svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.idc-head b{position:absolute;right:7%;top:14%;font-family:var(--display);font-weight:700;font-size:max(21px,6.8cqi);line-height:1.2;letter-spacing:.03em;color:#fff}
+html[data-theme="1"] .pass-av{grid-column:1;grid-row:2;position:relative;z-index:1;width:100%;height:auto;aspect-ratio:1;margin-top:-6cqi;
+  border-radius:3cqi;border:none;background:var(--ic-ph);box-shadow:0 0 0 2px var(--ic-paper),0 0 0 calc(2px + 2px) var(--ic-phb)}
+html[data-theme="1"] .pass-info{grid-column:2;grid-row:2;text-align:center;padding-top:3cqi}
+html[data-theme="1"] .pass small{font-size:clamp(11.5px,3.6cqi,13px);line-height:1.7;font-weight:600;color:var(--ic-txt)}
+html[data-theme="1"] .pass-name{margin:1.2cqi 0 1.6cqi;padding:.42em .5em .06em;border:2px solid var(--ic-line);border-radius:1.2em;background:var(--ic-pill);
+  color:var(--ic-pilltx);font-family:var(--display);font-weight:600;font-size:max(18px,6.2cqi);line-height:1.5}
+html[data-theme="1"] .pass-info small:last-child{position:relative;padding:0 1.4em}
+.idc-pen{position:absolute;right:-.9em;bottom:-.4em;width:1.9em;height:2.3em}
+html[data-theme="1"] .idc-pen{display:block}
+html[data-theme="1"] .pass-actions{grid-column:2;grid-row:3;margin-top:3cqi;gap:3cqi;flex-wrap:nowrap}
+html[data-theme="1"] .pass-actions .btn{flex:1;min-width:0;padding:1.6cqi 0;border:2px solid var(--ic-line);border-radius:999px;
+  font-family:var(--display);font-weight:700;font-size:max(14px,4.4cqi);letter-spacing:.06em;line-height:1.3;
+  background:var(--ic-btn);color:var(--ic-btntx);box-shadow:var(--ic-btnsh)}
+html[data-theme="1"] .pass-actions .btn + .btn{background:var(--ic-btn2);color:var(--ic-btn2tx);box-shadow:none}
+html[data-theme="1"] .pass-actions .btn:active{transform:translateY(2px)}
+html[data-theme="1"] .pass .lbl-l{display:none}
+html[data-theme="1"] .pass .lbl-s{display:inline}
+html[data-theme="1"] .idc-dots{display:flex;grid-column:1;grid-row:3;align-self:end;justify-content:space-between;padding:0 1cqi;font-size:max(10px,3.4cqi);line-height:1;color:var(--ic-d2)}
+.idc-dots i{font-style:normal;color:var(--ic-d1)}.idc-dots em{font-style:normal;font-size:.75em;align-self:center}
+/* สวิตช์สลับแบบ (แสดงเฉพาะตอนเปิดปุ่มสลับธีม) */
+html[data-theme="1"][data-theme-switch="on"] .idc-sw{display:flex;position:absolute;right:10px;bottom:100%;margin-bottom:6px;gap:6px;
+  padding:4px 7px;border-radius:999px;background:var(--white);border:1px solid rgba(194,59,59,.35)}
+.idc-sw button{width:18px;height:18px;border-radius:50%;background:#FF5EC4;box-shadow:inset 0 0 0 2px var(--white);border:1.5px solid #1E1A1A}
+.idc-sw button[data-idc="red"]{background:var(--red);border-color:var(--red)}
+html[data-idc="pink"] .idc-sw button[data-idc="pink"],html[data-idc="red"] .idc-sw button[data-idc="red"]{box-shadow:inset 0 0 0 2px var(--white),0 0 0 2px var(--red-soft)}
+@media (min-width:560px){
+  html[data-theme="1"][data-theme-switch="on"] .idc-sw{flex-direction:column;right:auto;left:100%;bottom:auto;top:50%;transform:translateY(-50%);margin:0 0 0 10px;padding:7px 4px}
+}
+
 .count{font-family:var(--display);font-weight:500;color:var(--red);font-size:clamp(2.4rem,12vw,3.4rem);letter-spacing:.02em;line-height:1.1;margin-top:12px}
 .count-labels{display:grid;grid-template-columns:repeat(4,1fr);max-width:300px;margin:4px auto 0;font-size:.72rem}
 /* ธีม 1: ตัวเลขแต่ละหลักอยู่ในกรอบมุมโค้ง */
@@ -438,6 +496,30 @@ footer .script-h{font-size:2rem}
 <!-- ===== reusable line art ===== -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <!-- เส้นคั่นธีม 1: ด้ายแดง (แรงบันดาลใจ Your Name) — ซ้ายไขว้เป็นเลขแปด ปลายห้อย · คลื่นยาวช้า · ขวาผูกโบว์ -->
+  <!-- บัตรเชิญธีม 1 (ID CARD): ของตกแต่งแถบหัว + ดินสอ — สีมาจากตัวแปร --ic-* ของแบบที่เลือก -->
+  <symbol id="idc-deco" viewBox="0 0 400 88">
+    <ellipse cx="48" cy="31" rx="32" ry="8" transform="rotate(-16 48 31)" style="fill:none;stroke:var(--ic-ring);stroke-width:2.6"/>
+    <path d="M48 12l6.5 12 13 2-9.5 9 2.4 13L48 42l-12.4 6 2.4-13-9.5-9 13-2z" style="fill:var(--ic-star)"/>
+    <path d="M17.2 39.8A32 8 -16 0 0 78.8 22.2" style="fill:none;stroke:var(--ic-ring);stroke-width:2.6"/>
+    <g style="fill:var(--ic-spark)"><circle cx="24" cy="16" r="2.2"/><circle cx="76" cy="36" r="1.8"/><circle cx="30" cy="56" r="1.6"/><path d="M84 8l1.5 3.5 3.5 1.5-3.5 1.5L84 18l-1.5-3.5-3.5-1.5 3.5-1.5z"/></g>
+    <g transform="translate(0 56)">
+      <use href="#idc-flw" x="80" style="fill:var(--ic-f1)"/><use href="#idc-flw" x="100" style="fill:var(--ic-f2)"/><use href="#idc-flw" x="120" style="fill:var(--ic-f3)"/>
+      <use href="#idc-flw" x="140" style="fill:var(--ic-f4)"/><use href="#idc-flw" x="160" style="fill:var(--ic-f1)"/><use href="#idc-flw" x="180" style="fill:var(--ic-f2)"/>
+    </g>
+    <path d="M186 84C222 70 246 92 284 78S330 60 352 70C366 76 372 62 362 58S346 66 358 76 394 72 402 66" style="fill:none;stroke:var(--ic-wave);stroke-width:2.6;stroke-linecap:round"/>
+    <g style="fill:var(--ic-star)">
+      <path d="M298 50l4.4 8.6 9.6 1.4-7 6.6 1.7 9.4-8.7-4.5-8.7 4.5 1.7-9.4-7-6.6 9.6-1.4z"/>
+      <path d="M258 64l2.2 4.3 4.8.7-3.5 3.3.9 4.7-4.4-2.3-4.4 2.3.9-4.7-3.5-3.3 4.8-.7z"/>
+      <path d="M384 58l3 5.8 6.4 1-4.7 4.4 1.2 6.3-5.9-3-5.9 3 1.2-6.3-4.7-4.4 6.4-1z"/>
+    </g>
+  </symbol>
+  <symbol id="idc-flw" viewBox="-6 -6 12 12" width="12" height="12"><path d="M0-5.6a2.4 2.4 0 0 1 2.4 2.3 2.4 2.4 0 1 1 1 4.4 2.4 2.4 0 1 1-2 3.8 2.4 2.4 0 0 1-2.8 0 2.4 2.4 0 1 1-2-3.8 2.4 2.4 0 1 1 1-4.4A2.4 2.4 0 0 1 0-5.6z"/><circle r="1.3" style="fill:var(--ic-fc)"/></symbol>
+  <symbol id="idc-pen" viewBox="0 0 40 48">
+    <g style="fill:none;stroke:var(--ic-pen2);stroke-width:1.6;stroke-linecap:round"><path d="M26 4c-5-3-11 1-8 7l6 6 6-6c3-6-3-10-4-7z" style="fill:var(--ic-pen3)"/><path d="M20 8h8M19.5 11h9"/></g>
+    <path d="M22 18l6 3L16 40l-6-3z" style="fill:var(--ic-pen1);stroke:var(--ic-line);stroke-width:1.4;stroke-linejoin:round"/>
+    <path d="M10 37l6 3-7 4z" style="fill:#E9C99A;stroke:var(--ic-line);stroke-width:1.2;stroke-linejoin:round"/>
+    <path d="M4 46c4-2 8 1 12-1" style="fill:none;stroke:var(--ic-pen2);stroke-width:1.4;stroke-linecap:round"/>
+  </symbol>
   <symbol id="wave" viewBox="0 0 400 64" preserveAspectRatio="xMidYMid meet">
     <g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M48 34C100 24 120 60 176 52S246 18 290 26 334 46 352 40"/>
@@ -508,18 +590,21 @@ footer .script-h{font-size:2rem}
     <h2 class="script-h">Your Pass</h2>
     <div class="sub-h">บัตรเชิญแบบที่แขกจะเห็น</div>
     <div class="pass show">
+      <div class="idc-head" aria-hidden="true"><svg viewBox="0 0 400 88"><use href="#idc-deco"/></svg><b>ID CARD</b></div>
       <div class="pass-row">
         <div class="pass-av"><img id="avtImg" alt="ตัวละคร"></div>
-        <div>
+        <div class="pass-info">
           <small>บัตรเชิญสำหรับ</small>
           <div class="pass-name" id="avtName"></div>
-          <small>ขอบคุณที่มาร่วมวันสำคัญของเรา</small>
+          <small>ขอบคุณที่มาร่วมวันสำคัญของเรา<svg class="idc-pen" viewBox="0 0 40 48" aria-hidden="true"><use href="#idc-pen"/></svg></small>
         </div>
       </div>
       <div class="pass-actions">
-        <button class="btn btn--ghost" id="avtDl" type="button">บันทึกรูปตัวละคร</button>
-        <button class="btn btn--ghost" id="avtRedo" type="button">แต่งตัวใหม่</button>
+        <button class="btn btn--ghost" id="avtDl" type="button"><span class="lbl-l">บันทึกรูปตัวละคร</span><span class="lbl-s">SAVE</span></button>
+        <button class="btn btn--ghost" id="avtRedo" type="button"><span class="lbl-l">แต่งตัวใหม่</span><span class="lbl-s">NEW</span></button>
       </div>
+      <div class="idc-dots" aria-hidden="true"><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b></div>
+      <div class="idc-sw" role="group" aria-label="สลับแบบบัตร (ทดสอบ)"><button type="button" data-idc="pink" title="ชมพู"></button><button type="button" data-idc="red" title="แดง"></button></div>
     </div>
 
     <h2 class="script-h" style="margin-top:34px">Wish Cards</h2>
@@ -609,18 +694,21 @@ footer .script-h{font-size:2rem}
     <div class="hero-date">เสาร์ที่ 19 ธันวาคม 2569</div>
 
     <div class="pass" id="pass">
+      <div class="idc-head" aria-hidden="true"><svg viewBox="0 0 400 88"><use href="#idc-deco"/></svg><b>ID CARD</b></div>
       <div class="pass-row">
         <div class="pass-av"><img class="js-av" alt="ตัวละครของคุณ"></div>
-        <div>
+        <div class="pass-info">
           <small>บัตรเชิญสำหรับ</small>
           <div class="pass-name js-name"></div>
-          <small>ขอบคุณที่มาร่วมวันสำคัญของเรา</small>
+          <small>ขอบคุณที่มาร่วมวันสำคัญของเรา<svg class="idc-pen" viewBox="0 0 40 48" aria-hidden="true"><use href="#idc-pen"/></svg></small>
         </div>
       </div>
       <div class="pass-actions">
-        <a class="btn btn--ghost" id="dlAvatar" download="my-wedding-avatar.png">บันทึกรูปตัวละคร</a>
-        <button class="btn btn--ghost" id="redoBtn" type="button">แต่งตัวใหม่</button>
+        <a class="btn btn--ghost" id="dlAvatar" download="my-wedding-avatar.png"><span class="lbl-l">บันทึกรูปตัวละคร</span><span class="lbl-s">SAVE</span></a>
+        <button class="btn btn--ghost" id="redoBtn" type="button"><span class="lbl-l">แต่งตัวใหม่</span><span class="lbl-s">NEW</span></button>
       </div>
+      <div class="idc-dots" aria-hidden="true"><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b></div>
+      <div class="idc-sw" role="group" aria-label="สลับแบบบัตร (ทดสอบ)"><button type="button" data-idc="pink" title="ชมพู"></button><button type="button" data-idc="red" title="แดง"></button></div>
     </div>
 
     <p class="hero-msg" style="margin-top:22px">-///-</p>
@@ -1372,11 +1460,11 @@ var STORE_KEY = 'wedding_guest_v1';
     return compose(size, withName?{name:guest.name,style:guest.nameStyle}:null).then(function(u){ return u||guest.img||guest.thumb||''; },function(){ return guest.img||guest.thumb||''; });
   }
   function downloadAvatar(a){
-    a.textContent='กำลังเตรียมรูป...';
+    var lbl=a.innerHTML; a.innerHTML='<span class="lbl-l">กำลังเตรียมรูป...</span><span class="lbl-s">…</span>';
     hiResAvatar(AVATAR_DOWNLOAD,true).then(function(u){
       var l=document.createElement('a'); l.href=u; l.download='my-wedding-avatar.png';
       document.body.appendChild(l); l.click(); setTimeout(function(){ l.remove(); },1000);
-    }).then(function(){ a.textContent='บันทึกรูปตัวละคร'; });
+    }).then(function(){ a.innerHTML=lbl; });
   }
   $('#dlAvatar').addEventListener('click',function(e){ if(!guest) return; e.preventDefault(); downloadAvatar(this); });
 
