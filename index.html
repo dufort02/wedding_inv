@@ -175,8 +175,6 @@ input,textarea{font-family:inherit}
 }
 .opt img{width:100%;height:100%;object-fit:contain}
 .opt.can-color::after{content:"";position:absolute;right:5px;bottom:5px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--white);box-shadow:0 0 0 1px rgba(194,59,59,.4);background:conic-gradient(#e55039,#f0a500,#b8e994,#5dade2,#c7ace4,#f8a5c2,#e55039)}
-.uni-row{display:flex;align-items:center;gap:8px;width:100%;margin-bottom:6px}
-.uni-lbl{font-size:.78rem;min-width:7.5em}
 .opt-note{grid-column:1/-1;font-size:.78rem;text-align:center;margin:0 0 4px;color:var(--red)}
 .tab--special{border-style:dashed}
 .opt.on{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
@@ -188,6 +186,7 @@ input,textarea{font-family:inherit}
 .palette p{font-size:.8rem;margin-bottom:6px}
 .dots{display:flex;flex-wrap:wrap;gap:8px}
 .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
+.dot.dot--pair{width:56px;border-radius:999px}
 .dot.on{box-shadow:0 0 0 2.5px var(--red)}
 .dot--reset{background:var(--white);color:var(--red);font-size:.9rem;font-weight:700}
 .stage-hint{font-size:.78rem;margin-top:10px;opacity:.85}
@@ -1048,11 +1047,11 @@ var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
 var SPECIAL_REPLACES = ['hair','back_hair','eyes','mouth'];
-/* ชุดนักเรียน (เสื้อตัวที่ 8): เสื้อขาวเปลี่ยนสีไม่ได้ · เลือกสีเข็มขัด/กางเกงจากชุดที่กำหนด
-   ไฟล์: shirt_8.png + shirt_8_belt_<สี>.png + shirt_8_bottom_<สี>.png */
+/* ชุดนักเรียน (เสื้อตัวที่ 8): เสื้อขาวเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
+   ไฟล์ภาพมีแค่ shirt_8.png + shirt_8_belt.png + shirt_8_bottom.png (วาดสีเดียว สีพื้นอิ่มตัวกลาง ๆ — ดูหัวข้อสีใน README)
+   pairs = [สีเข็มขัด, สีกางเกง, ชื่อ] · ค่าเริ่มต้น = แถวที่ 2 (DEFAULT_SEL.uniPair) */
 var UNIFORM = {shirt:8,
-  belt:  [['black','ดำ','#1c1c1c'],['brown','น้ำตาล','#7a3535']],
-  bottom:[['black','ดำ','#1c1c1c'],['brown','น้ำตาล','#4a2e20'],['navy','กรม','#1b2350']]};
+  pairs:[['#8C5A4B','#945747','น้ำตาล / น้ำตาล'],['#8C5A4B','#1C1F8C','น้ำตาล / กรม'],['#181818','#1C1F8C','ดำ / กรม'],['#181818','#181818','ดำ / ดำ']]};
 /* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
 var PALETTE = [['#f7d794','เหลืองพาสเทล'],['#f8a5c2','ชมพู'],['#c7ace4','ม่วงพาสเทล'],['#778beb','น้ำเงินพาสเทล'],['#b8e994','เขียวพาสเทล'],['#e55039','แดงส้ม'],
                ['#5dade2','ฟ้า'],['#f0a500','ส้มทอง'],['#ffffff','ขาว'],['#555555','เทาเข้ม'],['#3b2a24','น้ำตาลเข้ม'],['#c23b3b','แดง']];
@@ -1121,7 +1120,7 @@ var STORE_KEY = 'wedding_guest_v1';
   DEFAULT_SEL.hair_accessories=0; 
   DEFAULT_SEL.accessories=0; 
   DEFAULT_SEL.special=0;
-  DEFAULT_SEL.uniBelt='black'; DEFAULT_SEL.uniBottom='black';
+  DEFAULT_SEL.uniPair=1;
   var sel=Object.assign({},DEFAULT_SEL), colors={};
 
   Z_ORDER.forEach(function(k,i){
@@ -1135,8 +1134,8 @@ var STORE_KEY = 'wedding_guest_v1';
   function srcFor(k,n){
     if(k==='shi_front'||k==='special') return CONFIG.AVATAR_BASE+'shi_hair_'+n+'.png';
     if(k==='shi_back') return CONFIG.AVATAR_BASE+'shi_back_hair_'+n+'.png';
-    if(k==='uni_belt') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_belt_'+n+'.png';
-    if(k==='uni_bottom') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_bottom_'+n+'.png';
+    if(k==='uni_belt') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_belt.png';
+    if(k==='uni_bottom') return CONFIG.AVATAR_BASE+'shirt_'+UNIFORM.shirt+'_bottom.png';
     return CONFIG.AVATAR_BASE + (k==='body' ? 'body_1.png' : k+'_'+n+'.png');
   }
   function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'icons/' + L.thumb + '_' + n + '_thumb.png'; }
@@ -1189,12 +1188,13 @@ var STORE_KEY = 'wedding_guest_v1';
   function renderLayer(k){
     var im=layerEls[k]; if(!im) return;
     var n = k==='body' ? 1 : (k==='shi_front'||k==='shi_back') ? sel.special : sel[k];
-    if(k==='uni_belt'||k==='uni_bottom') n = sel.shirt===UNIFORM.shirt ? (k==='uni_belt'?sel.uniBelt:sel.uniBottom) : 0;
+    var uni=(k==='uni_belt'||k==='uni_bottom'); if(uni) n = sel.shirt===UNIFORM.shirt ? 1 : 0;
     if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ผมหลัง/ตา/ปาก
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
     var url=srcFor(k,n), c=colors[k];
-    if(c && LAYER_BY_KEY[k] && !canColor(LAYER_BY_KEY[k],n)) c=null;   // ชิ้นนี้เปลี่ยนสีไม่ได้ → ใช้สีเดิม
+    if(uni){ var up=UNIFORM.pairs[sel.uniPair]||UNIFORM.pairs[1]; c=up[k==='uni_belt'?0:1]; }
+    if(!uni && c && LAYER_BY_KEY[k] && !canColor(LAYER_BY_KEY[k],n)) c=null;   // ชิ้นนี้เปลี่ยนสีไม่ได้ → ใช้สีเดิม
     if(!c){ im.src=url; return; }
     busy++; win.classList.add('busy');
     tint(url,c).then(function(out){ if(im._tok===tok) im.src=out; })
@@ -1306,18 +1306,14 @@ var STORE_KEY = 'wedding_guest_v1';
   }
   function buildUniformPalette(){
     paletteEl.classList.add('show');
-    $('#paletteLabel').textContent='ชุดนักเรียน — เสื้อสีขาว เลือกสีเข็มขัดและกางเกง/กระโปรง';
+    $('#paletteLabel').textContent='ชุดนักเรียน — เลือกคู่สี เข็มขัด (ซ้าย) + กางเกง/กระโปรง (ขวา)';
     dotsEl.innerHTML='';
-    [['uniBelt','เข็มขัด',UNIFORM.belt,'uni_belt'],['uniBottom','กางเกง/กระโปรง',UNIFORM.bottom,'uni_bottom']].forEach(function(row){
-      var r=document.createElement('div'); r.className='uni-row';
-      var lb=document.createElement('span'); lb.className='uni-lbl'; lb.textContent=row[1]; r.appendChild(lb);
-      row[2].forEach(function(c){
-        var d=document.createElement('button'); d.type='button'; d.className='dot'+(sel[row[0]]===c[0]?' on':''); d.style.background=c[2];
-        d.setAttribute('aria-label',row[1]+'สี'+c[1]); d.title=c[1];
-        d.addEventListener('click',function(){ sel[row[0]]=c[0]; renderLayer(row[3]); buildUniformPalette(); });
-        r.appendChild(d);
-      });
-      dotsEl.appendChild(r);
+    UNIFORM.pairs.forEach(function(c,i){
+      var d=document.createElement('button'); d.type='button'; d.className='dot dot--pair'+(sel.uniPair===i?' on':'');
+      d.style.background='linear-gradient(90deg,'+c[0]+' 50%,'+c[1]+' 50%)';
+      d.setAttribute('aria-label','คู่สี '+c[2]); d.title='เข็มขัด / กางเกง: '+c[2];
+      d.addEventListener('click',function(){ sel.uniPair=i; renderLayer('uni_belt'); renderLayer('uni_bottom'); buildUniformPalette(); });
+      dotsEl.appendChild(d);
     });
   }
   function applyColor(k,hex){
@@ -1328,7 +1324,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function randomize(){
     sel.special=0;
     var pick=function(a){ return a[Math.floor(Math.random()*a.length)][0]; };
-    sel.uniBelt=pick(UNIFORM.belt); sel.uniBottom=pick(UNIFORM.bottom);
+    sel.uniPair=Math.floor(Math.random()*UNIFORM.pairs.length);
     LAYERS.forEach(function(L){
       sel[L.key] = (L.removable && Math.random()<.3) ? 0 : 1+Math.floor(Math.random()*L.count);
       delete colors[L.key];
