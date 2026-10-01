@@ -1034,7 +1034,7 @@ var LAYERS = [
   {key:'back_hair',        label:'ผมด้านหลัง',   count:9,  thumb:'back_hair',  color:true},
   {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
-  {key:'shirt',            label:'เสื้อ',         count:9,  thumb:'shirt',      color:true, noColor:[8,9]},
+  {key:'shirt',            label:'เสื้อ',         count:10, thumb:'shirt',      color:true, noColor:[8,9,10]},
   {key:'outerwear',        label:'เสื้อนอก',      count:2,  thumb:'outerwear',  color:true, removable:true},
   {key:'hair_accessories', label:'ที่คาดผม',      count:6,  thumb:'hair_acc',   color:true, removable:true},
   {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc',   color:[1,2,5,6,10,11,12,13], removable:true},
@@ -1047,13 +1047,14 @@ var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
 var SPECIAL_REPLACES = ['hair','back_hair','eyes','mouth'];
-/* ชุดนักเรียน (เสื้อตัวที่ 8, 9): เสื้อเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
+/* ชุดนักเรียน (เสื้อตัวที่ 8, 9, 10): เสื้อเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
    ไฟล์: shirt_N.png + shirt_N_bottom.png (+ shirt_N_belt.png ถ้า belt:true) — ชั้นที่ย้อมต้องเป็นสีอิ่มตัว ไม่ใช่ดำ/เทา (ดู README)
    pairs = [สีเข็มขัด, สีกางเกง, ชื่อ] · def = แถวเริ่มต้น (นับจาก 0)
    belt:false = เข็มขัดวาดรวมอยู่ในไฟล์เสื้อ (ทุกคู่สีเข็มขัดเหมือนกัน ไม่ต้องย้อม) */
 var UNIFORMS = {
   8:{belt:true, def:1, pairs:[['#8C5A4B','#97775B','น้ำตาล / น้ำตาลอ่อน'],['#8C5A4B','#1C1F8C','น้ำตาล / กรม'],['#181818','#1C1F8C','ดำ / กรม'],['#181818','#181818','ดำ / ดำ']]},
-  9:{belt:false, def:0, pairs:[['#191818','#1A1B31','ดำ / กรม'],['#191818','#191818','ดำ / ดำ']]}
+  9:{belt:false, def:0, pairs:[['#191818','#1A1B31','ดำ / กรม'],['#191818','#191818','ดำ / ดำ']]},
+  10:{belt:false, def:0, pairs:[['#191818','#1A1B31','ดำ / กรม'],['#191818','#191818','ดำ / ดำ']]}
 };
 /* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
 var PALETTE = [['#f7d794','เหลืองพาสเทล'],['#f8a5c2','ชมพู'],['#c7ace4','ม่วงพาสเทล'],['#778beb','น้ำเงินพาสเทล'],['#b8e994','เขียวพาสเทล'],['#e55039','แดงส้ม'],
