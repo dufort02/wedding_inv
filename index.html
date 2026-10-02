@@ -199,6 +199,7 @@ input,textarea{font-family:inherit}
 .dots{display:flex;flex-wrap:wrap;gap:8px}
 .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
 .dot.dot--pair{width:56px;border-radius:999px}
+.dot.dot--vip{box-shadow:0 0 0 1.5px #FF52C6,0 0 0 3.5px #fff,0 0 0 5px rgba(255,82,198,.45)}
 .dot.on{box-shadow:0 0 0 2.5px var(--red)}
 .dot--reset{background:var(--white);color:var(--red);font-size:.9rem;font-weight:700}
 .stage-hint{font-size:.78rem;margin-top:10px;opacity:.85}
@@ -1063,6 +1064,7 @@ var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','
 /* ชุดพิเศษ (ซ่อน): หน้า+ผม+ตา+ปาก 1 ภาพ (shi_hair_N.png) + ผมหลัง (shi_back_hair_N.png) — เปลี่ยนสีไม่ได้
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
+var SPECIAL_HAIR_COLOR = ['#FF52C6','✨ ชมพูชุดพิเศษ'];   // สีพื้นผมชุดพิเศษ — โผล่ท้ายพาเลตผมด้านหลังเมื่อปลดล็อกแล้ว
 var SPECIAL_REPLACES = ['hair','eyes','mouth'];   // ผมด้านหลัง: เลือกได้ว่าใช้ของชุดพิเศษ (sel.shiBack) หรือผมหลังปกติ
 /* ชุดนักเรียน (เสื้อตัวที่ 8–12): เสื้อเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
    ไฟล์: shirt_N.png + shirt_N_bottom.png (+ shirt_N_belt.png ถ้า belt:true) — ชั้นที่ย้อมต้องเป็นสีอิ่มตัว ไม่ใช่ดำ/เทา (ดู README)
@@ -1333,8 +1335,10 @@ var STORE_KEY = 'wedding_guest_v1';
     reset.setAttribute('aria-label','สีเดิม'); if(!colors[L.key]) reset.classList.add('on');
     reset.addEventListener('click',function(){ applyColor(L.key,null); });
     dotsEl.appendChild(reset);
-    paletteFor(L).forEach(function(p){
-      var hex=p[0], d=document.createElement('button'); d.type='button'; d.className='dot'; d.style.background=hex;
+    var pal=paletteFor(L);
+    if(L.key==='back_hair' && vipOn()) pal=pal.concat([SPECIAL_HAIR_COLOR]);   // ปลดล็อกชุดพิเศษแล้ว → มีสีชมพูของชุดพิเศษต่อท้าย
+    pal.forEach(function(p){
+      var hex=p[0], d=document.createElement('button'); d.type='button'; d.className='dot'+(p===SPECIAL_HAIR_COLOR?' dot--vip':''); d.style.background=hex;
       d.setAttribute('aria-label','สี'+p[1]); d.title=p[1]; if(colors[L.key]===hex) d.classList.add('on');
       d.addEventListener('click',function(){ applyColor(L.key,hex); });
       dotsEl.appendChild(d);
