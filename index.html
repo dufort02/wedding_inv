@@ -148,6 +148,18 @@ input,textarea{font-family:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 .av-missing{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:.85rem;z-index:40}
 .av-window.empty .av-missing{display:flex}
+.av-zoom{position:absolute;right:8px;bottom:8px;z-index:45;width:38px;height:38px;border-radius:50%;background:rgba(255,253,248,.92);color:var(--red);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(120,60,40,.2);border:1.5px solid rgba(194,59,59,.35)}
+.av-zoom svg{width:20px;height:20px}
+/* พรีวิวขยาย: แตะรูปเพื่อซูม 2.5 เท่า แล้วลากเลื่อนดูได้ */
+#zoomView{position:fixed;inset:0;z-index:300;background:rgba(43,30,26,.88);display:flex;flex-direction:column}
+#zoomView[hidden]{display:none}
+.zv-bar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:#fff;font-size:.85rem}
+.zv-bar button{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:1.3rem;line-height:1}
+.zv-box{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;display:grid;place-items:center;touch-action:pan-x pan-y pinch-zoom}
+.zv-box img{display:block;width:min(100vw,100vh - 60px);height:auto;background:radial-gradient(circle at 50% 40%,#FBF4EA 0%,var(--blush) 100%);cursor:zoom-in}
+.zv-box.z2{place-items:start}
+.zv-box.z2 img{width:calc(min(100vw,100vh - 60px)*2.5);max-width:none;cursor:zoom-out}
 .name-row{margin-top:12px}
 .name-row label{font-size:.8rem;display:block}
 .name-row input{
@@ -633,6 +645,10 @@ footer .script-h{font-size:2rem}
 </div>
 
 <!-- ===== 2. AVATAR STAGE ===== -->
+<div id="zoomView" hidden role="dialog" aria-modal="true" aria-label="ดูตัวละครแบบขยาย">
+  <div class="zv-bar"><span>แตะรูปเพื่อซูม · ลากเพื่อเลื่อน</span><button type="button" id="zvClose" aria-label="ปิด">✕</button></div>
+  <div class="zv-box" id="zvBox"><img id="zvImg" alt="ตัวละครแบบขยาย"></div>
+</div>
 <div id="stage" role="dialog" aria-modal="true" aria-labelledby="stageTitle">
   <div class="stage-inner">
     <div class="stage-top">
@@ -652,6 +668,7 @@ footer .script-h{font-size:2rem}
             </div>
             <div class="av-missing">ยังไม่พบรูปตัวละคร<br>ตรวจสอบโฟลเดอร์ images/ หรือค่า AVATAR_BASE</div>
             <div class="av-name" id="avName" aria-hidden="true"></div>
+            <button class="av-zoom" id="zoomBtn" type="button" aria-label="ขยายดูตัวละคร"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M10.5 7.5v6M7.5 10.5h6"/></svg></button>
           </div>
           <div class="name-row">
             <label for="guestName">ชื่อที่จะแสดงบนบัตร</label>
@@ -1046,7 +1063,7 @@ var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','
 /* ชุดพิเศษ (ซ่อน): หน้า+ผม+ตา+ปาก 1 ภาพ (shi_hair_N.png) + ผมหลัง (shi_back_hair_N.png) — เปลี่ยนสีไม่ได้
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
-var SPECIAL_REPLACES = ['hair','back_hair','eyes','mouth'];
+var SPECIAL_REPLACES = ['hair','eyes','mouth'];   // ผมด้านหลัง: เลือกได้ว่าใช้ของชุดพิเศษ (sel.shiBack) หรือผมหลังปกติ
 /* ชุดนักเรียน (เสื้อตัวที่ 8–12): เสื้อเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
    ไฟล์: shirt_N.png + shirt_N_bottom.png (+ shirt_N_belt.png ถ้า belt:true) — ชั้นที่ย้อมต้องเป็นสีอิ่มตัว ไม่ใช่ดำ/เทา (ดู README)
    pairs = [สีเข็มขัด, สีกางเกง, ชื่อ] · def = แถวเริ่มต้น (นับจาก 0)
@@ -1126,6 +1143,7 @@ var STORE_KEY = 'wedding_guest_v1';
   DEFAULT_SEL.hair_accessories=0; 
   DEFAULT_SEL.accessories=0; 
   DEFAULT_SEL.special=0;
+  DEFAULT_SEL.shiBack=1;   // ชุดพิเศษ: 1 = ใช้ผมหลังของชุดพิเศษ, 0 = ใช้ผมหลังปกติ (sel.back_hair)
   Object.keys(UNIFORMS).forEach(function(n){ DEFAULT_SEL['uni'+n]=UNIFORMS[n].def; });
   var sel=Object.assign({},DEFAULT_SEL), colors={};
 
@@ -1195,7 +1213,9 @@ var STORE_KEY = 'wedding_guest_v1';
     var im=layerEls[k]; if(!im) return;
     var n = k==='body' ? 1 : (k==='shi_front'||k==='shi_back') ? sel.special : sel[k];
     var uni=(k==='uni_belt'||k==='uni_bottom'), U=UNIFORMS[sel.shirt]; if(uni) n = U && (k==='uni_bottom'||U.belt) ? 1 : 0;
-    if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ผมหลัง/ตา/ปาก
+    if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ตา/ปาก
+    if(k==='shi_back' && !sel.shiBack) n=0;
+    if(k==='back_hair' && sel.special && sel.shiBack) n=0;
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
     var url=srcFor(k,n), c=colors[k];
@@ -1240,7 +1260,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var fa=layerEls.face_accessories; if(!fa) return;
     fa.style.zIndex = sel.special ? Z_ORDER.indexOf('hair_accessories')+1 : Z_ORDER.indexOf('face_accessories')+1;
   }
-  function renderSpecialSet(){ syncFaceAccZ(); ['shi_back','shi_front'].concat(SPECIAL_REPLACES).forEach(renderLayer); }
+  function renderSpecialSet(){ syncFaceAccZ(); ['shi_back','shi_front','back_hair'].concat(SPECIAL_REPLACES).forEach(renderLayer); }
 
   // หาไฟล์ที่อัปโหลดเพิ่ม: ลองเลขถัดจาก count ไปเรื่อย ๆ จนกว่าจะไม่เจอไฟล์ (ไม่ต้องแก้ count ในโค้ด)
   function discoverMore(L){
@@ -1262,7 +1282,16 @@ var STORE_KEY = 'wedding_guest_v1';
     var L=current; gridEl.innerHTML='';
     var replaced = !!sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0;
     if(replaced){ var note=document.createElement('p'); note.className='opt-note'; note.textContent='✨ กำลังใช้ชุดพิเศษ — เลือกชิ้นด้านล่างเพื่อถอดชุดพิเศษ'; gridEl.appendChild(note); }
-    var nums=[]; if(L.removable) nums.push(0); for(var n=1;n<=L.count;n++) nums.push(n);
+    var shiBackPick = !!sel.special && L.key==='back_hair';   // ชุดพิเศษ: เลือกผมหลังของชุดพิเศษ / ผมหลังปกติ / ไม่ใส่
+    if(shiBackPick){
+      var sb=document.createElement('button'); sb.type='button'; sb.className='opt opt--shi'+(sel.shiBack?' on':'');
+      sb.setAttribute('aria-label','ผมด้านหลังของชุดพิเศษ');
+      var si=new Image(); si.alt=''; si.src=thumbFor({thumb:'shi_back_hair'},sel.special); si.onerror=function(){ sb.classList.add('noimg'); si.remove(); };
+      var sf=document.createElement('span'); sf.className='fallback'; sf.textContent='✨'; sb.appendChild(si); sb.appendChild(sf);
+      sb.addEventListener('click',function(){ sel.shiBack=1; renderSpecialSet(); buildGrid(); });
+      gridEl.appendChild(sb);
+    }
+    var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) nums.push(n);
     nums.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.className='opt'+(n===0?' opt--none':'');
       b.setAttribute('aria-label',L.label+' '+(n===0?'ไม่ใส่':n));
@@ -1274,10 +1303,11 @@ var STORE_KEY = 'wedding_guest_v1';
         b.appendChild(img); b.appendChild(fb);
       }
       if(Array.isArray(L.color) && canColor(L,n)) b.classList.add('can-color');
-      if(sel[L.key]===n && !replaced) b.classList.add('on');
+      if(sel[L.key]===n && !replaced && !(shiBackPick && sel.shiBack)) b.classList.add('on');
       b.addEventListener('click',function(){
         if(L===SPECIAL){ sel.special=n; renderSpecialSet(); buildGrid(); return; }
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
+        if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
         if(L.key==='shirt'){ renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
@@ -1294,10 +1324,10 @@ var STORE_KEY = 'wedding_guest_v1';
   function buildPalette(){
     var L=current;
     if(L.key==='shirt' && UNIFORMS[sel.shirt]){ buildUniformPalette(); return; }
-    var ok=canColor(L,sel[L.key]) && !(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0);
+    var ok=canColor(L,sel[L.key]) && !(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0) && !(sel.special && L.key==='back_hair' && sel.shiBack);
     paletteEl.classList.toggle('show',ok);
     if(!ok) return;
-    $('#paletteLabel').textContent='สี'+L.label+(HAIR_PAIR[L.key]?' (ผมหน้าและหลังเปลี่ยนพร้อมกัน)':'');
+    $('#paletteLabel').textContent='สี'+L.label+(HAIR_PAIR[L.key]&&!sel.special?' (ผมหน้าและหลังเปลี่ยนพร้อมกัน)':'');
     dotsEl.innerHTML='';
     var reset=document.createElement('button'); reset.type='button'; reset.className='dot dot--reset'; reset.textContent='↺';
     reset.setAttribute('aria-label','สีเดิม'); if(!colors[L.key]) reset.classList.add('on');
@@ -1329,7 +1359,7 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   function randomize(){
-    sel.special=0;
+    sel.special=0; sel.shiBack=1;
     var pick=function(a){ return a[Math.floor(Math.random()*a.length)][0]; };
     Object.keys(UNIFORMS).forEach(function(n){ sel['uni'+n]=Math.floor(Math.random()*UNIFORMS[n].pairs.length); });
     LAYERS.forEach(function(L){
@@ -1386,6 +1416,30 @@ var STORE_KEY = 'wedding_guest_v1';
   });
   $('#skipBtn').addEventListener('click',closeStage);
   $('#randBtn').addEventListener('click',randomize);
+
+  /* ---------- พรีวิวขยาย (ปุ่มแว่นขยายมุมรูป) ---------- */
+  (function(){
+    var zv=$('#zoomView'), box=$('#zvBox'), img=$('#zvImg'), btn=$('#zoomBtn');
+    function close(){ zv.hidden=true; box.classList.remove('z2'); img.removeAttribute('src'); }
+    btn.addEventListener('click',function(){
+      btn.disabled=true;
+      compose(1600).then(function(u){ if(!u) return; img.src=u; zv.hidden=false; box.scrollTop=box.scrollLeft=0; })
+      .catch(function(){}).then(function(){ btn.disabled=false; });
+    });
+    img.addEventListener('click',function(e){
+      var r=img.getBoundingClientRect(), fx=(e.clientX-r.left)/r.width, fy=(e.clientY-r.top)/r.height;
+      box.classList.toggle('z2');
+      if(box.classList.contains('z2')){ box.scrollLeft=fx*img.offsetWidth-box.clientWidth/2; box.scrollTop=fy*img.offsetHeight-box.clientHeight/2; }
+    });
+    // ลากเลื่อนด้วยเมาส์ (มือถือเลื่อนด้วยนิ้วได้อยู่แล้ว)
+    var drag=null;
+    box.addEventListener('mousedown',function(e){ if(!box.classList.contains('z2')) return; drag={x:e.clientX,y:e.clientY,l:box.scrollLeft,t:box.scrollTop,moved:false}; e.preventDefault(); });
+    window.addEventListener('mousemove',function(e){ if(!drag) return; var dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>4) drag.moved=true; box.scrollLeft=drag.l-dx; box.scrollTop=drag.t-dy; });
+    window.addEventListener('mouseup',function(){ if(drag&&drag.moved){ img.addEventListener('click',function stop(ev){ ev.stopImmediatePropagation(); },{once:true,capture:true}); } drag=null; });
+    $('#zvClose').addEventListener('click',close);
+    zv.addEventListener('click',function(e){ if(e.target===zv||e.target===box) close(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !zv.hidden) close(); });
+  })();
   $('#redoBtn').addEventListener('click',openStage);
 
   $('#doneBtn').addEventListener('click',function(){
