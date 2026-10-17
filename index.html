@@ -199,6 +199,8 @@ input,textarea{font-family:inherit}
 .dots{display:flex;flex-wrap:wrap;gap:8px}
 .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
 .dot.dot--pair{width:56px;border-radius:999px}
+.opt.has-sides::after{content:'⇄';position:absolute;right:3px;top:2px;font-size:.7rem;font-weight:700;color:var(--red);background:var(--white);border-radius:50%;width:1.35em;height:1.35em;line-height:1.35em;text-align:center;box-shadow:0 0 0 1px rgba(194,59,59,.35)}
+.dot.dot--flip{background:var(--white);color:var(--red);font-size:1.05rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;border:1.5px dashed var(--red)}
 .dot.dot--vip{box-shadow:0 0 0 1.5px #FF52C6,0 0 0 3.5px #fff,0 0 0 5px rgba(255,82,198,.45)}
 .dot.on{box-shadow:0 0 0 2.5px var(--red)}
 .dot--reset{background:var(--white);color:var(--red);font-size:.9rem;font-weight:700}
@@ -1047,16 +1049,17 @@ var CONFIG = {
 /* หมวดในเมนู — count = จำนวนขั้นต่ำ; ถ้าอัปโหลดไฟล์เลขถัดไปเพิ่ม (เช่น hair_5.png) เว็บจะเจอเองอัตโนมัติ
    ไฟล์ตัวละคร : <AVATAR_BASE>/<key>_<n>.png
    ไฟล์ไอคอน   : <AVATAR_BASE>/icons/<thumb>_<n>_thumb.png */
+/* sides:[n] = ชิ้นที่มี 2 ด้าน: ไฟล์ <key>_n_L.png / <key>_n_R.png + ไอคอนรูปเดียว → มีปุ่ม ⇄ สลับซ้าย-ขวา (ด้านเริ่มต้น L) */
 var LAYERS = [
   {key:'hair',             label:'ทรงผม',        count:5,  thumb:'hair',       color:true},
   {key:'back_hair',        label:'ผมด้านหลัง',   count:9,  thumb:'back_hair',  color:true},
   {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
-  {key:'shirt',            label:'เสื้อ',         count:19, thumb:'shirt',      color:true, noColor:[8,9,10,11,12]},
+  {key:'shirt',            label:'เสื้อ',         count:20, thumb:'shirt',      color:true, noColor:[8,9,10,11,12]},
   {key:'outerwear',        label:'เสื้อนอก',      count:4,  thumb:'outerwear',  color:true, noColor:[3], removable:true},
-  {key:'hair_accessories', label:'ที่คาดผม',      count:6,  thumb:'hair_acc',   color:true, removable:true},
+  {key:'hair_accessories', label:'ที่คาดผม',      count:8,  thumb:'hair_acc',   color:true, removable:true, sides:[8]},
   {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc',   color:[1,2,5,6,10,11,12,13], removable:true},
-  {key:'accessories',      label:'เครื่องประดับ', count:7,  thumb:'acc',        color:[3,4,6,7], removable:true}
+  {key:'accessories',      label:'เครื่องประดับ', count:8,  thumb:'acc',        color:[3,4,6,7], removable:true}
 ];
 /* color: true = ทุกชิ้นเปลี่ยนสีได้ | [เลข,...] = เฉพาะชิ้นที่ระบุ (ชิ้นสีดำล้วนเปลี่ยนสีไม่ได้) */
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
@@ -1162,6 +1165,8 @@ var STORE_KEY = 'wedding_guest_v1';
     if(k==='shi_back') return CONFIG.AVATAR_BASE+'shi_back_hair_'+n+'.png';
     if(k==='uni_belt') return CONFIG.AVATAR_BASE+'shirt_'+sel.shirt+'_belt.png';
     if(k==='uni_bottom') return CONFIG.AVATAR_BASE+'shirt_'+sel.shirt+'_bottom.png';
+    var L=null; LAYERS.forEach(function(x){ if(x.key===k) L=x; });
+    if(L && L.sides && L.sides.indexOf(n)>=0) return CONFIG.AVATAR_BASE+k+'_'+n+'_'+(sel['side_'+k]==='R'?'R':'L')+'.png';
     return CONFIG.AVATAR_BASE + (k==='body' ? 'body_1.png' : k+'_'+n+'.png');
   }
   function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'icons/' + L.thumb + '_' + n + '_thumb.png'; }
@@ -1305,6 +1310,7 @@ var STORE_KEY = 'wedding_guest_v1';
         b.appendChild(img); b.appendChild(fb);
       }
       if(Array.isArray(L.color) && canColor(L,n)) b.classList.add('can-color');
+      if(L.sides && L.sides.indexOf(n)>=0) b.classList.add('has-sides');
       if(sel[L.key]===n && !replaced && !(shiBackPick && sel.shiBack)) b.classList.add('on');
       b.addEventListener('click',function(){
         if(L===SPECIAL){ sel.special=n; renderSpecialSet(); buildGrid(); return; }
@@ -1313,7 +1319,7 @@ var STORE_KEY = 'wedding_guest_v1';
         sel[L.key]=n; renderLayer(L.key);
         if(L.key==='shirt'){ renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
-        if(Array.isArray(L.color)||L.noColor) buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
+        if(Array.isArray(L.color)||L.noColor||L.sides) buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
       });
       gridEl.appendChild(b);
     });
@@ -1327,10 +1333,18 @@ var STORE_KEY = 'wedding_guest_v1';
     var L=current;
     if(L.key==='shirt' && UNIFORMS[sel.shirt]){ buildUniformPalette(); return; }
     var ok=canColor(L,sel[L.key]) && !(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0) && !(sel.special && L.key==='back_hair' && sel.shiBack);
-    paletteEl.classList.toggle('show',ok);
-    if(!ok) return;
-    $('#paletteLabel').textContent='สี'+L.label+(HAIR_PAIR[L.key]&&!sel.special?' (ผมหน้าและหลังเปลี่ยนพร้อมกัน)':'');
+    var flip=!!(L.sides && L.sides.indexOf(sel[L.key])>=0);   // ชิ้นที่สลับซ้าย-ขวาได้
+    paletteEl.classList.toggle('show',ok||flip);
+    if(!ok && !flip) return;
+    $('#paletteLabel').textContent=ok ? 'สี'+L.label+(HAIR_PAIR[L.key]&&!sel.special?' (ผมหน้าและหลังเปลี่ยนพร้อมกัน)':'') : 'สลับด้าน';
     dotsEl.innerHTML='';
+    if(flip){
+      var fb=document.createElement('button'); fb.type='button'; fb.className='dot dot--flip'; fb.textContent='⇄';
+      fb.setAttribute('aria-label','สลับซ้าย-ขวา'); fb.title='สลับซ้าย-ขวา';
+      fb.addEventListener('click',function(){ var k='side_'+L.key; sel[k]=sel[k]==='R'?'L':'R'; renderLayer(L.key); });
+      dotsEl.appendChild(fb);
+    }
+    if(!ok) return;
     var reset=document.createElement('button'); reset.type='button'; reset.className='dot dot--reset'; reset.textContent='↺';
     reset.setAttribute('aria-label','สีเดิม'); if(!colors[L.key]) reset.classList.add('on');
     reset.addEventListener('click',function(){ applyColor(L.key,null); });
