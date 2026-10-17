@@ -1169,6 +1169,9 @@ var STORE_KEY = 'wedding_guest_v1';
     if(L && L.sides && L.sides.indexOf(n)>=0) return CONFIG.AVATAR_BASE+k+'_'+n+'_'+(sel['side_'+k]==='R'?'R':'L')+'.png';
     return CONFIG.AVATAR_BASE + (k==='body' ? 'body_1.png' : k+'_'+n+'.png');
   }
+  // รูปที่แสดงบนหน้าจอใช้สำเนาย่อ images/web/ (2048px) — ไฟล์ต้นฉบับ 5000px กินหน่วยความจำ ~100MB ต่อชั้น ทำให้มือถือ/เบราว์เซอร์ในแอปเด้ง
+  // อัปรูปใหม่แล้วต้องรัน scripts/make_web_images.py แล้ว commit images/web/ ด้วย
+  function webFor(u){ var i=u.lastIndexOf('/')+1, f=u.slice(i).replace(/\.PNG$/,'.png'); return u.slice(0,i)+'web/'+f; }
   function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'icons/' + L.thumb + '_' + n + '_thumb.png'; }
 
   function rgb2hsl(r,g,b){ r/=255;g/=255;b/=255; var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h=0,s=0,l=(mx+mn)/2;
@@ -1178,9 +1181,10 @@ var STORE_KEY = 'wedding_guest_v1';
   function hsl2rgb(h,s,l){ h/=360; var q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;
     function f(t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<.5)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }
     return [Math.round(f(h+1/3)*255),Math.round(f(h)*255),Math.round(f(h-1/3)*255)]; }
+  function hue2rgb(p,q,t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<.5)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }
   function hex2hsl(hex){ return rgb2hsl(parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)); }
 
-  var tintCache={}, TINT_MAX=2048;
+  var tintCache={}, tintOrder=[], TINT_MAX=1536, TINT_KEEP=10;   // ย้อมสีที่ 1536px และเก็บผลล่าสุดแค่ 10 ภาพ กันกินหน่วยความจำมือถือ
   function tint(url,hex){
     var key=url+'|'+hex;
     if(!tintCache[key]){
@@ -1195,22 +1199,27 @@ var STORE_KEY = 'wedding_guest_v1';
               var d=x.getImageData(0,0,c.width,c.height), a=d.data, t=hex2hsl(hex);
               // หาความสว่างของ "สีพื้น" ของภาพ (median ของพิกเซลที่มีสี) แล้วเทียบสัดส่วน
               // → สีพื้นกลายเป็นสีที่เลือกจริง ๆ, เส้นดำยังดำ, ไฮไลต์ขาวยังขาว
-              var hist=new Uint32Array(256), cnt=0, i, hsl;
-              for(i=0;i<a.length;i+=4){ if(a[i+3]<128) continue; hsl=rgb2hsl(a[i],a[i+1],a[i+2]);
-                if(hsl[1]>.25&&hsl[2]>.05&&hsl[2]<.95){ hist[Math.round(hsl[2]*255)]++; cnt++; } }
+              // วนลูปแบบไม่สร้างอาร์เรย์ต่อพิกเซล (เดิมสร้างหลายล้านอาร์เรย์ต่อครั้ง → หน่วยความจำพุ่งบนมือถือ)
+              var hist=new Uint32Array(256), cnt=0, i, R,G,B,mx,mn,l,sa,dd;
+              for(i=0;i<a.length;i+=4){ if(a[i+3]<128) continue;
+                R=a[i]/255;G=a[i+1]/255;B=a[i+2]/255; mx=R>G?(R>B?R:B):(G>B?G:B); mn=R<G?(R<B?R:B):(G<B?G:B); l=(mx+mn)/2;
+                sa=mx===mn?0:(l>.5?(mx-mn)/(2-mx-mn):(mx-mn)/(mx+mn));
+                if(sa>.25&&l>.05&&l<.95){ hist[Math.round(l*255)]++; cnt++; } }
               var base=.5; if(cnt){ for(var b=0,acc=0;b<256;b++){ acc+=hist[b]; if(acc>=cnt/2){ base=Math.min(.95,Math.max(.05,b/255)); break; } } }
+              var th=t[0]/360, ts=t[1], tl=t[2], q,pp;
               for(i=0;i<a.length;i+=4){ if(!a[i+3]) continue;
-                var l=rgb2hsl(a[i],a[i+1],a[i+2])[2];
-                l = l<=base ? t[2]*l/base : t[2]+(l-base)/(1-base)*(1-t[2]);
-                var rgb=hsl2rgb(t[0],t[1],l);
-                a[i]=rgb[0];a[i+1]=rgb[1];a[i+2]=rgb[2]; }
-              x.putImageData(d,0,0); res(c.toDataURL('image/png'));
+                R=a[i]/255;G=a[i+1]/255;B=a[i+2]/255; mx=R>G?(R>B?R:B):(G>B?G:B); mn=R<G?(R<B?R:B):(G<B?G:B); l=(mx+mn)/2;
+                l = l<=base ? tl*l/base : tl+(l-base)/(1-base)*(1-tl);
+                q=l<.5?l*(1+ts):l+ts-l*ts; pp=2*l-q;
+                a[i]=Math.round(hue2rgb(pp,q,th+1/3)*255); a[i+1]=Math.round(hue2rgb(pp,q,th)*255); a[i+2]=Math.round(hue2rgb(pp,q,th-1/3)*255); }
+              x.putImageData(d,0,0); var out=c.toDataURL('image/png'); c.width=c.height=0; a=d=null; res(out);   // ปล่อยแคนวาสทันที ลดหน่วยความจำมือถือ
             }catch(e){ rej(e); }
           },10);
         };
         o.onerror=rej; o.src=url;
       });
       tintCache[key].catch(function(){ delete tintCache[key]; });
+      tintOrder.push(key); while(tintOrder.length>TINT_KEEP) delete tintCache[tintOrder.shift()];
     }
     return tintCache[key];
   }
@@ -1225,7 +1234,7 @@ var STORE_KEY = 'wedding_guest_v1';
     if(k==='back_hair' && sel.special && sel.shiBack) n=0;
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
-    var url=srcFor(k,n), c=colors[k];
+    var url=webFor(srcFor(k,n)), c=colors[k];
     if(uni){ var up=U.pairs[sel['uni'+sel.shirt]]||U.pairs[U.def]; c=up[k==='uni_belt'?0:1]; }
     if(!uni && c && LAYER_BY_KEY[k] && !canColor(LAYER_BY_KEY[k],n)) c=null;   // ชิ้นนี้เปลี่ยนสีไม่ได้ → ใช้สีเดิม
     if(!c){ im.src=url; return; }
