@@ -200,6 +200,16 @@ input,textarea{font-family:inherit}
 .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
 .dot.dot--pair{width:56px;border-radius:999px}
 .opt.has-sides::after{content:'⇄';position:absolute;right:3px;top:2px;font-size:.7rem;font-weight:700;color:var(--red);background:var(--white);border-radius:50%;width:1.35em;height:1.35em;line-height:1.35em;text-align:center;box-shadow:0 0 0 1px rgba(194,59,59,.35)}
+.wink{margin-top:4px}.wink:empty{display:none}
+.wink-lbl{display:block;font-size:.8rem;margin:10px 0 6px;padding-top:10px;border-top:1.5px dashed rgba(194,59,59,.3)}
+.wink-lbl+.wink-style{margin-top:0}
+.wink-side{display:flex;gap:8px;flex-wrap:wrap}
+.wink-side button{border:1.5px solid var(--red);border-radius:999px;padding:2px 14px;background:var(--white);color:var(--red);font-size:.9rem;line-height:1.7}
+.wink-side button.on{background:var(--red);color:var(--white)}
+.wink-style{display:flex;gap:10px;flex-wrap:wrap}
+.wink-style button{width:46px;height:46px;border-radius:50%;overflow:hidden;background:var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35);padding:0}
+.wink-style button.on{box-shadow:0 0 0 2.5px var(--red)}
+.wink-style img{width:200%;max-width:none;margin-left:-100%}
 .dot.dot--flip{background:var(--white);color:var(--red);font-size:1.05rem;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center;border:1.5px dashed var(--red)}
 .dot.dot--vip{box-shadow:0 0 0 1.5px #FF52C6,0 0 0 3.5px #fff,0 0 0 5px rgba(255,82,198,.45)}
 .dot.on{box-shadow:0 0 0 2.5px var(--red)}
@@ -1063,10 +1073,13 @@ var LAYERS = [
 ];
 /* color: true = ทุกชิ้นเปลี่ยนสีได้ | [เลข,...] = เฉพาะชิ้นที่ระบุ (ชิ้นสีดำล้วนเปลี่ยนสีไม่ได้) */
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
-var Z_ORDER = ['back_hair','shi_back','body','eyes','mouth','face_accessories','uni_bottom','uni_belt','shirt','outerwear','accessories','hair','shi_front','hair_accessories'];
+var Z_ORDER = ['back_hair','shi_back','body','eyes','eyes_wink','mouth','face_accessories','uni_bottom','uni_belt','shirt','outerwear','accessories','hair','shi_front','hair_accessories'];
 /* ชุดพิเศษ (ซ่อน): หน้า+ผม+ตา+ปาก 1 ภาพ (shi_hair_N.png) + ผมหลัง (shi_back_hair_N.png) — เปลี่ยนสีไม่ได้
    ปลดล็อก: แตะหัวข้อ "Dress up" 5 ครั้ง → เครื่องนั้นจำไว้ */
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
+/* ขยิบตา: ตาข้างหนึ่งใช้ "ตาหลับ" จากไฟล์ตาเบอร์ในรายการนี้ (ตัดครึ่งภาพ) อีกข้างเป็นตาที่เลือกไว้
+   เพิ่มแบบตาหลับ = วาดไฟล์ตาหลับสองข้าง eyes_N.png แล้วเติมเลข N · ปุ่มสุ่มขยิบ 1 ใน 10 (WINK_RANDOM) */
+var WINK_EYES = [5], WINK_RANDOM = 0.1;
 var SPECIAL_HAIR_COLOR = ['#FF52C6','✨ ชมพูชุดพิเศษ'];   // สีพื้นผมชุดพิเศษ — โผล่ท้ายพาเลตผมด้านหลังเมื่อปลดล็อกแล้ว
 var SPECIAL_REPLACES = ['hair','eyes','mouth'];   // ผมด้านหลัง: เลือกได้ว่าใช้ของชุดพิเศษ (sel.shiBack) หรือผมหลังปกติ
 /* ชุดนักเรียน (เสื้อตัวที่ 8–12): เสื้อเปลี่ยนสีไม่ได้ · เลือก "คู่สี" เข็มขัด+กางเกง/กระโปรง (แอปย้อมสีให้เอง)
@@ -1148,6 +1161,8 @@ var STORE_KEY = 'wedding_guest_v1';
   DEFAULT_SEL.hair_accessories=0; 
   DEFAULT_SEL.accessories=0; 
   DEFAULT_SEL.special=0;
+  DEFAULT_SEL.wink=0;      // ขยิบตา: 0 = ไม่ขยิบ, 'L' = ตาซ้ายของจอหลับ, 'R' = ตาขวาของจอหลับ
+  DEFAULT_SEL.winkEye=WINK_EYES[0];
   DEFAULT_SEL.shiBack=1;   // ชุดพิเศษ: 1 = ใช้ผมหลังของชุดพิเศษ, 0 = ใช้ผมหลังปกติ (sel.back_hair)
   Object.keys(UNIFORMS).forEach(function(n){ DEFAULT_SEL['uni'+n]=UNIFORMS[n].def; });
   var sel=Object.assign({},DEFAULT_SEL), colors={};
@@ -1161,6 +1176,7 @@ var STORE_KEY = 'wedding_guest_v1';
   });
 
   function srcFor(k,n){
+    if(k==='eyes_wink') return CONFIG.AVATAR_BASE+'eyes_'+n+'.png';
     if(k==='shi_front'||k==='special') return CONFIG.AVATAR_BASE+'shi_hair_'+n+'.png';
     if(k==='shi_back') return CONFIG.AVATAR_BASE+'shi_back_hair_'+n+'.png';
     if(k==='uni_belt') return CONFIG.AVATAR_BASE+'shirt_'+sel.shirt+'_belt.png';
@@ -1231,6 +1247,8 @@ var STORE_KEY = 'wedding_guest_v1';
     var uni=(k==='uni_belt'||k==='uni_bottom'), U=UNIFORMS[sel.shirt]; if(uni) n = U && (k==='uni_bottom'||U.belt) ? 1 : 0;
     if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ตา/ปาก
     if(k==='shi_back' && !sel.shiBack) n=0;
+    if(k==='eyes_wink') n = winkOn() ? (WINK_EYES.indexOf(sel.winkEye)>=0 ? sel.winkEye : WINK_EYES[0]) : 0;
+    if(k==='eyes'||k==='eyes_wink') setHalf(im, !winkOn() ? '' : (k==='eyes' ? (sel.wink==='L'?'R':'L') : sel.wink));
     if(k==='back_hair' && sel.special && sel.shiBack) n=0;
     im._tok=(im._tok||0)+1; var tok=im._tok;
     if(!n){ im.removeAttribute('src'); im.style.visibility='hidden'; return; }
@@ -1244,6 +1262,10 @@ var STORE_KEY = 'wedding_guest_v1';
       if(!warnedTint){ warnedTint=true; toast('เปลี่ยนสีได้เมื่อเปิดผ่านเว็บ (https) เท่านั้น'); } })
     .then(function(){ busy--; if(!busy) win.classList.remove('busy'); });
   }
+  // ขยิบตา: ใช้ได้เมื่อมีตา ไม่ได้ใส่ชุดพิเศษ และตาที่เลือกไม่ใช่ตาหลับอยู่แล้ว
+  function winkOn(){ return !!sel.wink && !!sel.eyes && !sel.special && WINK_EYES.indexOf(sel.eyes)<0; }
+  // แสดงแค่ครึ่งซ้าย ('L') / ครึ่งขวา ('R') ของภาพ — compose() อ่าน data-half ไปวาดครึ่งเดียวกัน
+  function setHalf(im,h){ if(h){ im.dataset.half=h; im.style.clipPath = h==='L' ? 'inset(0 50% 0 0)' : 'inset(0 0 0 50%)'; } else { delete im.dataset.half; im.style.clipPath=''; } }
   function renderAll(){ if(typeof syncFaceAccZ==='function') syncFaceAccZ(); Z_ORDER.forEach(renderLayer); }
 
   /* ---------------- menu ---------------- */
@@ -1328,7 +1350,8 @@ var STORE_KEY = 'wedding_guest_v1';
         sel[L.key]=n; renderLayer(L.key);
         if(L.key==='shirt'){ renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
-        if(Array.isArray(L.color)||L.noColor||L.sides) buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
+        if(L.key==='eyes') renderLayer('eyes_wink');
+        if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
       });
       gridEl.appendChild(b);
     });
@@ -1340,6 +1363,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function canColor(L,n){ return !!L && !!n && !(L.noColor && L.noColor.indexOf(n)>=0) && (L.color===true || (Array.isArray(L.color) && L.color.indexOf(n)>=0)); }
   function buildPalette(){
     var L=current;
+    if(winkEl) winkEl.innerHTML='';
     if(L.key==='shirt' && UNIFORMS[sel.shirt]){ buildUniformPalette(); return; }
     var ok=canColor(L,sel[L.key]) && !(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0) && !(sel.special && L.key==='back_hair' && sel.shiBack);
     var flip=!!(L.sides && L.sides.indexOf(sel[L.key])>=0);   // ชิ้นที่สลับซ้าย-ขวาได้
@@ -1366,6 +1390,32 @@ var STORE_KEY = 'wedding_guest_v1';
       d.addEventListener('click',function(){ applyColor(L.key,hex); });
       dotsEl.appendChild(d);
     });
+    if(L.key==='eyes') buildWinkUI();
+  }
+  var winkEl=document.createElement('div'); winkEl.className='wink'; paletteEl.appendChild(winkEl);
+  function buildWinkUI(){
+    if(!winkEl || !sel.eyes || sel.special || WINK_EYES.indexOf(sel.eyes)>=0) return;   // ตาหลับอยู่แล้ว / ชุดพิเศษ → ไม่มีขยิบ
+    function row(cls){ var r=document.createElement('div'); r.className=cls; winkEl.appendChild(r); return r; }
+    function lbl(t){ var e=document.createElement('span'); e.className='wink-lbl'; e.textContent=t; winkEl.appendChild(e); }
+    function redraw(){ renderLayer('eyes'); renderLayer('eyes_wink'); buildPalette(); }
+    lbl('ขยิบตา');
+    var r1=row('wink-side');
+    [[0,'ไม่ขยิบ','ไม่ขยิบ'],['R','👁 —','ขยิบตาข้างขวาของจอ'],['L','— 👁','ขยิบตาข้างซ้ายของจอ']].forEach(function(o){
+      var b=document.createElement('button'); b.type='button'; b.textContent=o[1]; b.setAttribute('aria-label',o[2]);
+      if((sel.wink||0)===o[0]) b.classList.add('on');
+      b.addEventListener('click',function(){ sel.wink=o[0]; redraw(); });
+      r1.appendChild(b);
+    });
+    if(!sel.wink || WINK_EYES.length<2) return;
+    lbl('แบบตาหลับ');
+    var r2=row('wink-style');
+    WINK_EYES.forEach(function(n){
+      var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','ตาหลับแบบ '+n);
+      if(sel.winkEye===n) b.classList.add('on');
+      var im=new Image(); im.alt=''; im.src=thumbFor(LAYER_BY_KEY.eyes,n); b.appendChild(im);
+      b.addEventListener('click',function(){ sel.winkEye=n; redraw(); });
+      r2.appendChild(b);
+    });
   }
   function buildUniformPalette(){
     paletteEl.classList.add('show');
@@ -1387,6 +1437,8 @@ var STORE_KEY = 'wedding_guest_v1';
 
   function randomize(){
     sel.special=0; sel.shiBack=1;
+    sel.wink = Math.random()<WINK_RANDOM ? (Math.random()<.5?'L':'R') : 0;
+    sel.winkEye = WINK_EYES[Math.floor(Math.random()*WINK_EYES.length)];
     var pick=function(a){ return a[Math.floor(Math.random()*a.length)][0]; };
     Object.keys(UNIFORMS).forEach(function(n){ sel['uni'+n]=Math.floor(Math.random()*UNIFORMS[n].pairs.length); });
     LAYERS.forEach(function(L){
@@ -1411,7 +1463,11 @@ var STORE_KEY = 'wedding_guest_v1';
     .then(function(){
       var c=document.createElement('canvas'); c.width=c.height=size; var x=c.getContext('2d'), drew=false;
       Z_ORDER.slice().sort(function(a,b){ return (+layerEls[a].style.zIndex)-(+layerEls[b].style.zIndex) || Z_ORDER.indexOf(a)-Z_ORDER.indexOf(b); }).forEach(function(k){ var im=layerEls[k];   // วาดตาม z-index จริง
-        if(im.getAttribute('src') && im.style.visibility!=='hidden' && im.naturalWidth){ x.drawImage(im,0,0,size,size); drew=true; } });
+        if(im.getAttribute('src') && im.style.visibility!=='hidden' && im.naturalWidth){ var hw=im.naturalWidth/2, hh=im.naturalHeight;
+          if(im.dataset.half==='L') x.drawImage(im,0,0,hw,hh,0,0,size/2,size);
+          else if(im.dataset.half==='R') x.drawImage(im,hw,0,hw,hh,size/2,0,size/2,size);
+          else x.drawImage(im,0,0,size,size);
+          drew=true; } });
       if(!drew) return null;
       return (nameOpt ? drawName(x,size,nameOpt.name,nameOpt.style) : Promise.resolve()).then(function(){
         try{ return c.toDataURL('image/png'); }catch(e){ return null; }
