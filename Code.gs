@@ -6,7 +6,7 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
-const VERSION          = 3;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
+const VERSION          = 4;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
 const SAVE_AVATAR      = true;             // true = เก็บรูปตัวละครของแขกลง Google Drive และโชว์ในชีต
@@ -18,13 +18,16 @@ const WALL_LIMIT       = 300;              // จำนวนคำอวยพ�
 const REQUIRE_APPROVAL = true;
 // 3) แจ้งเตือนทางอีเมล: 'me' = อีเมลเจ้าของสคริปต์ | '' = ปิด | หรือใส่อีเมล (หลายคนคั่นด้วย ,)
 const NOTIFY_EMAIL     = 'me';
+// 4) รหัสทีมงาน: ใช้เปิดหน้าเช็กอิน / พิมพ์บัตรแขก (checkin.html) — ตั้งเป็นตัวเลข/คำที่เดายาก
+//    '' = ปิดหน้าเช็กอิน (ไม่มีใครดูรายชื่อแขกได้)
+const STAFF_KEY        = '';
 
 const S_SHOW = 'แสดง', S_HIDE = 'ไม่แสดง', S_PENDING = 'รออนุมัติ';
 const HEADERS = ['เวลา', 'ชื่อ', 'รูปแบบ', 'มาร่วมงาน', 'จำนวนคน', 'อาหาร', 'แพ้อาหาร/หมายเหตุ',
                  'คำอวยพร', 'แสดงบนเว็บ', 'สีการ์ด', 'ตัวละคร', 'ลิงก์รูป', 'ค่าตัวละคร (JSON)', 'mode', 'ปักหมุด',
-                 'rsvpId', 'แก้ไขล่าสุด'];
+                 'rsvpId', 'แก้ไขล่าสุด', 'ผู้ติดตามของ', 'เช็กอิน'];
 const PAPERS  = ['blush', 'cream', 'sky', 'sage', 'lilac'];
-const MODES   = ['attend', 'gift', 'wish'];
+const MODES   = ['attend', 'gift', 'wish', 'companion'];   // companion = ผู้ติดตามที่ทำบัตรเองจากลิงก์ของแขก
 const FOODS   = ['ทานได้ทุกอย่าง', 'มังสวิรัติ/เจ', 'ฮาลาล'];
 
 /* ============================ รับคำตอบจากเว็บ ============================ */
@@ -62,14 +65,16 @@ function doPost(e) {
     }
 
     mode = MODES.indexOf(p.mode) >= 0 ? p.mode : 'attend';
-    const message = clean_(p.message);
+    const comp = mode === 'companion';
+    const message = comp ? '' : clean_(p.message);
     const wantShow = p.showOnWall === S_SHOW && String(p.message || '').trim();
     status = !wantShow ? S_HIDE
            : (!REQUIRE_APPROVAL || (updated && prev('แสดงบนเว็บ') === S_SHOW && String(prev('คำอวยพร')) === message)) ? S_SHOW  // ข้อความเดิมที่อนุมัติแล้ว ไม่ต้องอนุมัติซ้ำ
            : S_PENDING;
     const v = {
       'เวลา': updated ? prev('เวลา') : new Date(), 'ชื่อ': clean_(p.name), 'รูปแบบ': clean_(p.modeLabel), 'มาร่วมงาน': clean_(p.attending),
-      'จำนวนคน': Number(p.guests) || 0, 'อาหาร': clean_(p.food), 'แพ้อาหาร/หมายเหตุ': clean_(p.allergy),
+      'จำนวนคน': comp ? 0 : (Number(p.guests) || 0),   // ผู้ติดตามนับรวมในจำนวนคนของแขกหลักแล้ว
+      'ผู้ติดตามของ': comp ? String(p.parentId || '').replace(/[^\w-]/g, '').slice(0, 40) : '', 'อาหาร': clean_(p.food), 'แพ้อาหาร/หมายเหตุ': clean_(p.allergy),
       'คำอวยพร': message, 'แสดงบนเว็บ': status, 'สีการ์ด': PAPERS.indexOf(p.paper) >= 0 ? p.paper : 'blush',
       'ตัวละคร': imgFormula, 'ลิงก์รูป': link, 'ค่าตัวละคร (JSON)': clean_(p.avatarConfig) || prev('ค่าตัวละคร (JSON)'), 'mode': mode,
       'ปักหมุด': updated ? prev('ปักหมุด') === true : false, 'rsvpId': rid, 'แก้ไขล่าสุด': updated ? new Date() : ''
@@ -94,8 +99,10 @@ function doPost(e) {
 
 /* ================= ส่งคำอวยพรให้หน้าเว็บ (?action=wishes) ================= */
 // แสดงเฉพาะแถวที่ "แสดงบนเว็บ" = แสดง  เรียง: ปักหมุดก่อน แล้วใหม่ → เก่า
+// ?action=guests / ?action=checkin = หน้าเช็กอินของทีมงาน (ต้องมี key = STAFF_KEY)
 function doGet(e) {
   const action = e && e.parameter && e.parameter.action;
+  if (action === 'guests' || action === 'checkin') return staff_(e.parameter);
   if (action !== 'wishes') return json_({ ok: true, msg: 'RSVP endpoint is running', version: VERSION, approval: REQUIRE_APPROVAL });
 
   const cache = CacheService.getScriptCache();
@@ -125,6 +132,42 @@ function doGet(e) {
   const out = JSON.stringify({ ok: true, wishes: wishes });
   if (out.length < 90000) cache.put('wishes', out, 60);
   return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* ================= หน้าเช็กอิน / พิมพ์บัตรแขก (checkin.html) ================= */
+function staff_(q) {
+  if (!STAFF_KEY || String(q.key || '') !== STAFF_KEY) return json_({ ok: false, error: 'key' });
+  const sh = getSheet_(), c = cols_(sh);
+  const rows = sh.getLastRow() > 1 ? sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues() : [];
+  const get = (r, k) => (c[k] ? r[c[k] - 1] : '');
+  const names = {};
+  rows.forEach(r => { if (get(r, 'rsvpId')) names[get(r, 'rsvpId')] = String(get(r, 'ชื่อ')); });
+  const guest = (r, i) => {
+    const img = (String(get(r, 'ลิงก์รูป')).match(/\/d\/([\w-]+)/) || [])[1], ci = get(r, 'เช็กอิน'), par = String(get(r, 'ผู้ติดตามของ') || '');
+    return {
+      row: i + 2, id: String(get(r, 'rsvpId') || ''), name: String(get(r, 'ชื่อ')), mode: get(r, 'mode') || 'attend',
+      guests: Number(get(r, 'จำนวนคน')) || 0, food: String(get(r, 'อาหาร')), allergy: String(get(r, 'แพ้อาหาร/หมายเหตุ')),
+      parent: par, parentName: par ? (names[par] || '') : '',
+      avatar: img ? thumbUrl_(img, 400) : '', checkin: ci instanceof Date ? ci.getTime() : (ci ? String(ci) : '')
+    };
+  };
+  const list = rows.map(guest).filter(g => g.mode === 'attend' || g.mode === 'companion');
+
+  if (q.action === 'guests') return json_({ ok: true, guests: list });
+
+  const id = String(q.id || '').replace(/[^\w-]/g, '').slice(0, 40);
+  const g = id && list.filter(x => x.id === id).pop();
+  if (!g) return json_({ ok: false, error: 'notfound' });
+  let already = !!g.checkin;
+  if (q.mark === '1' && !already) {
+    const lock = LockService.getScriptLock(); lock.waitLock(20000);
+    try { const now = new Date(); sh.getRange(g.row, c['เช็กอิน']).setValue(now); g.checkin = now.getTime(); }
+    finally { lock.releaseLock(); }
+  }
+  if (q.mark === 'undo') { sh.getRange(g.row, c['เช็กอิน']).setValue(''); g.checkin = ''; already = false; }
+  return json_({ ok: true, guest: g, already: already,
+    companions: list.filter(x => x.parent === g.id),
+    host: g.parent ? (list.filter(x => x.id === g.parent).pop() || null) : null });
 }
 
 /* ============================ เมนูแอดมินในชีต ============================ */
@@ -214,6 +257,8 @@ function buildSummary_(sh, c) {
     ['อวยพรออนไลน์ (คน)', '=COUNTIF(' + mode + ',"wish")'],
     ['คำอวยพรรออนุมัติ', '=COUNTIF(' + status + ',"' + S_PENDING + '")'],
     ['คำอวยพรที่แสดงบนเว็บ', '=COUNTIF(' + status + ',"' + S_SHOW + '")'],
+    ['ผู้ติดตามที่ทำบัตรเอง (คน)', '=COUNTIF(' + mode + ',"companion")'],
+    ['เช็กอินแล้ว (บัตร)', '=COUNTIFS(' + R('เช็กอิน') + ',"<>",' + mode + ',"<>gift",' + mode + ',"<>wish")'],
     ['', ''],
     ['อาหาร (จำนวนคน)', '']
   ].concat(FOODS.map(f => ['   ' + f, '=SUMIFS(' + guests + ',' + mode + ',"attend",' + food + ',"' + f + '")']));
@@ -227,8 +272,8 @@ function buildSummary_(sh, c) {
   s.getRange('H3').setFormula('=IFERROR(UNIQUE(FILTER(' + name + ',' + mode + '="attend",COUNTIFS(' + name + ',' + name + ',' + mode + ',"attend")>1)),"— ไม่มี —")');
 
   s.getRange('A1').setFontSize(14).setFontWeight('bold');
-  s.getRangeList(['A10', 'D1', 'H1', 'D2:F2']).setFontWeight('bold');
-  s.getRange('B3:B13').setFontWeight('bold').setHorizontalAlignment('center');
+  s.getRangeList(['A12', 'D1', 'H1', 'D2:F2']).setFontWeight('bold');
+  s.getRange('B3:B15').setFontWeight('bold').setHorizontalAlignment('center');
   s.setColumnWidth(1, 240); s.setColumnWidth(4, 160); s.setColumnWidth(6, 220); s.setColumnWidth(8, 220);
   s.setFrozenRows(2);
 }
@@ -242,7 +287,8 @@ function notify_(p, mode, status, updated) {
     const subject = {
       attend: '[RSVP] ' + name + ' มาร่วมงาน ' + (Number(p.guests) || 1) + ' คน',
       gift:   '[RSVP] ' + name + ' ร่วมอวยพรผ่านของขวัญ',
-      wish:   '[คำอวยพร] ' + name
+      wish:   '[คำอวยพร] ' + name,
+      companion: '[ผู้ติดตาม] ' + name + (p.parentName ? ' (มากับ ' + String(p.parentName).slice(0, 60) + ')' : '')
     }[mode] + (status === S_PENDING ? ' • รออนุมัติ' : '');
     const subj = (updated ? '[แก้ไข] ' : '') + subject;
     const lines = ['ชื่อ: ' + name, 'รูปแบบ: ' + (p.modeLabel || mode)];
@@ -295,7 +341,7 @@ function getFolder_() {
   return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
 }
 
-function thumbUrl_(id) { return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w200'; }
+function thumbUrl_(id, w) { return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w' + (w || 200); }
 
 // กันแขกพิมพ์ข้อความที่ขึ้นต้นด้วย = + - @ แล้วชีตตีความเป็นสูตร
 function clean_(v) {
