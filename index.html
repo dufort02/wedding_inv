@@ -283,6 +283,12 @@ section{text-align:center;padding:34px 0}
 .pass small{font-size:.75rem;display:block}
 .pass-name{font-family:var(--display);font-weight:600;color:var(--red);font-size:1.35rem;line-height:1.55;padding-top:.1em;word-break:break-word}   /* บรรทัดสูงพอให้วรรณยุกต์บนสระ (พี่ ปั้น) ไม่ชนบรรทัดบน */
 .pass-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.pass-qr{display:flex;align-items:center;gap:14px;max-width:360px;margin:12px auto 0;padding:10px 14px;background:var(--white);border:1.5px dashed rgba(194,59,59,.45);border-radius:14px;text-align:left}
+.pass-qr[hidden]{display:none}
+.pass-qr img{width:112px;height:112px;flex:none;image-rendering:pixelated;border-radius:4px}
+.pass-qr b{display:block;font-family:var(--display);color:var(--red);font-size:1.05rem;letter-spacing:.04em}
+.pass-qr span,.pass-qr small{display:block;font-size:.78rem;line-height:1.6}
+.pass-qr small{color:var(--red);font-weight:600;margin-top:2px}
 .pass-actions .btn--ghost{font-size:.8rem;padding:5px 14px}
 
 /* ---------- บัตรเชิญธีม 1: ID CARD (2 แบบ สลับด้วย data-idc="pink|red" ที่ <html>) ---------- */
@@ -442,6 +448,8 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .rsvp-who img{width:52px;height:52px;border-radius:50%;background:var(--blush);border:1.5px solid var(--red);object-fit:contain}
 .form .btn{width:100%;padding:12px}
 .status{font-size:.82rem;min-height:1.3em;text-align:center;margin-top:8px;color:var(--red)}
+.comp-share{margin-top:16px;padding-top:14px;border-top:1.5px dashed rgba(194,59,59,.3);text-align:center}
+.comp-share p{font-size:.85rem;margin-bottom:10px}
 .thanks{text-align:center;padding:10px 0}
 .thanks>img{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;background:var(--blush);border:1.8px solid var(--red);object-fit:contain}
 .thanks>b{font-family:var(--display);color:var(--red);font-size:1.3rem;display:block}
@@ -739,6 +747,11 @@ footer .script-h{font-size:2rem}
       <div class="idc-dots" aria-hidden="true"><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b><em>◆</em><i>✦</i><b>★</b></div>
       <div class="idc-sw" role="group" aria-label="สลับแบบบัตร (ทดสอบ)"><button type="button" data-idc="pink" title="ชมพู"></button><button type="button" data-idc="red" title="แดง"></button></div>
     </div>
+    <!-- บัตรเข้างาน: QR = ลิงก์หน้าเช็กอิน + รหัสแขก (โชว์หลังตอบรับมาร่วมงาน / ผู้ติดตามส่งบัตรแล้ว) -->
+    <div class="pass-qr" id="passQr" hidden>
+      <img id="passQrImg" alt="QR บัตรเข้างาน" width="112" height="112">
+      <div><b>บัตรเข้างาน</b><span>แสดง QR นี้ที่จุดลงทะเบียนในวันงาน</span><small id="passWith" hidden></small></div>
+    </div>
 
     <p class="hero-msg" style="margin-top:22px">-///-</p>
   </section>
@@ -1030,6 +1043,7 @@ footer .script-h{font-size:2rem}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="js/wishcard.js"></script>
+<script src="js/qrcode.js"></script>
 <script>
 /* =====================================================================
    CONFIG — แก้ค่าตรงนี้ที่เดียว
@@ -1039,6 +1053,7 @@ var CONFIG = {
   // 'https://<username>.github.io/<repo>/images/'
   AVATAR_BASE: 'images/',
   // วาง URL Web App ของ Google Apps Script (ลงท้าย /exec) — ว่างไว้ = โหมดทดสอบ (เก็บในเครื่อง)
+  CHECKIN_PAGE: 'checkin.html',   // หน้าเช็กอินของทีมงาน — QR บนบัตรเข้างานชี้มาที่หน้านี้
   RSVP_ENDPOINT: 'https://script.google.com/macros/s/AKfycbzE_b37rmXBPCkitzQzb4Y_NhE9nD7a-a-JaP2qTMrSx-4VVBrxYki9bfQKj2jZPRr1/exec',
   // คำอวยพรต้องให้แอดมินอนุมัติก่อนขึ้นเว็บ — ตั้งให้ตรงกับ REQUIRE_APPROVAL ใน Code.gs
   WISH_APPROVAL: true,
@@ -1535,6 +1550,7 @@ var STORE_KEY = 'wedding_guest_v1';
       guest={name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), nameStyle:nameStyle, img:r[0], thumb:r[1], ts:Date.now()};
       saveGuest(guest); applyGuest(prevName); closeStage();
       if(AVATAR_TEST) showAvTest();
+      else if(COMP) sendCompanion();     // ผู้ติดตาม: ส่งบัตร (ชื่อ + ตัวละคร) ให้บ่าวสาว
       else syncRsvpToGuest(prevName);   // เคยตอบ RSVP แล้ว → อัปเดตชื่อ/ตัวละครในคำตอบให้เอง
     }).then(function(){ btn.disabled=false; btn.textContent='ใช้ตัวนี้เข้างาน'; });
   });
@@ -1702,6 +1718,65 @@ var STORE_KEY = 'wedding_guest_v1';
   function loadRsvp(){ try{ return JSON.parse(localStorage.getItem(RSVP_KEY)||'null'); }catch(e){ return null; } }
   function saveRsvp(d){ try{ localStorage.setItem(RSVP_KEY,JSON.stringify(d)); }catch(e){} }
 
+  /* ---------- ผู้ติดตาม: แขกหลักส่งลิงก์ ?with=<rsvpId>&from=<ชื่อ> → ผู้ติดตามแต่งตัว + ใส่ชื่อ แล้วส่งบัตรเอง (ไม่ต้องตอบ RSVP) ---------- */
+  var COMP_KEY='wedding_companion_v1';
+  function loadComp(){ try{ return JSON.parse(localStorage.getItem(COMP_KEY)||'null'); }catch(e){ return null; } }
+  function saveComp(c){ try{ if(c) localStorage.setItem(COMP_KEY,JSON.stringify(c)); else localStorage.removeItem(COMP_KEY); }catch(e){} }
+  (function(){
+    var m=location.search.match(/[?&]with=([\w-]{4,40})/); if(!m) return;
+    var mine=null; try{ mine=localStorage.getItem(RID_KEY); }catch(e){}
+    var rec=loadRsvp();
+    if(m[1]===mine || (rec && rec.mode && rec.mode!=='companion')) return;   // เจ้าของลิงก์เปิดเอง / เคยตอบรับเองแล้ว → ไม่เปลี่ยนเป็นผู้ติดตาม
+    var f=(location.search.match(/[?&]from=([^&]*)/)||[])[1]||'', name='';
+    try{ name=decodeURIComponent(f.replace(/\+/g,' ')); }catch(e){}
+    var old=loadComp();
+    saveComp({parent:m[1], parentName:name.slice(0,60), sent: old&&old.parent===m[1] ? old.sent : 0});
+  })();
+  var COMP=loadComp();
+  function companionLink(){
+    var rec=loadRsvp()||{};
+    return location.origin+location.pathname+'?with='+rsvpId()+'&from='+encodeURIComponent(rec.name||(guest&&guest.name)||'')+'&openExternalBrowser=1';
+  }
+  function shareCompanionLink(){
+    var url=companionLink(), text='มาทำบัตรเข้างานแต่ง Palida & Pachaya ของคุณกัน (แต่งตัวละคร + ใส่ชื่อ)';
+    if(navigator.share){ navigator.share({title:'บัตรผู้ติดตาม',text:text,url:url}).catch(function(){}); return; }
+    function done(){ toast('คัดลอกลิงก์แล้ว ส่งให้ผู้ติดตามได้เลย'); }
+    if(navigator.clipboard) navigator.clipboard.writeText(url).then(done,function(){ prompt('คัดลอกลิงก์นี้ส่งให้ผู้ติดตาม',url); });
+    else prompt('คัดลอกลิงก์นี้ส่งให้ผู้ติดตาม',url);
+  }
+  function sendCompanion(){
+    if(!COMP || !guest) return;
+    var data=Object.assign(buildData({mode:'attend',name:guest.name,guests:'0',showOnWall:'ไม่แสดง'}),
+      {mode:'companion',modeLabel:'ผู้ติดตาม',attending:'มา',food:'',allergy:'',parentId:COMP.parent,parentName:COMP.parentName});
+    toast('กำลังส่งบัตรของคุณให้บ่าวสาว...');
+    sendRsvp(data).then(function(){ COMP.sent=Date.now(); saveComp(COMP); updatePassQr(); showCompanion(); toast('ส่งบัตรแล้ว เจอกันในวันงานนะ'); },
+                        function(){ toast('ส่งบัตรไม่สำเร็จ ลองกด "แต่งตัวใหม่" แล้วกดใช้ตัวนี้อีกครั้ง'); });
+  }
+  function showCompanion(){
+    var t=$('#rsvpThanks'); t.innerHTML='';
+    var b=document.createElement('b'); b.textContent=COMP.sent?'บัตรผู้ติดตามของคุณพร้อมแล้ว':'คุณได้รับเชิญในฐานะผู้ติดตาม'; t.appendChild(b);
+    var p=document.createElement('p');
+    p.innerHTML='มากับ <b>'+esc(COMP.parentName||'แขกของเรา')+'</b> · ไม่ต้องตอบรับซ้ำ<br>'+
+      (COMP.sent?'ใช้ QR ใต้บัตรเชิญด้านบนตอนลงทะเบียนในวันงาน':(guest?'กด "แต่งตัวใหม่" แล้ว "ใช้ตัวนี้เข้างาน" เพื่อส่งบัตร':'แต่งตัวละครและใส่ชื่อ แล้วบัตรจะส่งให้บ่าวสาวเอง'));
+    t.appendChild(p);
+    var row=document.createElement('div'); row.className='btn-row';
+    row.innerHTML='<button class="btn btn--ghost" type="button" id="compLeave">ไม่ใช่ผู้ติดตาม? ตอบรับแบบปกติ</button>';
+    t.appendChild(row);
+    form.hidden=true; t.hidden=false;
+    $('#compLeave').addEventListener('click',function(){ saveComp(null); COMP=null; updatePassQr(); t.hidden=true; form.hidden=false; });
+  }
+
+  /* ---------- QR บัตรเข้างาน ---------- */
+  function checkinUrl(id){ return new URL(CONFIG.CHECKIN_PAGE+'?id='+encodeURIComponent(id),location.href).href; }
+  function updatePassQr(){
+    var box=$('#passQr'), rec=loadRsvp();
+    var on = !!guest && ((COMP && COMP.sent) || (!COMP && rec && rec.mode==='attend'));
+    box.hidden=!on; if(!on || typeof qrcode!=='function') return;
+    var q=qrcode(0,'M'); q.addData(checkinUrl(rsvpId())); q.make();
+    $('#passQrImg').src=q.createDataURL(6,2);
+    var w=$('#passWith'); w.hidden=!COMP; if(COMP) w.textContent='ผู้ติดตามของ '+(COMP.parentName||'แขก');
+  }
+
   form.addEventListener('submit',function(e){
     e.preventDefault();
     var mode=form.dataset.mode;
@@ -1760,6 +1835,7 @@ var STORE_KEY = 'wedding_guest_v1';
     }
     renderWall();
     showThanks(rec,opt);
+    updatePassQr();
   }
 
   // แต่งตัว/เปลี่ยนชื่อใหม่หลังตอบ RSVP แล้ว → ส่งอัปเดตแถวเดิมให้อัตโนมัติ
@@ -1798,6 +1874,12 @@ var STORE_KEY = 'wedding_guest_v1';
     row.innerHTML=(rec.showOnWall==='แสดง'&&!rec.pending?'<a class="btn" href="#wishes">ดูสมุดอวยพร</a>':'')+
       '<button class="btn btn--ghost" type="button" id="rEdit">แก้ไขคำตอบ</button>';
     t.appendChild(row);
+    if(rec.mode==='attend' && Number(rec.guests)>1){
+      var cp=document.createElement('div'); cp.className='comp-share';
+      cp.innerHTML='<p>มากัน '+esc(String(rec.guests))+' ท่าน? ส่งลิงก์ให้ผู้ติดตามมาแต่งตัวละครและทำบัตรของตัวเอง (ลิงก์เดียวใช้ได้ทุกคน)</p>'+
+        '<button class="btn" type="button" id="rShareComp">ส่งลิงก์ให้ผู้ติดตาม</button>';
+      t.appendChild(cp); $('#rShareComp').addEventListener('click',shareCompanionLink);
+    }
     form.hidden=true; t.hidden=false;
     $('#rEdit').addEventListener('click',function(){ fillForm(rec); t.hidden=true; form.hidden=false; $('#rsvpForm').scrollIntoView({behavior:'smooth',block:'start'}); });
     if(!opt.returning) t.scrollIntoView({behavior:'smooth',block:'center'});
@@ -1814,7 +1896,7 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   // เปิดเว็บอีกครั้ง → แสดงคำตอบเดิม พร้อมปุ่มแก้ไข
-  (function(){ var rec=loadRsvp(); if(rec && rec.mode) showThanks(rec,{returning:true}); })();
+  (function(){ var rec=loadRsvp(); if(COMP) showCompanion(); else if(rec && rec.mode) showThanks(rec,{returning:true}); updatePassQr(); })();
 
   /* ---------------- wish wall ---------------- */
   var wall=$('#wall'), wishes=[], WALL_PREVIEW=4;   // หน้าหลักโชว์แค่ล่าสุด 4 ใบ ที่เหลือดูใน wishes.html

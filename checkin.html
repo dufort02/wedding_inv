@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!--
+  หน้าทีมงาน: เช็กอินแขก + พิมพ์บัตรเข้างาน
+  • QR บนบัตรแขก = ลิงก์มาหน้านี้ (?id=<รหัสแขก>) → สแกนด้วยกล้องมือถือธรรมดาได้เลย
+  • ต้องใส่ "รหัสทีมงาน" (STAFF_KEY ใน Code.gs) ครั้งแรก เครื่องนั้นจะจำไว้  (หรือ ?key=...)
+  • แท็บ "พิมพ์บัตร" = บัตรเข้างานแบบตั๋ว 8 ใบต่อ A4 (ตัวละคร + ชื่อ + QR) กด พิมพ์ / บันทึก PDF
+  • ดึง URL ระบบจาก RSVP_ENDPOINT ใน index.html ให้เอง (หรือ ?endpoint=<URL /exec>)
+-->
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>เช็กอินแขก — PALIDA &amp; PACHAYA</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F3ECE0;--red:#C23B3B;--red-deep:#9F2C2E;--red-soft:#B5504C;--blush:#EFD3CB;--white:#FFFDF8;--ok:#3E8E5A;
+  --display:'Fredoka','Mali',sans-serif;--body:'Mali','Fredoka',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:var(--body);color:var(--red-soft);background:var(--paper);line-height:1.7;font-size:15px;min-height:100vh}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+header img{height:46px;width:auto}
+header h1{font-family:var(--display);color:var(--red);font-size:1.3rem;line-height:1.2}
+header p{font-size:.8rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border-radius:999px;padding:9px 20px;font-weight:600;box-shadow:0 3px 0 var(--red-deep)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--red-deep)}
+.btn--ghost{background:var(--white);color:var(--red);border:1.6px solid var(--red);box-shadow:none}
+.btn--ok{background:var(--ok);box-shadow:0 3px 0 #2b6a41}
+.card{background:var(--white);border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(120,60,40,.1)}
+.tabs{display:flex;gap:8px;margin:6px 0 14px}
+.tabs button{flex:1;border:1.6px solid var(--red);border-radius:999px;padding:6px 0;color:var(--red);background:var(--white);font-weight:600}
+.tabs button[aria-selected="true"]{background:var(--red);color:#fff}
+.stats{display:flex;gap:10px;margin-bottom:12px}
+.stats div{flex:1;background:var(--white);border-radius:12px;padding:8px 10px;text-align:center}
+.stats b{display:block;font-family:var(--display);color:var(--red);font-size:1.5rem;line-height:1.2}
+.stats span{font-size:.75rem}
+.search{width:100%;border:1.6px solid rgba(194,59,59,.4);border-radius:999px;padding:8px 16px;background:var(--white);line-height:1.9;margin-bottom:10px}
+.search:focus{outline:none;border-color:var(--red)}
+.list{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--white);border-radius:12px;padding:6px 10px;text-align:left;width:100%}
+.row img,.row .ph{width:44px;height:44px;border-radius:10px;background:var(--blush);object-fit:contain;flex:none}
+.row .ph{display:flex;align-items:center;justify-content:center;color:var(--red);font-weight:700}
+.row .nm{flex:1;min-width:0}
+.row .nm b{display:block;color:var(--red-deep);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm small{font-size:.75rem}
+.tag{font-size:.72rem;border-radius:999px;padding:1px 9px;white-space:nowrap;border:1.4px solid currentColor}
+.tag--ok{color:var(--ok)}
+.tag--wait{color:#b08a7d}
+.msg{text-align:center;padding:24px 10px;font-size:.9rem}
+/* รายละเอียดแขก */
+.detail{position:fixed;inset:0;background:rgba(43,30,26,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.detail .card{width:100%;max-width:520px;border-radius:20px 20px 0 0;max-height:92vh;overflow:auto;padding:18px 18px 26px;text-align:center;position:relative}
+.detail .x{position:absolute;right:12px;top:10px;width:36px;height:36px;border-radius:50%;background:var(--paper);color:var(--red);font-size:1.1rem}
+.detail .av{width:150px;height:150px;border-radius:18px;margin:0 auto 6px;background:radial-gradient(circle at 50% 40%,#FBF4EA,var(--blush));object-fit:contain;display:block}
+.detail .av.ph{display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:3.4rem;color:var(--red)}
+.detail h2{font-family:var(--display);color:var(--red);font-size:1.6rem;line-height:1.5}
+.detail .sub{font-size:.9rem}
+.detail dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;margin:12px auto;max-width:360px;font-size:.9rem}
+.detail dt{color:var(--red);font-weight:600}
+.state{margin:14px 0 8px;font-weight:600}
+.state--ok{color:var(--ok);font-size:1.2rem}
+.detail .btn{width:100%;max-width:340px;font-size:1.1rem;padding:12px 0}
+.undo{display:block;margin:10px auto 0;font-size:.8rem;text-decoration:underline;color:var(--red-soft)}
+.comps{margin-top:14px;text-align:left;max-width:360px;margin-left:auto;margin-right:auto}
+.comps>b{font-size:.85rem;color:var(--red)}
+.keybox{max-width:360px;margin:40px auto;text-align:center}
+.keybox input{width:100%;text-align:center;border:none;border-bottom:1.8px solid var(--red);background:transparent;font-size:1.3rem;letter-spacing:.2em;line-height:2;margin:14px 0}
+.keybox input:focus{outline:none}
+.err{color:var(--red);font-size:.85rem;min-height:1.4em}
+/* ===== บัตรเข้างาน (พิมพ์) ===== */
+.ptools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.ptools label{font-size:.85rem;display:flex;align-items:center;gap:6px}
+.sheetbox{overflow-x:auto;padding:4px 0 12px}
+.sheet{display:grid;width:max-content;margin:0 auto;grid-template-columns:repeat(2,93mm);gap:5mm 4mm;justify-content:center}
+.tk{width:93mm;height:62mm;position:relative;display:grid;grid-template-columns:1fr 27mm;background:#FFFDF8;border:.5mm solid var(--red);border-radius:4mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid;color:#7a3b35}
+.tk::before,.tk::after{content:"";position:absolute;left:calc(100% - 27mm - 2.5mm);width:5mm;height:5mm;border-radius:50%;background:var(--paper);border:.5mm solid var(--red);z-index:2}
+.tk::before{top:-2.8mm}.tk::after{bottom:-2.8mm}
+.tk-main{display:grid;grid-template-columns:27mm 1fr;grid-template-rows:auto 1fr auto;column-gap:3mm;padding:3.5mm 3mm 3mm 3.5mm;min-width:0}
+.tk-top{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-weight:600;font-size:2.6mm;letter-spacing:.12em;color:var(--red);border-bottom:.3mm dashed rgba(194,59,59,.5);padding-bottom:1.5mm;margin-bottom:2.5mm}
+.tk-av{width:27mm;height:27mm;border-radius:3mm;background:radial-gradient(circle at 50% 40%,#FBF4EA,var(--blush));object-fit:contain;align-self:start}
+.tk-av.ph{display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:10mm;color:var(--red)}
+.tk-info{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.tk-info small{font-size:2.5mm;line-height:1.5}
+.tk-name{font-family:var(--display);font-weight:600;color:var(--red);font-size:5.6mm;line-height:1.55;word-break:break-word;padding-top:.6mm}
+.tk-meta{font-size:2.7mm;line-height:1.55;margin-top:.8mm}
+.tk-foot{grid-column:1/-1;font-size:2.5mm;letter-spacing:.04em;margin-top:2mm;padding-top:1.5mm;border-top:.3mm dashed rgba(194,59,59,.5);display:flex;justify-content:space-between}
+.tk-stub{border-left:.4mm dashed var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5mm;padding:2mm;background:#FBEFEA}
+.tk-stub img{width:21mm;height:21mm;image-rendering:pixelated;background:#fff;padding:.8mm;border-radius:1mm}
+.tk-stub b{font-family:var(--display);color:var(--red);font-size:3mm;letter-spacing:.12em}
+.tk-stub small{font-size:2.2mm;letter-spacing:.06em;word-break:break-all;text-align:center}
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff}
+  .wrap{max-width:none;padding:0}
+  header,.tabs,.stats,.ptools,#viewCheck,.detail{display:none!important}
+  .tk::before,.tk::after{background:#fff}
+  .sheet{gap:4mm}
+  .sheetbox{overflow:visible;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="images/logo.png" alt="">
+    <div><h1>เช็กอินแขก</h1><p>สำหรับทีมงานเท่านั้น</p></div>
+  </header>
+
+  <div class="keybox card" id="keyBox" hidden>
+    <b>ใส่รหัสทีมงาน</b>
+    <p style="font-size:.8rem">รหัสเดียวกับ STAFF_KEY ใน Code.gs · เครื่องนี้จะจำไว้</p>
+    <input id="keyIn" type="password" inputmode="numeric" autocomplete="off">
+    <div class="err" id="keyErr"></div>
+    <button class="btn" id="keyGo" type="button">เข้าใช้งาน</button>
+  </div>
+
+  <div id="app" hidden>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-view="viewCheck">เช็กอิน</button>
+      <button role="tab" aria-selected="false" data-view="viewPrint">พิมพ์บัตร</button>
+    </div>
+    <div class="stats"><div><b id="stCards">–</b><span>บัตรเช็กอินแล้ว</span></div><div><b id="stPeople">–</b><span>คนที่ตอบมา</span></div></div>
+
+    <section id="viewCheck">
+      <input class="search" id="q" type="search" placeholder="ค้นหาชื่อแขก" autocomplete="off">
+      <div class="list" id="list"></div>
+    </section>
+
+    <section id="viewPrint" hidden>
+      <div class="ptools">
+        <button class="btn" id="printBtn" type="button">พิมพ์ / บันทึก PDF</button>
+        <label><input type="checkbox" id="pComp" checked> รวมผู้ติดตาม</label>
+        <label><input type="checkbox" id="pNotIn"> เฉพาะที่ยังไม่เช็กอิน</label>
+      </div>
+      <div class="sheetbox"><div class="sheet" id="sheet"></div></div>
+    </section>
+  </div>
+  <p class="msg" id="msg" hidden></p>
+</div>
+
+<div class="detail" id="detail" hidden><div class="card" id="dCard"></div></div>
+
+<script src="js/qrcode.js"></script>
+<script>
+(function(){
+  var $=function(s){ return document.querySelector(s); };
+  var KEY_STORE='wedding_staff_key', guests=[], ep='', key='';
+  var EVENT_LINE='เสาร์ 19 ธ.ค. 2569 · The Barnery';
+  function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+  function msg(t){ var m=$('#msg'); m.hidden=!t; m.textContent=t||''; }
+  function qp(n){ var m=location.search.match(new RegExp('[?&]'+n+'=([^&]*)')); return m?decodeURIComponent(m[1]):''; }
+  function checkinUrl(id){ return new URL('checkin.html?id='+encodeURIComponent(id),location.href).href; }
+  function qrImg(id,cell){ var q=qrcode(0,'M'); q.addData(checkinUrl(id)); q.make(); return q.createDataURL(cell||4,1); }
+  function hhmm(t){ var d=new Date(t); return isNaN(d)?'':('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+
+  function endpoint(){
+    var e=qp('endpoint'); if(e) return Promise.resolve(e);
+    return fetch('index.html',{cache:'no-cache'}).then(function(r){ return r.text(); })
+      .then(function(t){ var m=t.match(/RSVP_ENDPOINT\s*:\s*'([^']*)'/); return m?m[1]:''; });
+  }
+  function api(params){
+    var u=ep+(ep.indexOf('?')<0?'?':'&')+Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(params[k]); }).join('&');
+    return fetch(u,{cache:'no-store'}).then(function(r){ return r.json(); });
+  }
+
+  /* ----- รหัสทีมงาน ----- */
+  function askKey(err){
+    $('#app').hidden=true; $('#keyBox').hidden=false; $('#keyErr').textContent=err||''; $('#keyIn').focus();
+  }
+  $('#keyGo').addEventListener('click',function(){ key=$('#keyIn').value.trim(); if(!key) return; try{ localStorage.setItem(KEY_STORE,key); }catch(e){} start(); });
+  $('#keyIn').addEventListener('keydown',function(e){ if(e.key==='Enter') $('#keyGo').click(); });
+
+  /* ----- โหลดรายชื่อ ----- */
+  function load(){
+    return api({action:'guests',key:key}).then(function(d){
+      if(!d.ok){ if(d.error==='key'){ try{ localStorage.removeItem(KEY_STORE); }catch(e){} askKey('รหัสไม่ถูกต้อง (หรือยังไม่ได้ตั้ง STAFF_KEY ใน Code.gs)'); } return false; }
+      guests=d.guests||[]; $('#keyBox').hidden=true; $('#app').hidden=false; msg('');
+      renderStats(); renderList(); renderSheet(); return true;
+    });
+  }
+  function nameOf(id){ for(var i=0;i<guests.length;i++) if(guests[i].id===id) return guests[i].name; return ''; }
+  function renderStats(){
+    var tickets=guests.length, inn=guests.filter(function(g){ return g.checkin; }).length;
+    var people=guests.reduce(function(a,g){ return a+(g.mode==='attend'?(g.guests||1):0); },0);
+    $('#stCards').textContent=inn+' / '+tickets; $('#stPeople').textContent=people;
+  }
+  function sub(g){
+    if(g.mode==='companion') return 'ผู้ติดตามของ '+(g.parentName||nameOf(g.parent)||'-');
+    return 'มา '+(g.guests||1)+' ท่าน'+(g.food?' · '+g.food:'')+(g.allergy?' · ⚠ '+g.allergy:'');
+  }
+  function avatarEl(g,cls){ return g.avatar?'<img class="'+cls+'" src="'+esc(g.avatar)+'" alt="" referrerpolicy="no-referrer">':'<div class="'+cls+' ph">'+esc((g.name||'?').charAt(0))+'</div>'; }
+  function renderList(){
+    var q=$('#q').value.trim().toLowerCase(), box=$('#list'); box.innerHTML='';
+    var arr=guests.filter(function(g){ return !q || g.name.toLowerCase().indexOf(q)>=0 || (g.parentName||'').toLowerCase().indexOf(q)>=0; });
+    arr.sort(function(a,b){ return (!!a.checkin-!!b.checkin) || a.name.localeCompare(b.name,'th'); });
+    if(!arr.length){ box.innerHTML='<p class="msg">'+(guests.length?'ไม่พบชื่อนี้':'ยังไม่มีแขกตอบรับมาร่วมงาน')+'</p>'; return; }
+    arr.forEach(function(g){
+      var b=document.createElement('button'); b.type='button'; b.className='row';
+      b.innerHTML=(g.avatar?'<img src="'+esc(g.avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'<span class="ph">'+esc(g.name.charAt(0))+'</span>')+
+        '<span class="nm"><b>'+esc(g.name)+'</b><small>'+esc(sub(g))+'</small></span>'+
+        (g.checkin?'<span class="tag tag--ok">✓ '+hhmm(g.checkin)+'</span>':'<span class="tag tag--wait">ยังไม่มา</span>');
+      b.addEventListener('click',function(){ openGuest(g.id); });
+      box.appendChild(b);
+    });
+  }
+  $('#q').addEventListener('input',renderList);
+
+  /* ----- รายละเอียด + ยืนยันเข้างาน ----- */
+  function openGuest(id,mark){
+    var c=$('#dCard'); $('#detail').hidden=false; c.innerHTML='<p class="msg">กำลังโหลด...</p>';
+    var p={action:'checkin',key:key,id:id}; if(mark) p.mark=mark;
+    api(p).then(function(d){
+      if(!d.ok){ c.innerHTML='<button class="x" type="button" aria-label="ปิด">✕</button><p class="msg">'+(d.error==='notfound'?'ไม่พบบัตรนี้ในระบบ (แขกอาจยังไม่ได้ตอบรับมาร่วมงาน)':'เปิดไม่สำเร็จ')+'</p>'; return; }
+      var g=d.guest;
+      for(var i=0;i<guests.length;i++) if(guests[i].id===g.id) guests[i].checkin=g.checkin;
+      renderStats(); renderList(); renderSheet();
+      var h='<button class="x" type="button" aria-label="ปิด">✕</button>'+avatarEl(g,'av')+'<h2>'+esc(g.name)+'</h2><p class="sub">'+
+        (g.mode==='companion'?'ผู้ติดตามของ <b>'+esc(d.host?d.host.name:g.parentName)+'</b>':'มาร่วมงาน <b>'+(g.guests||1)+' ท่าน</b>')+'</p>';
+      if(g.mode!=='companion') h+='<dl><dt>อาหาร</dt><dd>'+esc(g.food||'-')+'</dd><dt>แพ้/หมายเหตุ</dt><dd>'+esc(g.allergy||'-')+'</dd></dl>';
+      if(g.checkin) h+='<p class="state state--ok">✓ เช็กอินแล้ว '+hhmm(g.checkin)+' น.</p>'+(mark==='1'&&d.already?'<p style="font-size:.85rem">(บัตรนี้เคยเช็กอินไปแล้ว)</p>':'')+'<button class="undo" type="button" id="dUndo">ยกเลิกเช็กอิน</button>';
+      else h+='<p class="state">ยังไม่เช็กอิน</p><button class="btn btn--ok" type="button" id="dGo">ยืนยันเข้างาน</button>';
+      var cs=(d.companions||[]);
+      if(cs.length) h+='<div class="comps"><b>ผู้ติดตามที่ทำบัตรแล้ว</b>'+cs.map(function(x){ return '<button type="button" class="row" data-id="'+esc(x.id)+'">'+(x.avatar?'<img src="'+esc(x.avatar)+'" alt="" referrerpolicy="no-referrer">':'<span class="ph">'+esc(x.name.charAt(0))+'</span>')+'<span class="nm"><b>'+esc(x.name)+'</b></span>'+(x.checkin?'<span class="tag tag--ok">✓ '+hhmm(x.checkin)+'</span>':'<span class="tag tag--wait">ยังไม่มา</span>')+'</button>'; }).join('')+'</div>';
+      if(d.host) h+='<div class="comps"><b>มากับ</b><button type="button" class="row" data-id="'+esc(d.host.id)+'"><span class="nm"><b>'+esc(d.host.name)+'</b></span></button></div>';
+      c.innerHTML=h;
+      var go=$('#dGo'); if(go) go.addEventListener('click',function(){ openGuest(g.id,'1'); });
+      var un=$('#dUndo'); if(un) un.addEventListener('click',function(){ if(confirm('ยกเลิกเช็กอินของ '+g.name+' ?')) openGuest(g.id,'undo'); });
+      Array.prototype.forEach.call(c.querySelectorAll('.row[data-id]'),function(r){ r.addEventListener('click',function(){ openGuest(r.dataset.id); }); });
+    }).catch(function(){ c.innerHTML='<button class="x" type="button">✕</button><p class="msg">เชื่อมต่อไม่ได้ ตรวจสอบอินเทอร์เน็ต</p>'; });
+  }
+  $('#detail').addEventListener('click',function(e){
+    if(e.target.id==='detail' || e.target.classList.contains('x')){
+      $('#detail').hidden=true;
+      if(qp('id')) history.replaceState(null,'',location.pathname);
+    }
+  });
+
+  /* ----- บัตรเข้างาน (พิมพ์) ----- */
+  function renderSheet(){
+    var box=$('#sheet'); if($('#viewPrint').hidden) return; box.innerHTML='';
+    var arr=guests.filter(function(g){ return ($('#pComp').checked || g.mode!=='companion') && (!$('#pNotIn').checked || !g.checkin); });
+    // แขกหลักแล้วตามด้วยผู้ติดตามของตัวเอง
+    var hosts=arr.filter(function(g){ return g.mode!=='companion'; }), out=[];
+    hosts.sort(function(a,b){ return a.name.localeCompare(b.name,'th'); }).forEach(function(h){ out.push(h); arr.forEach(function(c){ if(c.mode==='companion' && c.parent===h.id) out.push(c); }); });
+    arr.forEach(function(c){ if(out.indexOf(c)<0) out.push(c); });
+    if(!out.length){ box.innerHTML='<p class="msg">ยังไม่มีบัตรให้พิมพ์</p>'; return; }
+    out.forEach(function(g){
+      var t=document.createElement('div'); t.className='tk';
+      var meta = g.mode==='companion' ? 'ผู้ติดตามของ '+(g.parentName||nameOf(g.parent)||'-') : 'มาร่วมงาน '+(g.guests||1)+' ท่าน'+(g.food&&g.food!=='ทานได้ทุกอย่าง'?' · '+g.food:'');
+      t.innerHTML='<div class="tk-main"><div class="tk-top"><span>ADMIT · บัตรเข้างาน</span><span>P ♥ P</span></div>'+
+        avatarEl(g,'tk-av')+
+        '<div class="tk-info"><small>บัตรเชิญสำหรับ</small><div class="tk-name">'+esc(g.name)+'</div><div class="tk-meta">'+esc(meta)+'</div></div>'+
+        '<div class="tk-foot"><span>'+EVENT_LINE+'</span></div></div>'+
+        '<div class="tk-stub"><b>CHECK-IN</b><img src="'+qrImg(g.id,4)+'" alt="QR"><small>'+esc(g.id.slice(-6).toUpperCase())+'</small></div>';
+      box.appendChild(t);
+    });
+  }
+  ['pComp','pNotIn'].forEach(function(id){ $('#'+id).addEventListener('change',renderSheet); });
+  $('#printBtn').addEventListener('click',function(){ window.print(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(x){ x.setAttribute('aria-selected',String(x===b)); $('#'+x.dataset.view).hidden=x!==b; });
+      renderSheet();
+    });
+  });
+
+  /* ----- เริ่ม ----- */
+  function start(){
+    if(!ep){ msg('ยังไม่ได้ตั้ง RSVP_ENDPOINT ใน index.html'); return; }
+    if(!key){ askKey(); return; }
+    msg('กำลังโหลดรายชื่อ...');
+    load().then(function(ok){ if(ok && qp('id')) openGuest(qp('id')); })
+      .catch(function(){ msg('เชื่อมต่อระบบไม่ได้ ตรวจสอบอินเทอร์เน็ต หรือ deploy Code.gs เวอร์ชัน 4 แล้วหรือยัง'); });
+  }
+  key=qp('key'); if(key){ try{ localStorage.setItem(KEY_STORE,key); }catch(e){} history.replaceState(null,'',location.pathname+(qp('id')?'?id='+encodeURIComponent(qp('id')):'')); }
+  else { try{ key=localStorage.getItem(KEY_STORE)||''; }catch(e){} }
+  endpoint().then(function(e){ ep=e; start(); }, function(){ msg('อ่านค่า RSVP_ENDPOINT จาก index.html ไม่ได้'); });
+})();
+</script>
+</body>
+</html>
