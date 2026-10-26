@@ -310,3 +310,5 @@ html[data-theme="3"] .t3tk-card{background:none;box-shadow:none;filter:drop-shad
 .t3tk-tear{height:0;margin:0 18px;background:none;border-top:2px dashed rgba(43,42,39,.28)}
 .t3tk-tear::before,.t3tk-tear::after{display:none}
 .t3tk-qr{padding-top:16px}.t3tk-wait{padding-top:16px}
+.t3tk-qr figure{margin:0;flex:none;text-align:center}
+.t3tk-qr figcaption{font-family:var(--display);font-size:.62rem;letter-spacing:.12em;line-height:1.4;margin-top:2px;opacity:.45}
