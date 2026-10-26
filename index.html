@@ -448,6 +448,10 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .rsvp-who img{width:52px;height:52px;border-radius:50%;background:var(--blush);border:1.5px solid var(--red);object-fit:contain}
 .form .btn{width:100%;padding:12px}
 .status{font-size:.82rem;min-height:1.3em;text-align:center;margin-top:8px;color:var(--red)}
+/* หน้าผู้ติดตาม (หลังแต่งตัว): เหลือ บัตร → The Couple → ส่วนตอบรับ */
+body.comp-view #main > :is(#countdown,#savethedate,#program,#location,#details,#attire,#wishes,#story){display:none}
+body.comp-view .rsvp-lead{display:none}
+body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave:nth-of-type(n+3) + .tdeco-div{display:none}
 .comp-share{margin-top:16px;padding-top:14px;border-top:1.5px dashed rgba(194,59,59,.3);text-align:center}
 .comp-share p{font-size:.85rem;margin-bottom:10px}
 .thanks{text-align:center;padding:10px 0}
@@ -667,7 +671,7 @@ footer .script-h{font-size:2rem}
 
 <!-- ===== 2. AVATAR STAGE ===== -->
 <div id="zoomView" hidden role="dialog" aria-modal="true" aria-label="ดูตัวละครแบบขยาย">
-  <div class="zv-bar"><span>แตะรูปเพื่อซูม · ลากเพื่อเลื่อน</span><button type="button" id="zvClose" aria-label="ปิด">✕</button></div>
+  <div class="zv-bar"><span id="zvHint">แตะรูปเพื่อซูม · ลากเพื่อเลื่อน</span><button type="button" id="zvClose" aria-label="ปิด">✕</button></div>
   <div class="zv-box" id="zvBox"><img id="zvImg" alt="ตัวละครแบบขยาย"></div>
 </div>
 <div id="stage" role="dialog" aria-modal="true" aria-labelledby="stageTitle">
@@ -770,12 +774,13 @@ footer .script-h{font-size:2rem}
           <div class="t3tk-chips"><span class="t3tk-lang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> TH</span><span class="t3tk-chip">G</span><span class="t3tk-prem">PREMIERE</span></div>
           <div class="t3tk-when"><span><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="16" cy="19" r="9"/><path d="M12 9l4-5 4 5-4 3z"/></svg>19 ธ.ค. 2569</span><span><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="13" width="24" height="15" rx="2"/><path d="M4 13l2-7 22-2 1 6z"/><path d="M11 5.5l4 7M18 5l4 7"/></svg>11:00 น.</span></div>
         </div>
-        <div class="t3tk-stub" id="t3Stub" hidden>
+        <div class="t3tk-stub">
           <div class="t3tk-tear"></div>
-          <div class="t3tk-qr"><img id="t3QrImg" alt="QR บัตรเข้างาน"><div><b id="t3No"></b><small>ยื่น QR ที่จุดลงทะเบียน</small></div></div>
+          <div class="t3tk-qr" id="t3Stub" hidden><img id="t3QrImg" alt="QR บัตรเข้างาน"><div><b id="t3No"></b><small>ยื่น QR ที่จุดลงทะเบียน</small></div></div>
+          <div class="t3tk-wait" id="t3Wait"><span id="t3WaitTx">ตอบรับร่วมงานด้านล่าง เพื่อรับ QR บัตรเข้างาน</span><a class="btn btn--ghost" href="#rsvp" id="t3WaitBtn">ไปตอบรับ</a></div>
         </div>
       </div>
-      <div class="t3tk-acts"><button class="btn" type="button" id="t3Dl">บันทึกรูปตัวละคร</button><button class="btn btn--ghost" type="button" id="t3Redo">แต่งตัวใหม่</button></div>
+      <div class="t3tk-acts"><button class="btn" type="button" id="t3Shot">บันทึกภาพตั๋ว</button><button class="btn btn--ghost" type="button" id="t3Dl">บันทึกรูปตัวละคร</button><button class="btn btn--ghost" type="button" id="t3Redo">แต่งตัวใหม่</button></div>
     </div>
 
     <p class="hero-msg" style="margin-top:22px">-///-</p>
@@ -1540,12 +1545,78 @@ var STORE_KEY = 'wedding_guest_v1';
   $('#skipBtn').addEventListener('click',closeStage);
   $('#randBtn').addEventListener('click',randomize);
   $('#t3Dl').addEventListener('click',function(){ $('#dlAvatar').click(); });
+  /* ---------- บันทึกภาพตั๋วทั้งใบ (ธีม 3) — วาดใหม่บน canvas ให้หน้าตาเหมือนตั๋วบนจอ ---------- */
+  function ticketPng(){
+    var F={d:"'Fredoka','Mali',sans-serif", b:"'Mali','Fredoka',sans-serif"};
+    var need=['700 24px Fredoka','600 12px Fredoka','700 16px Mali','600 14px Mali'];
+    return Promise.all(need.map(function(f){ return document.fonts?document.fonts.load(f).catch(function(){}):0; })).then(function(){
+      var S=3, M=20, W=360, rec=loadRsvp(), on=!$('#t3Stub').hidden, name=guest?guest.name:'';
+      var INK='#2B2A27', RED='#B8312F', GOLD='#F2C46D', CARD='#FFFDF8', PAGE='#F3EADB', TEAL='#16968A';
+      var H=760+(COMP?22:0), c=document.createElement('canvas'); c.width=(W+M*2)*S; c.height=(H+M*2)*S;
+      var x=c.getContext('2d'); x.scale(S,S); x.fillStyle=PAGE; x.fillRect(0,0,W+M*2,H+M*2); x.translate(M,M);
+      function rr(X,Y,w,h,r){ if(typeof r==='number') r=[r,r,r,r]; x.beginPath(); x.moveTo(X+r[0],Y); x.lineTo(X+w-r[1],Y); x.arcTo(X+w,Y,X+w,Y+r[1],r[1]); x.lineTo(X+w,Y+h-r[2]); x.arcTo(X+w,Y+h,X+w-r[2],Y+h,r[2]); x.lineTo(X+r[3],Y+h); x.arcTo(X,Y+h,X,Y+h-r[3],r[3]); x.lineTo(X,Y+r[0]); x.arcTo(X,Y,X+r[0],Y,r[0]); x.closePath(); }
+      function sp(t,X,Y,gap,align){ var w=0,i; for(i=0;i<t.length;i++) w+=x.measureText(t[i]).width+gap; w-=gap; var cx=align==='center'?X-w/2:X; x.textAlign='left'; for(i=0;i<t.length;i++){ x.fillText(t[i],cx,Y); cx+=x.measureText(t[i]).width+gap; } return w; }
+      function icon(d,X,Y,sz,col,vb,fill){ x.save(); x.translate(X,Y); x.scale(sz/vb,sz/vb); x.strokeStyle=col; x.fillStyle=col; x.lineWidth=2.2; x.lineJoin='round'; x.lineCap='round'; d.forEach(function(p){ var P=new Path2D(p); if(fill) x.fill(P); else x.stroke(P); }); x.restore(); }
+      // การ์ด + เงา
+      x.save(); x.shadowColor='rgba(43,42,39,.18)'; x.shadowBlur=18; x.shadowOffsetY=8; rr(0,0,W,H,16); x.fillStyle=CARD; x.fill(); x.restore();
+      // แถบสเลท
+      x.save(); rr(0,0,W,18,[16,16,0,0]); x.clip(); x.fillStyle=CARD; x.fillRect(0,0,W,18); x.fillStyle=INK;
+      for(var k=-20;k<W+20;k+=26){ x.beginPath(); x.moveTo(k,18); x.lineTo(k+13,0); x.lineTo(k+26,0); x.lineTo(k+13,18); x.closePath(); x.fill(); } x.restore();
+      // ป้ายไฟ + ตัวละคร
+      var mx=16, my=34, mw=W-32, ww=mw-22, wh=Math.round(ww*1.02), mh=wh+22;
+      rr(mx,my,mw,mh,[150,150,14,14]); x.fillStyle=INK; x.fill();
+      x.save(); rr(mx+6.5,my+6.5,mw-13,mh-13,[146,146,11,11]); x.setLineDash([0,9.5]); x.lineCap='round'; x.lineWidth=5; x.strokeStyle=GOLD; x.stroke(); x.restore();
+      x.save(); rr(mx+11,my+11,ww,wh,[140,140,9,9]); x.clip();
+      var g=x.createLinearGradient(mx,my,mx+ww*.3,my+wh); g.addColorStop(0,'#FBE3C9'); g.addColorStop(1,GOLD); x.fillStyle=g; x.fillRect(mx,my,mw,mh);
+      var r2=x.createRadialGradient(mx+11+ww/2,my+11+wh*.28,10,mx+11+ww/2,my+11+wh*.28,ww*.6); r2.addColorStop(0,'rgba(255,248,226,.75)'); r2.addColorStop(1,'rgba(255,248,226,0)'); x.fillStyle=r2; x.fillRect(mx,my,mw,mh);
+      var av=document.querySelector('#t3tk .t3tk-win img');
+      if(av && av.naturalWidth){ var aw=ww*1.12, ah=aw*av.naturalHeight/av.naturalWidth; x.drawImage(av,mx+11+(ww-aw)/2,my+11+wh-ah,aw,ah); }
+      x.restore();
+      if(on){ x.font='700 13px '+F.b; var bt='ตอบรับแล้ว ✓', bw=x.measureText(bt).width+28; x.save(); x.shadowColor='rgba(0,0,0,.25)'; x.shadowBlur=8; x.shadowOffsetY=3; rr(W-28-bw,28,bw,26,13); x.fillStyle=TEAL; x.fill(); x.restore(); x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(bt,W-28-bw/2,41.5); }
+      x.textBaseline='alphabetic';
+      // ชื่อเรื่อง
+      var y=my+mh+40; x.fillStyle=RED; x.font='700 24px '+F.d; x.textAlign='center'; x.fillText('The Wedding Premiere',W/2,y);
+      y+=26; x.font='600 11px '+F.d; x.fillStyle=INK; var sw=sp('STARRING ',0,-99,2.4); x.font='700 16px '+F.b; var nw=x.measureText(name).width;
+      var sx=W/2-(sw+nw)/2; x.font='600 11px '+F.d; sp('STARRING ',sx,y,2.4); x.font='700 16px '+F.b; x.fillStyle=RED; x.textAlign='left'; x.fillText(name,sx+sw,y);
+      if(COMP){ y+=22; x.font='400 13px '+F.b; x.fillStyle=INK; x.textAlign='center'; x.fillText('มากับ '+(COMP.parentName||'แขก'),W/2,y); }
+      // NOW SHOWING AT
+      var bx=16, by=y+20, bw2=W-32, bh=128; rr(bx,by,bw2,bh,12); x.lineWidth=2; x.strokeStyle='rgba(43,42,39,.22)'; x.stroke();
+      x.font='600 10.5px '+F.d; var lw=sp('NOW SHOWING AT',0,-99,2.1); x.fillStyle=CARD; x.fillRect(bx+12,by-3,lw+12,6); x.fillStyle=RED; sp('NOW SHOWING AT',bx+18,by+4,2.1);
+      x.textAlign='left'; x.font='700 23px '+F.d; x.fillStyle=RED; x.fillText('The Barnery',bx+14,by+36);
+      x.font='600 11.5px '+F.d; x.fillStyle='rgba(43,42,39,.7)'; sp('GARDEN HALL · SARABURI',bx+14,by+54,.9);
+      var cy=by+80; x.fillStyle=INK; icon(['M4 9v6h4l5 4V5L8 9z'],bx+14,cy-12,15,INK,24,true); icon(['M16 8.5a4.5 4.5 0 0 1 0 7'],bx+14,cy-12,15,INK,24,false);
+      x.font='600 13.5px '+F.d; x.fillText('TH',bx+33,cy); var gx=bx+60; rr(gx,cy-13,18,17,4); x.lineWidth=1.5; x.strokeStyle=INK; x.stroke(); x.font='600 11px '+F.d; x.textAlign='center'; x.fillText('G',gx+9,cy-.5);
+      x.font='600 10px '+F.d; var pw=sp('PREMIERE',0,-99,1.4)+14; rr(gx+28,cy-14,pw,19,4); x.fillStyle=RED; x.fill(); x.fillStyle='#fff'; sp('PREMIERE',gx+35,cy-1,1.4);
+      var wy=by+110; x.textAlign='left'; x.font='700 14.5px '+F.d; x.fillStyle=INK;
+      icon(['M25 19a9 9 0 1 1-18 0 9 9 0 0 1 18 0z','M12 9l4-5 4 5-4 3z'],bx+14,wy-15,19,RED,32,false); x.fillText('19 ธ.ค. 2569',bx+40,wy);
+      var tx=bx+40+x.measureText('19 ธ.ค. 2569').width+18;
+      icon(['M6 13h20a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V15a2 2 0 0 1 2-2z','M4 13l2-7 22-2 1 6z','M11 5.5l4 7M18 5l4 7'],tx,wy-15,19,RED,32,false); x.fillText('11:00 น.',tx+26,wy);
+      // รอยฉีก + รอยเว้า
+      var ty=by+bh+18; x.fillStyle=PAGE; for(var t=7;t<W;t+=14){ x.beginPath(); x.arc(t,ty-2,6,0,Math.PI*2); x.fill(); }
+      x.beginPath(); x.arc(0,ty+7,11,0,Math.PI*2); x.fill(); x.beginPath(); x.arc(W,ty+7,11,0,Math.PI*2); x.fill();
+      // ต้นขั้ว
+      var qy=ty+22;
+      if(on){ var qi=$('#t3QrImg'); x.imageSmoothingEnabled=false; x.fillStyle='#fff'; x.fillRect(18,qy,104,104); if(qi.naturalWidth) x.drawImage(qi,18,qy,104,104); x.imageSmoothingEnabled=true;
+        x.fillStyle=INK; x.font='600 15px '+F.d; sp($('#t3No').textContent,136,qy+46,2.4); x.font='400 14px '+F.b; x.textAlign='left'; x.fillText('ยื่น QR ที่จุดลงทะเบียน',136,qy+72); }
+      else { x.fillStyle=INK; x.font='400 14px '+F.b; x.textAlign='center'; x.fillText($('#t3WaitTx').textContent,W/2,qy+44); }
+      return c.toDataURL('image/png');
+    });
+  }
+  $('#t3Shot').addEventListener('click',function(){
+    var b=this, lbl=b.textContent; b.disabled=true; b.textContent='กำลังเตรียมภาพ...';
+    ticketPng().then(function(u){
+      var l=document.createElement('a'); l.href=u; l.download='wedding-ticket.png'; document.body.appendChild(l); l.click(); setTimeout(function(){ l.remove(); },1000);
+      // เบราว์เซอร์ในแอป (LINE/FB) มักดาวน์โหลดไม่ได้ → เปิดภาพให้กดค้างบันทึกเองด้วย
+      $('#zvImg').src=u; $('#zvHint').textContent='กดค้างที่รูปเพื่อบันทึก (ถ้ายังไม่ดาวน์โหลดอัตโนมัติ)'; $('#zoomView').hidden=false;
+    }).catch(function(){ toast('สร้างภาพตั๋วไม่สำเร็จ ลองอีกครั้งนะ'); })
+    .then(function(){ b.disabled=false; b.textContent=lbl; });
+  });
   $('#t3Redo').addEventListener('click',function(){ $('#redoBtn').click(); });
 
   /* ---------- พรีวิวขยาย (ปุ่มแว่นขยายมุมรูป) ---------- */
   (function(){
     var zv=$('#zoomView'), box=$('#zvBox'), img=$('#zvImg'), btn=$('#zoomBtn');
-    function close(){ zv.hidden=true; box.classList.remove('z2'); img.removeAttribute('src'); }
+    function close(){ zv.hidden=true; box.classList.remove('z2'); img.removeAttribute('src'); $('#zvHint').textContent='แตะรูปเพื่อซูม · ลากเพื่อเลื่อน'; }
     btn.addEventListener('click',function(){
       btn.disabled=true;
       compose(1600).then(function(u){ if(!u) return; img.src=u; zv.hidden=false; box.scrollTop=box.scrollLeft=0; })
@@ -1797,9 +1868,12 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------- QR บัตรเข้างาน ---------- */
   function checkinUrl(id){ return new URL(CONFIG.CHECKIN_PAGE+'?id='+encodeURIComponent(id),location.href).href; }
   function updatePassQr(){
+    document.body.classList.toggle('comp-view', !!(COMP && guest));   // ผู้ติดตามแต่งตัวแล้ว → เหลือแค่บัตร / The Couple / ส่วนตอบรับ
     var box=$('#passQr'), rec=loadRsvp();
     var on = !!guest && ((COMP && COMP.sent) || (!COMP && rec && rec.mode==='attend'));
-    box.hidden=!on; $('#t3Stub').hidden=!on; $('#t3Badge').hidden=!on;
+    box.hidden=!on; $('#t3Stub').hidden=!on; $('#t3Badge').hidden=!on; $('#t3Wait').hidden=on;
+    $('#t3WaitTx').textContent = COMP ? 'QR บัตรเข้างานจะขึ้นเมื่อส่งบัตรผู้ติดตามแล้ว' : 'ตอบรับร่วมงานด้านล่าง เพื่อรับ QR บัตรเข้างาน';
+    $('#t3WaitBtn').hidden=!!COMP;
     var tw=$('#t3With'); tw.hidden=!COMP; if(COMP) tw.textContent='มากับ '+(COMP.parentName||'แขก'); if(!on || typeof qrcode!=='function') return;
     var q=qrcode(0,'M'); q.addData(checkinUrl(rsvpId())); q.make();
     $('#passQrImg').src=q.createDataURL(6,2);
