@@ -6,7 +6,7 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
-const VERSION          = 4;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
+const VERSION          = 5;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
 const SAVE_AVATAR      = true;             // true = เก็บรูปตัวละครของแขกลง Google Drive และโชว์ในชีต
@@ -88,6 +88,8 @@ function doPost(e) {
     sh.getRange(r, c['แสดงบนเว็บ']).setDataValidation(statusRule_());
     if (imgFormula) sh.setRowHeight(r, 110);
     clearCache_();
+    // ยังไม่มีชีตสรุป (ไม่ได้รัน setup) → สร้างให้เองครั้งแรก
+    try { if (!sh.getParent().getSheetByName(SUMMARY_NAME)) buildSummary_(sh, c); } catch (err) { console.warn('summary: ' + err); }
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   } finally {

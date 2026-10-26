@@ -293,3 +293,8 @@ html[data-theme="3"] .t3tk:not([hidden]){display:block;max-width:360px;margin:22
 .t3tk-qr small{display:block;font-size:.85rem;line-height:1.7;margin-top:2px}
 .t3tk-acts{display:flex;gap:10px;justify-content:center;margin-top:14px}
 .t3tk-acts .btn{font-size:.85rem;padding:8px 16px}
+.t3tk-qr[hidden],.t3tk-wait[hidden]{display:none}
+.t3tk-wait{padding:12px 18px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.88rem;line-height:1.6}
+.t3tk-wait .btn{font-size:.82rem;padding:6px 18px}
+.t3tk-wait .btn[hidden]{display:none}
+.t3tk-acts{flex-wrap:wrap}
