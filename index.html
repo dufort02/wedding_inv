@@ -448,6 +448,10 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .rsvp-who img{width:52px;height:52px;border-radius:50%;background:var(--blush);border:1.5px solid var(--red);object-fit:contain}
 .form .btn{width:100%;padding:12px}
 .status{font-size:.82rem;min-height:1.3em;text-align:center;margin-top:8px;color:var(--red)}
+/* หน้าผู้ติดตาม (หลังแต่งตัว): เหลือ บัตร → The Couple → ส่วนตอบรับ */
+body.comp-view #main > :is(#countdown,#savethedate,#program,#location,#details,#attire,#wishes,#story){display:none}
+body.comp-view .rsvp-lead{display:none}
+body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave:nth-of-type(n+3) + .tdeco-div{display:none}
 .comp-share{margin-top:16px;padding-top:14px;border-top:1.5px dashed rgba(194,59,59,.3);text-align:center}
 .comp-share p{font-size:.85rem;margin-bottom:10px}
 .thanks{text-align:center;padding:10px 0}
@@ -1864,6 +1868,7 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------- QR บัตรเข้างาน ---------- */
   function checkinUrl(id){ return new URL(CONFIG.CHECKIN_PAGE+'?id='+encodeURIComponent(id),location.href).href; }
   function updatePassQr(){
+    document.body.classList.toggle('comp-view', !!(COMP && guest));   // ผู้ติดตามแต่งตัวแล้ว → เหลือแค่บัตร / The Couple / ส่วนตอบรับ
     var box=$('#passQr'), rec=loadRsvp();
     var on = !!guest && ((COMP && COMP.sent) || (!COMP && rec && rec.mode==='attend'));
     box.hidden=!on; $('#t3Stub').hidden=!on; $('#t3Badge').hidden=!on; $('#t3Wait').hidden=on;
