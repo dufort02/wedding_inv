@@ -1917,8 +1917,20 @@ var STORE_KEY = 'wedding_guest_v1';
       avatarPng:''
     };
   }
+  // รูปที่ส่งเข้าชีต: วางบนพื้นครีม — ภาพตัวอย่างของ Google Drive แสดงส่วนโปร่งใสเป็นสีดำ (ในชีต / การ์ดอวยพร / หน้าเช็กอิน)
+  function onCream(u){
+    if(!u || u.indexOf('data:image')!==0) return Promise.resolve(u);
+    return new Promise(function(res){
+      var im=new Image(); im.onload=function(){
+        var c=document.createElement('canvas'); c.width=im.naturalWidth; c.height=im.naturalHeight; var x=c.getContext('2d');
+        var g=x.createRadialGradient(c.width/2,c.height*.4,0,c.width/2,c.height*.4,c.width*.75); g.addColorStop(0,'#FFFDF8'); g.addColorStop(1,'#F3E3D3');
+        x.fillStyle=g; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0);
+        try{ res(c.toDataURL('image/png')); }catch(e){ res(u); }
+      }; im.onerror=function(){ res(u); }; im.src=u;
+    });
+  }
   function sendRsvp(data,onPrepared){
-    var prep = (guest && CONFIG.RSVP_ENDPOINT) ? hiResAvatar(AVATAR_UPLOAD) : Promise.resolve('');
+    var prep = (guest && CONFIG.RSVP_ENDPOINT) ? hiResAvatar(AVATAR_UPLOAD).then(onCream) : Promise.resolve('');
     return prep.then(function(png){
       if(png && png.indexOf(',')>0) data.avatarPng=png.split(',')[1];
       if(onPrepared) onPrepared();
