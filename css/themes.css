@@ -298,3 +298,18 @@ html[data-theme="3"] .t3tk:not([hidden]){display:block;max-width:360px;margin:22
 .t3tk-wait .btn{font-size:.82rem;padding:6px 18px}
 .t3tk-wait .btn[hidden]{display:none}
 .t3tk-acts{flex-wrap:wrap}
+/* รอยเว้า = เจาะทะลุจริง (mask) ให้เห็นพื้นหลังลายกระดาษ ไม่ใช่วงกลมทับสี · เงาย้ายไปที่ filter */
+html[data-theme="3"] .t3tk-card{background:none;box-shadow:none;filter:drop-shadow(0 8px 12px rgba(43,42,39,.16))}
+.t3tk-top,.t3tk-stub{background:var(--white)}
+.t3tk-top{border-radius:16px 16px 0 0;padding-bottom:16px;
+  -webkit-mask:radial-gradient(circle 11px at 0 100%,#0000 96%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 96%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 11px at 0 100%,#0000 96%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 100%,#0000 96%,#000) right/51% 100% no-repeat}
+.t3tk-stub{margin-top:0;border-radius:0 0 16px 16px;
+  -webkit-mask:radial-gradient(circle 11px at 0 0,#0000 96%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 96%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 11px at 0 0,#0000 96%,#000) left/51% 100% no-repeat,radial-gradient(circle 11px at 100% 0,#0000 96%,#000) right/51% 100% no-repeat}
+.t3tk-tear{height:0;margin:0 18px;background:none;border-top:2px dashed rgba(43,42,39,.28)}
+.t3tk-tear::before,.t3tk-tear::after{display:none}
+.t3tk-qr{padding-top:16px}.t3tk-wait{padding-top:16px}
+.t3tk-qr figure{margin:0;flex:none;text-align:center}
+.t3tk-qr figcaption{font-family:var(--display);font-size:.62rem;letter-spacing:.12em;line-height:1.4;margin-top:2px;opacity:.45}
+.t3tk-who{display:block;font-size:.78rem;line-height:1.6;opacity:.62;margin-top:2px}
