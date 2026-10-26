@@ -114,7 +114,7 @@
       ['#story','t3-clapper','d-tr'],
       ['#rsvp','t3-ticket','d-tl d-wide'],
       ['#wishes','t3-popcorn','d-tr'],
-      ['.stage-top','t3-clapper','d-sm'],
+
       ['.wishes-top .ttl','t3-popcorn','d-sm']
     ]
   };
