@@ -760,7 +760,7 @@ footer .script-h{font-size:2rem}
 
     <!-- ธีม 3: บัตรเข้างานแบบตั๋วหนัง (แทน #pass + #passQr เฉพาะธีม 3) -->
     <div class="t3tk" id="t3tk" hidden>
-      <div class="t3tk-card">
+      <div class="t3tk-card"><div class="t3tk-top">
         <div class="t3tk-slate"></div>
         <div class="t3tk-stage">
           <div class="t3tk-marq"><div class="t3tk-bulbs"></div><div class="t3tk-win"><div class="t3tk-spot"></div><img class="js-av" alt="ตัวละครของคุณ"></div></div>
@@ -773,6 +773,7 @@ footer .script-h{font-size:2rem}
           <div class="t3tk-venue">The Barnery</div><div class="t3tk-hall">GARDEN HALL · SARABURI</div>
           <div class="t3tk-chips"><span class="t3tk-lang"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> TH</span><span class="t3tk-chip">G</span><span class="t3tk-prem">PREMIERE</span></div>
           <div class="t3tk-when"><span><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="16" cy="19" r="9"/><path d="M12 9l4-5 4 5-4 3z"/></svg>19 ธ.ค. 2569</span><span><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="13" width="24" height="15" rx="2"/><path d="M4 13l2-7 22-2 1 6z"/><path d="M11 5.5l4 7M18 5l4 7"/></svg>11:00 น.</span></div>
+        </div>
         </div>
         <div class="t3tk-stub">
           <div class="t3tk-tear"></div>
@@ -1592,7 +1593,7 @@ var STORE_KEY = 'wedding_guest_v1';
       var tx=bx+40+x.measureText('19 ธ.ค. 2569').width+18;
       icon(['M6 13h20a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V15a2 2 0 0 1 2-2z','M4 13l2-7 22-2 1 6z','M11 5.5l4 7M18 5l4 7'],tx,wy-15,19,RED,32,false); x.fillText('11:00 น.',tx+26,wy);
       // รอยฉีก + รอยเว้า
-      var ty=by+bh+18; x.fillStyle=PAGE; for(var t=7;t<W;t+=14){ x.beginPath(); x.arc(t,ty-2,6,0,Math.PI*2); x.fill(); }
+      var ty=by+bh+18; x.save(); x.setLineDash([7,5]); x.lineWidth=2; x.strokeStyle='rgba(43,42,39,.28)'; x.beginPath(); x.moveTo(18,ty+7); x.lineTo(W-18,ty+7); x.stroke(); x.restore(); x.fillStyle=PAGE;
       x.beginPath(); x.arc(0,ty+7,11,0,Math.PI*2); x.fill(); x.beginPath(); x.arc(W,ty+7,11,0,Math.PI*2); x.fill();
       // ต้นขั้ว
       var qy=ty+22;
