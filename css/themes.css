@@ -314,3 +314,5 @@ html[data-theme="3"] .t3tk-card{background:none;box-shadow:none;filter:drop-shad
 .t3tk-qr figcaption{font-family:var(--display);font-size:.62rem;letter-spacing:.12em;line-height:1.4;margin-top:2px;opacity:.45}
 .t3tk-who{display:block;font-size:.78rem;line-height:1.6;opacity:.62;margin-top:2px}
 html[data-theme="3"] .rm-shield rect{fill:var(--t3-board)}
+html[data-theme="3"] .rm-road--hwy{stroke:#E8A93C}
+html[data-theme="3"] .route-map .rm-shield--hwy rect{fill:var(--ink)}html[data-theme="3"] .route-map .rm-shield--hwy text{fill:var(--t3-gold)}
