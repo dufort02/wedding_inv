@@ -313,3 +313,4 @@ html[data-theme="3"] .t3tk-card{background:none;box-shadow:none;filter:drop-shad
 .t3tk-qr figure{margin:0;flex:none;text-align:center}
 .t3tk-qr figcaption{font-family:var(--display);font-size:.62rem;letter-spacing:.12em;line-height:1.4;margin-top:2px;opacity:.45}
 .t3tk-who{display:block;font-size:.78rem;line-height:1.6;opacity:.62;margin-top:2px}
+html[data-theme="3"] .rm-shield rect{fill:var(--t3-board)}
