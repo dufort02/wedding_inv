@@ -421,6 +421,10 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 
 .swatches{display:flex;flex-wrap:wrap;justify-content:center;gap:14px 16px;margin-top:16px}
 .sw{width:74px;font-size:.72rem;line-height:1.3}
+.swatches--dots{gap:10px;flex-wrap:nowrap}
+.swatches--dots i{display:block;flex:0 1 38px;aspect-ratio:1;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
+.sw-name{font-family:var(--script);color:var(--red);font-size:1.7rem;line-height:1.2;margin-top:12px}
+.sw-or{font-size:.75rem;opacity:.55;letter-spacing:.04em}
 .sw i{display:block;width:44px;height:44px;border-radius:50%;margin:0 auto 6px;border:2px solid var(--white);box-shadow:0 0 0 1.8px var(--red)}
 
 .story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px;margin-top:22px;text-align:left;position:relative}
@@ -936,14 +940,17 @@ footer .script-h{font-size:2rem}
     <h2 class="script-h">Attire Guide</h2>
     <div class="sub-h">การแต่งกาย</div>
     <p style="margin-top:10px">ขอเชิญแต่งกายโทนสีสดใสสไตล์สวนดอกไม้ งดสีนู้ดและสีพื้นเรียบ</p>
-    <div class="swatches">
-      <div class="sw"><i style="background:#6FA8DC"></i>ฟ้าไฮเดรนเยีย</div>
-      <div class="sw"><i style="background:#E91E8C"></i>ชมพูบานเย็น</div>
-      <div class="sw"><i style="background:#FF7F3F"></i>ส้มพิกุล</div>
-      <div class="sw"><i style="background:#FFD166"></i>เหลืองทอง</div>
-      <div class="sw"><i style="background:#FF9EC7"></i>พีชอ่อน</div>
-      <div class="sw"><i style="background:#8E5FD9"></i>ม่วงลาเวนเดอร์</div>
+    <div class="swatches swatches--dots">
+      <i style="background:#D2B896" title="เบจน้ำตาล"></i>
+      <i style="background:#F8B99A" title="พีชพาสเทล"></i>
+      <i style="background:#F8E3A0" title="เหลืองครีม"></i>
+      <i style="background:#B5CDA3" title="เขียวเสจ"></i>
+      <i style="background:#A9C6EC" title="ฟ้าอ่อน"></i>
+      <i style="background:#F9CFDD" title="ชมพูอ่อน"></i>
+      <i style="background:#EE9DBB" title="ชมพูกุหลาบ"></i>
     </div>
+    <div class="sw-name">Colorful Pastels</div>
+    <div class="sw-or">or Any Colors You Love</div>
   </section>
 
   <svg class="wave"><use href="#wave"/></svg>
@@ -1161,7 +1168,7 @@ var PALETTES = {
          ['#c8975a','บลอนด์น้ำผึ้ง'],['#e0c07a','บลอนด์'],['#6e2430','แดงไวน์'],['#a0472a','ทองแดง'],['#a9a9ad','เทาเงิน'],['#e8a6b8','ชมพูพาสเทล']],
   eyes: [['#1e1716','ดำ'],['#7a4b2a','น้ำตาล'],['#7d8791','เทา'],['#5b8db8','ฟ้า'],['#5e8a5a','เขียว']],
   // เสื้อ: สีเดิม + สีธีมงานจาก Attire Guide
-  shirt: PALETTE.concat([['#6FA8DC','ฟ้าไฮเดรนเยีย'],['#E91E8C','ชมพูบานเย็น'],['#FF7F3F','ส้มพิกุล'],['#FFD166','เหลืองทอง'],['#FF9EC7','พีชอ่อน'],['#8E5FD9','ม่วงลาเวนเดอร์']])
+  shirt: PALETTE.concat([['#D2B896','เบจน้ำตาล'],['#F8B99A','พีชพาสเทล'],['#F8E3A0','เหลืองครีม'],['#B5CDA3','เขียวเสจ'],['#A9C6EC','ฟ้าอ่อน'],['#F9CFDD','ชมพูอ่อน'],['#EE9DBB','ชมพูกุหลาบ']])
 };
 /* เรียงไล่สีอัตโนมัติ: แดง→ส้ม→เหลือง→เขียว→ฟ้า→ม่วง→ชมพู แล้วตามด้วย ขาว→เทา→น้ำตาลเข้ม
    (สีผม/สีตาเรียงเองด้วยมือ ไม่ต้องเรียงอัตโนมัติ) */
