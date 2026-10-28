@@ -18,10 +18,10 @@
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <!-- ภาพตอนแชร์ลิงก์ (LINE/Facebook) ต้องเป็น URL เต็ม — ถ้าย้ายโดเมนให้แก้ตรงนี้ -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://palida-pachaya-wd.netlify.app/">
+<meta property="og:url" content="https://palida-pachaya-wd.pages.dev/">
 <meta property="og:title" content="PALIDA & PACHAYA — We're getting married">
 <meta property="og:description" content="เสาร์ที่ 19 ธันวาคม 2569 — ขอเชิญร่วมงานแต่งงานของเรา">
-<meta property="og:image" content="https://palida-pachaya-wd.netlify.app/images/og-image.jpg">
+<meta property="og:image" content="https://palida-pachaya-wd.pages.dev/images/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -1372,7 +1372,8 @@ var STORE_KEY = 'wedding_guest_v1';
     function probe(){
       if(n>L.count+30) return;
       fetch(srcFor(L.key,n),{method:'HEAD',cache:'no-cache'}).then(function(r){
-        if(!r.ok) return;
+        // ต้องเป็นไฟล์รูปจริง — บางที่ฝากเว็บ (Cloudflare Pages) ตอบหน้า index.html พร้อมสถานะ 200 แทน 404
+        if(!r.ok || !/^image\//.test(r.headers.get('content-type')||'')) return;
         L.count=n; n++;
         if(current===L && stage.classList.contains('show')) buildGrid();
         probe();
