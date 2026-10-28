@@ -1,0 +1,8 @@
+# Cloudflare (Workers static assets): ไฟล์ที่ไม่ต้องอัปขึ้นเว็บ
+.git
+.github
+.assetsignore
+scripts
+Code.gs
+README.md
+*.md
