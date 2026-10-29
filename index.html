@@ -626,7 +626,7 @@ footer .script-h{font-size:2rem}
   <img class="logo cover-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
   <div class="cover-date">เสาร์ที่ 19 ธันวาคม 2569</div>
   <button class="btn" id="openBtn">เปิดคำเชิญ</button>
-  <p class="cover-note">ก่อนเข้างาน มาแต่งตัวละครของคุณเองกันก่อนนะ</p>
+  <p class="cover-note">ก่อนเข้างาน มาเริ่มแต่งตัวละครของคุณ</p>
   <a class="wish-link" href="wishes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7.5l9 6.5 9-6.5"/></svg>อ่านคำอวยพรทั้งหมด</a>
 </div>
 
@@ -709,7 +709,7 @@ footer .script-h{font-size:2rem}
           </div>
           <div class="name-row">
             <label for="guestName"><span class="tn">ชื่อที่จะแสดงบนบัตร</span><span class="t3">CAST · ชื่อบนบัตร</span></label>
-            <input id="guestName" type="text" maxlength="40" autocomplete="name" placeholder="เช่น พี่แจ๋ว / Edward">
+            <input id="guestName" type="text" maxlength="40" autocomplete="name" placeholder=". . . .">
             <div class="name-err" id="nameErr" aria-live="polite"></div>
             <div class="name-style" id="nameStyle" hidden>
               <span class="lbl">ชื่อบนรูปที่บันทึก</span>
@@ -744,7 +744,7 @@ footer .script-h{font-size:2rem}
       <h1 class="cover-title">WE'RE<br>GETTING<br>MARRIED!</h1>
       <img class="logo hero-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
     </div>
-    <div class="hero-date">เสาร์ที่ 19 ธันวาคม 2569</div>
+    <div class="hero-date"></div>
 
     <div class="pass" id="pass">
       <div class="idc-head" aria-hidden="true"><svg viewBox="0 0 400 88"><use href="#idc-deco"/></svg><b>ID CARD</b></div>
@@ -891,18 +891,8 @@ footer .script-h{font-size:2rem}
     <div class="venue-addr">Nong Saeng District, Saraburi</div>
     <div class="btn-row">
       <a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=14.502252877297297,100.8050379601451">นำทางด้วย Google Maps</a>
-      <a class="btn btn--ghost" target="_blank" rel="noopener" href="https://www.facebook.com/">แฟนเพจ</a>
     </div>
-  </section>
-
-  <svg class="wave"><use href="#wave"/></svg>
-
-  <section id="details" class="details">
-    <h2 class="script-h" style="text-align:center">Wedding Details</h2>
-    <div class="sub-h" style="text-align:center">ข้อมูลสำหรับแขก</div>
-    <h3>ที่พัก</h3>
-    <p>สำรองห้องพักไว้ที่ [ชื่อโรงแรม/รีสอร์ท] ใกล้สถานที่จัดงาน แจ้งชื่องาน "PALIDA &amp; PACHAYA Wedding" ตอนจองเพื่อรับส่วนลดพิเศษ</p>
-    <h3>การเดินทาง</h3>
+        <h3>การเดินทาง</h3>
     <p>สถานที่จัดงานอยู่ห่างจากตัวเมืองประมาณ 30 นาที มีรถรับส่งฟรีสำหรับแขกที่พักโรงแรมที่แนะนำ และมีที่จอดรถภายในบริเวณงาน</p>
     <figure class="route-map" aria-label="แผนที่การเดินทางโดยประมาณ">
       <svg viewBox="0 0 360 306" role="img">
@@ -935,10 +925,12 @@ footer .script-h{font-size:2rem}
     </figure>
   </section>
 
+  <svg class="wave"><use href="#wave"/></svg>
+
+
   <section id="attire">
     <h2 class="script-h">Attire Guide</h2>
-    <div class="sub-h">การแต่งกาย</div>
-    <p style="margin-top:10px">ขอเชิญแต่งกายโทนสีสดใสสไตล์สวนดอกไม้ งดสีนู้ดและสีพื้นเรียบ</p>
+    <p style="margin-top:10px">ขอเชิญแต่งกายโทนสีสดใสพาสเทล</p>
     <div class="swatches swatches--dots">
       <i style="background:#D2B896" title="เบจน้ำตาล"></i>
       <i style="background:#F8B99A" title="พีชพาสเทล"></i>
@@ -957,7 +949,7 @@ footer .script-h{font-size:2rem}
   <section id="rsvp">
     <div class="rsvp-big" aria-hidden="true">RS<br>VP</div>
     <h2 class="sr">ตอบรับคำเชิญ</h2>
-    <p class="rsvp-lead">ขอบคุณที่ร่วมยินดีกับเรา เลือกได้เลยว่าจะร่วมยินดีแบบไหน<br><small>รบกวนตอบรับภายใน [วันที่] เพื่อให้เราเตรียมงานได้ครบทุกท่าน</small></p>
+    <p class="rsvp-lead">ขอบคุณที่ร่วมยินดี เลือกตามลิ้งก์ที่สะดวกได้เลย<br><small>รบกวนตอบรับภายใน 12 ธ.ค. เพื่อให้เราเตรียมงานได้ครบทุกท่าน</small></p>
     <div id="rsvpBox">
       <form class="form" id="rsvpForm" novalidate>
         <fieldset class="modes">
@@ -1051,7 +1043,7 @@ footer .script-h{font-size:2rem}
     <h2 class="script-h">Wishes</h2>
     <div class="sub-h">สมุดอวยพรจากทุกคน</div>
     <div class="wall" id="wall" aria-live="polite"></div>
-    <p class="wall-empty" id="wallEmpty" hidden>ยังไม่มีคำอวยพร มาเป็นคนแรกที่เขียนการ์ดให้เรากันนะ</p>
+    <p class="wall-empty" id="wallEmpty" hidden>ยังไม่มีคำอวยพร เขียนการ์ดอวยพรได้ที่แบบตอบรับนะ</p>
     <div class="btn-row" style="margin-top:6px">
       <a class="btn" href="wishes.html" id="wallMore" hidden>ดูคำอวยพรทั้งหมด</a>
       <a class="btn btn--ghost" href="#rsvp" id="wallWrite">เขียนคำอวยพร</a>
@@ -1083,7 +1075,6 @@ footer .script-h{font-size:2rem}
 
 <footer>
   <svg class="wave"><use href="#wave"/></svg>
-  <p style="margin:14px 0 4px">ขอบคุณที่เป็นส่วนหนึ่งของวันสำคัญที่สุดวันหนึ่งในชีวิตเรา</p>
   <img class="logo footer-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya" loading="lazy">
 </footer>
 
