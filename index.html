@@ -1136,6 +1136,8 @@ var Z_ORDER = ['back_hair','shi_back','body','eyes','eyes_wink','mouth','face_ac
 var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_hair', removable:true};
 /* ขยิบตา: ตาข้างหนึ่งใช้ "ตาหลับ" จากไฟล์ตาเบอร์ในรายการนี้ (ตัดครึ่งภาพ) อีกข้างเป็นตาที่เลือกไว้
    เพิ่มแบบตาหลับ = วาดไฟล์ตาหลับสองข้าง eyes_N.png แล้วเติมเลข N · ปุ่มสุ่มขยิบ 1 ใน 10 (WINK_RANDOM) */
+/* เสื้อบางตัวต้องใช้ตัว (body) แบบอื่น — {เลขเสื้อ: เลข body}  เลือกเสื้อนั้นแล้วสลับ body_N.png ให้เอง เปลี่ยนเสื้อตัวอื่นกลับเป็น body_1 */
+var BODY_FOR_SHIRT = {24:2};
 var WINK_EYES = [5,8], WINK_RANDOM = 0.1;
 var SPECIAL_HAIR_COLOR = ['#FF52C6','✨ ชมพูชุดพิเศษ'];   // สีพื้นผมชุดพิเศษ — โผล่ท้ายพาเลตผมด้านหลังเมื่อปลดล็อกแล้ว
 var SPECIAL_REPLACES = ['hair','eyes','mouth'];   // ผมด้านหลัง: เลือกได้ว่าใช้ของชุดพิเศษ (sel.shiBack) หรือผมหลังปกติ
@@ -1240,7 +1242,7 @@ var STORE_KEY = 'wedding_guest_v1';
     if(k==='uni_bottom') return CONFIG.AVATAR_BASE+'shirt_'+sel.shirt+'_bottom.png';
     var L=null; LAYERS.forEach(function(x){ if(x.key===k) L=x; });
     if(L && L.sides && L.sides.indexOf(n)>=0) return CONFIG.AVATAR_BASE+k+'_'+n+'_'+(sel['side_'+k]==='R'?'R':'L')+'.png';
-    return CONFIG.AVATAR_BASE + (k==='body' ? 'body_1.png' : k+'_'+n+'.png');
+    return CONFIG.AVATAR_BASE + (k==='body' ? 'body_'+n+'.png' : k+'_'+n+'.png');
   }
   // รูปที่แสดงบนหน้าจอใช้สำเนาย่อ images/web/ (2048px) — ไฟล์ต้นฉบับ 5000px กินหน่วยความจำ ~100MB ต่อชั้น ทำให้มือถือ/เบราว์เซอร์ในแอปเด้ง
   // อัปรูปใหม่แล้วต้องรัน scripts/make_web_images.py แล้ว commit images/web/ ด้วย
@@ -1300,7 +1302,7 @@ var STORE_KEY = 'wedding_guest_v1';
   var warnedTint=false;
   function renderLayer(k){
     var im=layerEls[k]; if(!im) return;
-    var n = k==='body' ? 1 : (k==='shi_front'||k==='shi_back') ? sel.special : sel[k];
+    var n = k==='body' ? (BODY_FOR_SHIRT[sel.shirt]||1) : (k==='shi_front'||k==='shi_back') ? sel.special : sel[k];
     var uni=(k==='uni_belt'||k==='uni_bottom'), U=UNIFORMS[sel.shirt]; if(uni) n = U && (k==='uni_bottom'||U.belt) ? 1 : 0;
     if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ตา/ปาก
     if(k==='shi_back' && !sel.shiBack) n=0;
@@ -1406,7 +1408,7 @@ var STORE_KEY = 'wedding_guest_v1';
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
-        if(L.key==='shirt'){ renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
+        if(L.key==='shirt'){ renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(L.key==='eyes') renderLayer('eyes_wink');
         if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
