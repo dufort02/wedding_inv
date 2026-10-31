@@ -2,6 +2,8 @@
    ปิดหน้านี้ตอนเปิดเว็บจริง: เปลี่ยน GATE_ON เป็น false
    เปลี่ยนรหัส: ใส่ค่า SHA-256 ของรหัสใหม่ใน GATE_HASH (ดูวิธีใน README หัวข้อ "หน้ากำลังจัดเตรียม")
    ส่งลิงก์ให้คนทดสอบเข้าได้เลย: ต่อท้ายลิงก์ด้วย ?gate=รหัส
+   ช่องใส่รหัสซ่อนไว้: แตะโลโก้ 5 ครั้งติดกัน ช่องจะโผล่ขึ้นมา
+   หน้าทดสอบตัวละคร (?avatar) ไม่ถูกปิด
    หมายเหตุ: เป็นการซ่อนหน้าเว็บแบบง่าย ไม่ใช่ระบบความปลอดภัยจริง (ไฟล์ยังเปิดตรงได้ถ้ารู้ที่อยู่) */
 (function(){
   var GATE_ON = true;
@@ -12,6 +14,8 @@
   function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
   function set(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }
   if(get()===GATE_HASH) return;
+  // หน้าทดสอบตัวละคร (index.html?avatar) เปิดได้โดยไม่ต้องใส่รหัส
+  if(/[?&]avatar(=|&|$)/.test(location.search)) return;
 
   function sha(s){
     if(window.crypto && crypto.subtle && window.TextEncoder){
@@ -33,7 +37,7 @@
     '#gate img{width:200px;max-width:60vw;height:auto;display:block;margin:0 auto 6px}'+
     '#gate h1{font-family:"Dancing Script",Mali,cursive;font-weight:700;font-size:2.4rem;margin:0;color:#C23B3B;line-height:1.1}'+
     '#gate p{margin:8px 0 22px;font-size:.95rem;line-height:1.6;opacity:.85}'+
-    '#gate form{display:flex;gap:8px}'+
+    '#gate form{display:flex;gap:8px}#gate form[hidden],#gate .g-err:empty{display:none}#gate img{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}'+
     '#gate input{flex:1;min-width:0;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid #E2BDB3;border-radius:999px;background:#FFFDF8;color:#9F2C2E;text-align:center;letter-spacing:.15em;outline:none}'+
     '#gate input:focus{border-color:#C23B3B;box-shadow:0 0 0 3px rgba(194,59,59,.15)}'+
     '#gate button{font:inherit;font-weight:600;padding:12px 18px;border:0;border-radius:999px;background:#C23B3B;color:#FFFDF8;cursor:pointer;white-space:nowrap}'+
@@ -56,11 +60,17 @@
       '<img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652">'+
       '<h1 id="gateT">Coming soon</h1>'+
       '<p>เว็บไซต์งานแต่งกำลังจัดเตรียม<br>อีกไม่นานพบกันนะ ♡</p>'+
-      '<form autocomplete="off"><input type="password" inputmode="text" placeholder="รหัสเข้าชม" aria-label="รหัสเข้าชม"><button type="submit">เข้า</button></form>'+
+      '<form autocomplete="off" hidden><input type="password" inputmode="text" placeholder="รหัสเข้าชม" aria-label="รหัสเข้าชม"><button type="submit">เข้า</button></form>'+
       '<div class="g-err" aria-live="polite"></div>'+
       '<small>19 · 12 · 2569</small></div>';
     document.body.appendChild(g);
     var f=g.querySelector('form'), inp=g.querySelector('input'), err=g.querySelector('.g-err');
+    // แตะโลโก้ 5 ครั้งภายใน 3 วินาที → แสดงช่องใส่รหัส
+    var taps=[];
+    g.querySelector('img').addEventListener('click',function(){
+      var t=Date.now(); taps=taps.filter(function(x){ return t-x<3000; }); taps.push(t);
+      if(taps.length>=5){ taps=[]; f.hidden=false; inp.focus(); }
+    });
     f.addEventListener('submit',function(e){
       e.preventDefault();
       sha(inp.value.trim()).then(function(h){
