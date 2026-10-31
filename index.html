@@ -28,6 +28,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Itim&family=Mitr:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&display=swap&text=%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E3%83%BBShiro%E3%81%95%E3%82%93" rel="stylesheet">
 <style>
 :root{
   --paper:#F3ECE0;
@@ -218,6 +219,9 @@ input,textarea{font-family:inherit}
 .dot.on{box-shadow:0 0 0 2.5px var(--red)}
 .dot--reset{background:var(--white);color:var(--red);font-size:.9rem;font-weight:700}
 .stage-hint{font-size:.78rem;margin-top:10px;opacity:.85}
+.illust-credit{font-family:"Klee One",serif;font-weight:600;font-size:.82rem;letter-spacing:.08em;margin:10px 0 0;opacity:.7;text-align:center}
+.illust-credit b{font-weight:600;font-size:1.08em}
+.illust-credit .ic-dot{margin:0 .15em;opacity:.6}
 
 /* ---------- MAIN ---------- */
 main{max-width:var(--max-w);margin:0 auto;padding:0 22px}
@@ -734,6 +738,7 @@ footer .script-h{font-size:2rem}
           <div class="dots" id="dots"></div>
         </div>
         <p class="stage-hint">ตัวละครจะถูกจำไว้ในเครื่องนี้ เปิดคำเชิญครั้งหน้าจะเห็นตัวเดิม</p>
+        <p class="illust-credit" lang="ja"><span>イラスト</span><span class="ic-dot">・</span><b>Shiroさん</b></p>
       </div>
     </div>
   </div>
@@ -1079,6 +1084,7 @@ footer .script-h{font-size:2rem}
 <footer>
   <svg class="wave"><use href="#wave"/></svg>
   <img class="logo footer-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya" loading="lazy">
+  <p class="illust-credit" lang="ja"><span>イラスト</span><span class="ic-dot">・</span><b>Shiroさん</b></p>
 </footer>
 
 <button id="music" type="button" aria-pressed="false" aria-label="เปิด/ปิดเพลง">
