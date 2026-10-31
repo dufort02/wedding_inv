@@ -188,6 +188,9 @@ input,textarea{font-family:inherit}
 .opt img{width:100%;height:100%;object-fit:contain}
 .opt.can-color::after{content:"";position:absolute;right:5px;bottom:5px;width:12px;height:12px;border-radius:50%;border:1.5px solid var(--white);box-shadow:0 0 0 1px rgba(194,59,59,.4);background:conic-gradient(#e55039,#f0a500,#b8e994,#5dade2,#c7ace4,#f8a5c2,#e55039)}
 .opt-note{grid-column:1/-1;font-size:.78rem;text-align:center;margin:0 0 4px;color:var(--red)}
+.opt-note--soft{color:inherit;opacity:.65}
+.opt.opt--off{filter:grayscale(1);opacity:.35}
+.opt.opt--off:disabled{cursor:not-allowed}
 .tab--special{border-style:dashed}
 .opt.on{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset}
 .opt .fallback{display:none}
@@ -1406,7 +1409,10 @@ var STORE_KEY = 'wedding_guest_v1';
       sb.addEventListener('click',function(){ sel.shiBack=1; renderSpecialSet(); buildGrid(); });
       gridEl.appendChild(sb);
     }
-    var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) if(L.key!=='outerwear' || outerOk(n,sel.shirt)) nums.push(n);
+    var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) nums.push(n);
+    // เสื้อนอกที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับเสื้อนอกที่ใส่อยู่ → เทา กดได้ (เสื้อนอกจะถอดออก)
+    var mismatch=function(n){ return n>0 && (L.key==='outerwear' ? !outerOk(n,sel.shirt) : L.key==='shirt' && !!sel.outerwear && !outerOk(sel.outerwear,n)); };
+    if(!replaced && (L.key==='outerwear'||(L.key==='shirt'&&sel.outerwear)) && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='outerwear'?'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้':'ตัวสีเทาไม่เข้ากับเสื้อนอก (เลือกแล้วจะถอดเสื้อนอก)'; gridEl.appendChild(mn); }
     nums.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.className='opt'+(n===0?' opt--none':'');
       b.setAttribute('aria-label',L.label+' '+(n===0?'ไม่ใส่':n));
@@ -1420,12 +1426,13 @@ var STORE_KEY = 'wedding_guest_v1';
       if(Array.isArray(L.color) && canColor(L,n)) b.classList.add('can-color');
       if(L.sides && L.sides.indexOf(n)>=0) b.classList.add('has-sides');
       if(sel[L.key]===n && !replaced && !(shiBackPick && sel.shiBack)) b.classList.add('on');
+      if(mismatch(n)){ b.classList.add('opt--off'); if(L.key==='outerwear'){ b.disabled=true; b.setAttribute('aria-label',L.label+' '+n+' (ใส่กับเสื้อตัวนี้ไม่ได้)'); } }
       b.addEventListener('click',function(){
         if(L===SPECIAL){ sel.special=n; renderSpecialSet(); buildGrid(); return; }
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
-        if(L.key==='shirt'){ if(!outerOk(sel.outerwear,n)) sel.outerwear=0; renderLayer('outerwear'); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette(); }
+        if(L.key==='shirt'){ var hadOuter=!!sel.outerwear; if(!outerOk(sel.outerwear,n)) sel.outerwear=0; renderLayer('outerwear'); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); if(hadOuter){ buildGrid(); return; } buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(L.key==='eyes') renderLayer('eyes_wink');
         if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
