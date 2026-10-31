@@ -5,7 +5,7 @@
    หมายเหตุ: เป็นการซ่อนหน้าเว็บแบบง่าย ไม่ใช่ระบบความปลอดภัยจริง (ไฟล์ยังเปิดตรงได้ถ้ารู้ที่อยู่) */
 (function(){
   var GATE_ON = true;
-  var GATE_HASH = '51f6064e2b5e1f014e71e9f7a0fb6b23cce41d490c89baa91c44bf70192f3612';
+  var GATE_HASH = '02516262316eb32082f986379efad4a6ca1ec4b140c340f3dcb4fe1a4122e00a';
   var KEY = 'pp_gate_ok';
   if(!GATE_ON) return;
 
