@@ -1135,7 +1135,7 @@ var LAYERS = [
   {key:'outerwear',        label:'เสื้อนอก',      count:5,  thumb:'outerwear',  color:true, noColor:[5], removable:true},
   {key:'hair_accessories', label:'ที่คาดผม',      count:11,  thumb:'hair_acc',   color:true, removable:true, sides:[8]},
   {key:'face_accessories', label:'ของบนหน้า',     count:13, thumb:'face_acc',   color:[1,2,5,6,10,11,12,13], removable:true, sides:[9]},
-  {key:'accessories',      label:'เครื่องประดับ', count:10, thumb:'acc',        color:[3,4,5,7], removable:true}
+  {key:'accessories',      label:'เครื่องประดับ', count:10, thumb:'acc',        color:[3,4,5,6], removable:true}
 ];
 /* color: true = ทุกชิ้นเปลี่ยนสีได้ | [เลข,...] = เฉพาะชิ้นที่ระบุ (ชิ้นสีดำล้วนเปลี่ยนสีไม่ได้) */
 /* ลำดับการซ้อนชั้น (ล่าง → บน) */
@@ -1147,20 +1147,32 @@ var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_h
    เพิ่มแบบตาหลับ = วาดไฟล์ตาหลับสองข้าง eyes_N.png แล้วเติมเลข N · ปุ่มสุ่มขยิบ 1 ใน 10 (WINK_RANDOM) */
 /* เสื้อบางตัวต้องใช้ตัว (body) แบบอื่น — {เลขเสื้อ: เลข body}  เลือกเสื้อนั้นแล้วสลับ body_N.png ให้เอง เปลี่ยนเสื้อตัวอื่นกลับเป็น body_1 */
 var BODY_FOR_SHIRT = {16:2, 17:2};   // หลายตัวคั่นด้วยจุลภาคในวงเล็บเดียว
-/* เสื้อนอกใส่ได้กับเสื้อตัวไหนบ้าง — {เลขเสื้อนอก: [เลขเสื้อ...]}  เสื้อที่ไม่อยู่ในรายการ → แท็บเสื้อนอกเหลือแค่ "ไม่ใส่" */
-var OUTER_FOR_SHIRT = {1:[1,4], 2:[8], 3:[10,11,12], 4:[18,19], 5:[1,2,3,7,8,9,21,23,24]};
-function outerOk(o,shirt){ return !o || (OUTER_FOR_SHIRT[o]||[]).indexOf(shirt)>=0; }
-/* เรียงเลขชิ้นส่วนใหม่ (ต.ค. 2569) — แปลงชุดที่แขกบันทึกไว้ด้วยเลขเก่า */
-var RENUM_V = 2, RENUM = {
-  shirt:{2:8,3:9,4:7,5:2,6:5,7:6,8:20,9:21,10:22,11:23,12:24,13:3,14:4,15:14,16:13,17:12,18:11,19:10,20:19,21:18,22:26,23:25,24:16,25:15,26:17},
-  outerwear:{3:5,4:3,5:4}, accessories:{4:5,5:6,6:4}, face_accessories:{7:8,8:9,9:10,10:11,11:12,12:13,13:7}
+/* ชิ้นที่ใส่ได้เฉพาะกับเสื้อบางตัว — {หมวด: {เลขชิ้น: [เลขเสื้อ...]}}  ชิ้นที่ไม่เข้ากับเสื้อ → สีเทา กดไม่ได้ */
+var FOR_SHIRT = {
+  outerwear:   {1:[1,4], 2:[8], 3:[10,11,12], 4:[18,19], 5:[1,2,3,7,8,9,21,23,24]},
+  accessories: {1:[1,2,3,5,6,7,8,9], 2:[1,2,3,5,6,7,8,9], 3:[7,8], 4:[10,11,12], 5:[10,11,12], 6:[1,2,3,4,5,6,7,8,9,10,11,12,13,14],
+                7:[1,2,3,5,6,7,8,9,13,16,17], 8:[1,2,3,9,13,16,17], 9:[16], 10:[15]}
 };
+var LINKED = Object.keys(FOR_SHIRT);
+function linkOk(k,n,shirt){ return !n || !FOR_SHIRT[k] || (FOR_SHIRT[k][n]||[]).indexOf(shirt)>=0; }
+function outerOk(o,shirt){ return linkOk('outerwear',o,shirt); }
+/* เรียงเลขชิ้นส่วนใหม่ — แปลงชุดที่แขกบันทึกไว้ด้วยเลขเก่า (ทำทีละรุ่นตามลำดับ) */
+var RENUM_STEPS = [
+ {v:2, shirt:{2:8,3:9,4:7,5:2,6:5,7:6,8:20,9:21,10:22,11:23,12:24,13:3,14:4,15:14,16:13,17:12,18:11,19:10,20:19,21:18,22:26,23:25,24:16,25:15,26:17},
+  outerwear:{3:5,4:3,5:4}, accessories:{4:5,5:6,6:4}, face_accessories:{7:8,8:9,9:10,10:11,11:12,12:13,13:7}},
+ {v:3, accessories:{7:5,5:6,6:7}}
+];
+var RENUM_V = RENUM_STEPS[RENUM_STEPS.length-1].v;
 function migrateSel(g){
   if(!g || !g.sel || g.selV>=RENUM_V) return g;
-  var o=g.sel, n=Object.assign({},o);
-  Object.keys(RENUM).forEach(function(k){ if(o[k] && RENUM[k][o[k]]) n[k]=RENUM[k][o[k]]; });
-  Object.keys(o).forEach(function(k){ var m=k.match(/^uni(\d+)$/); if(m){ delete n[k]; n['uni'+(RENUM.shirt[m[1]]||m[1])]=o[k]; } });
-  g.sel=n; g.selV=RENUM_V; return g;
+  RENUM_STEPS.forEach(function(st){
+    if((g.selV||1)>=st.v) return;
+    var o=g.sel, n=Object.assign({},o);
+    Object.keys(st).forEach(function(k){ if(k!=='v' && o[k] && st[k][o[k]]) n[k]=st[k][o[k]]; });
+    if(st.shirt) Object.keys(o).forEach(function(k){ var m=k.match(/^uni(\d+)$/); if(m){ delete n[k]; n['uni'+(st.shirt[m[1]]||m[1])]=o[k]; } });
+    g.sel=n; g.selV=st.v;
+  });
+  return g;
 }
 var WINK_EYES = [5,8], WINK_RANDOM = 0.1;
 var SPECIAL_HAIR_COLOR = ['#FF52C6','✨ ชมพูชุดพิเศษ'];   // สีพื้นผมชุดพิเศษ — โผล่ท้ายพาเลตผมด้านหลังเมื่อปลดล็อกแล้ว
@@ -1331,7 +1343,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var uni=(k==='uni_belt'||k==='uni_bottom'), U=UNIFORMS[sel.shirt]; if(uni) n = U && (k==='uni_bottom'||U.belt) ? 1 : 0;
     if(sel.special && SPECIAL_REPLACES.indexOf(k)>=0) n=0;   // ชุดพิเศษใช้แทน ผม/ตา/ปาก
     if(k==='shi_back' && !sel.shiBack) n=0;
-    if(k==='outerwear' && !outerOk(n,sel.shirt)) n=0;   // เสื้อนอกที่ไม่เข้ากับเสื้อตัวนี้ → ไม่แสดง
+    if(!linkOk(k,n,sel.shirt)) n=0;   // ชิ้นที่ไม่เข้ากับเสื้อตัวนี้ → ไม่แสดง
     if(k==='eyes_wink') n = winkOn() ? (WINK_EYES.indexOf(sel.winkEye)>=0 ? sel.winkEye : WINK_EYES[0]) : 0;
     if(k==='eyes'||k==='eyes_wink') setHalf(im, !winkOn() ? '' : (k==='eyes' ? (sel.wink==='L'?'R':'L') : sel.wink));
     if(k==='back_hair' && sel.special && sel.shiBack) n=0;
@@ -1416,9 +1428,10 @@ var STORE_KEY = 'wedding_guest_v1';
       gridEl.appendChild(sb);
     }
     var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) nums.push(n);
-    // เสื้อนอกที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับเสื้อนอกที่ใส่อยู่ → เทา กดได้ (เสื้อนอกจะถอดออก)
-    var mismatch=function(n){ return n>0 && (L.key==='outerwear' ? !outerOk(n,sel.shirt) : L.key==='shirt' && !!sel.outerwear && !outerOk(sel.outerwear,n)); };
-    if(!replaced && (L.key==='outerwear'||(L.key==='shirt'&&sel.outerwear)) && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='outerwear'?'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้':'ตัวสีเทาไม่เข้ากับเสื้อนอก (เลือกแล้วจะถอดเสื้อนอก)'; gridEl.appendChild(mn); }
+    // ชิ้นที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับชิ้นที่ใส่อยู่ → เทา กดได้ (ชิ้นนั้นจะถอดออก)
+    var worn=LINKED.filter(function(k){ return sel[k]; });
+    var mismatch=function(n){ return n>0 && (FOR_SHIRT[L.key] ? !linkOk(L.key,n,sel.shirt) : L.key==='shirt' && worn.some(function(k){ return !linkOk(k,sel[k],n); })); };
+    if(!replaced && (FOR_SHIRT[L.key]||(L.key==='shirt'&&worn.length)) && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key!=='shirt'?'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้':'ตัวสีเทาไม่เข้ากับเสื้อนอก/เครื่องประดับที่ใส่อยู่ (เลือกแล้วจะถอดชิ้นนั้นออก)'; gridEl.appendChild(mn); }
     nums.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.className='opt'+(n===0?' opt--none':'');
       b.setAttribute('aria-label',L.label+' '+(n===0?'ไม่ใส่':n));
@@ -1432,13 +1445,13 @@ var STORE_KEY = 'wedding_guest_v1';
       if(Array.isArray(L.color) && canColor(L,n)) b.classList.add('can-color');
       if(L.sides && L.sides.indexOf(n)>=0) b.classList.add('has-sides');
       if(sel[L.key]===n && !replaced && !(shiBackPick && sel.shiBack)) b.classList.add('on');
-      if(mismatch(n)){ b.classList.add('opt--off'); if(L.key==='outerwear'){ b.disabled=true; b.setAttribute('aria-label',L.label+' '+n+' (ใส่กับเสื้อตัวนี้ไม่ได้)'); } }
+      if(mismatch(n)){ b.classList.add('opt--off'); if(FOR_SHIRT[L.key]){ b.disabled=true; b.setAttribute('aria-label',L.label+' '+n+' (ใส่กับเสื้อตัวนี้ไม่ได้)'); } }
       b.addEventListener('click',function(){
         if(L===SPECIAL){ sel.special=n; renderSpecialSet(); buildGrid(); return; }
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
-        if(L.key==='shirt'){ var hadOuter=!!sel.outerwear; if(!outerOk(sel.outerwear,n)) sel.outerwear=0; renderLayer('outerwear'); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); if(hadOuter){ buildGrid(); return; } buildPalette(); }
+        if(L.key==='shirt'){ var hadOuter=LINKED.some(function(k){ return sel[k]; }); LINKED.forEach(function(k){ if(!linkOk(k,sel[k],n)) sel[k]=0; renderLayer(k); }); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); if(hadOuter){ buildGrid(); return; } buildPalette(); }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(L.key==='eyes') renderLayer('eyes_wink');
         if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
@@ -1535,7 +1548,7 @@ var STORE_KEY = 'wedding_guest_v1';
       sel[L.key] = (L.removable && Math.random()<.3) ? 0 : 1+Math.floor(Math.random()*L.count);
       delete colors[L.key];
     });
-    if(!outerOk(sel.outerwear,sel.shirt)){ var ok=[]; for(var o in OUTER_FOR_SHIRT) if(outerOk(+o,sel.shirt)) ok.push(+o); sel.outerwear = ok.length && Math.random()<.6 ? ok[Math.floor(Math.random()*ok.length)] : 0; }
+    LINKED.forEach(function(k){ if(!linkOk(k,sel[k],sel.shirt)){ var ok=[]; for(var o in FOR_SHIRT[k]) if(linkOk(k,+o,sel.shirt)) ok.push(+o); sel[k] = ok.length && Math.random()<.6 ? ok[Math.floor(Math.random()*ok.length)] : 0; } });
     LAYERS.forEach(function(L){
       if(canColor(L,sel[L.key]) && L.key!=='back_hair' && Math.random()<.5){
         var pal=paletteFor(L), hex=pal[Math.floor(Math.random()*pal.length)][0];
