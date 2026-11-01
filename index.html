@@ -812,9 +812,9 @@ footer .script-h{font-size:2rem}
   <section id="couple">
     <h2 class="script-h">The Couple</h2>
     <div class="sub-h">ทำความรู้จักบ่าวสาว</div>
-    <!-- ธีม 3: รูปคู่ใบเดียวในจอกล้อง — ใช้ไฟล์ images/couple.jpg (ไม่มีไฟล์ = ใช้รูปเดี่ยว 2 ใบแบบเดิม)
+    <!-- ธีม 3: รูปคู่ใบเดียวในจอกล้อง — ใช้ไฟล์ images/couple.jpg (ยังไม่มีไฟล์ = แสดงกรอบเปล่า)
          ขยับป้ายชื่อ: แก้ --x (จากซ้าย) และ --y (จากบน) เป็น % ของรูป = ตำแหน่งจุดกลมที่ชี้หัวแต่ละคน -->
-    <figure class="cp-shot" hidden>
+    <figure class="cp-shot">
       <div class="cp-shot-frame">
         <img src="images/couple.jpg" alt="Palida &amp; Pachaya" decoding="async">
         <div class="vf" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><span class="rec">REC</span><span class="tc">19:12:69</span></div>
@@ -1846,13 +1846,11 @@ var STORE_KEY = 'wedding_guest_v1';
     im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
   });
 
-  /* รูปคู่ (ธีม 3): มีไฟล์ couple.jpg → แสดงจอกล้อง + ซ่อนรูปเดี่ยว */
+  /* รูปคู่ (ธีม 3): ยังไม่มีไฟล์ couple.jpg → กรอบเปล่า */
   (function(){
     var fig=$('.cp-shot'); if(!fig) return; var im=fig.querySelector('img');
-    function ok(){ fig.hidden=false; $('#couple').classList.add('has-shot'); }
-    function gone(){ fig.remove(); }
-    im.addEventListener('load',ok); im.addEventListener('error',gone);
-    if(im.complete){ if(im.naturalWidth) ok(); else gone(); }
+    function gone(){ im.remove(); fig.classList.add('cp-shot--empty'); }
+    im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
   })();
 
   /* ---------------- story photos fallback ---------------- */
