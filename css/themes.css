@@ -108,6 +108,20 @@ html[data-theme="3"] #cover .cover-date{display:none}
   background:repeating-linear-gradient(0deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 13px)}
 .t3-bar span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:.6rem;letter-spacing:.2em;margin-top:6px;color:var(--ink)}
 @media (max-height:680px){ .t3-logo{max-height:16vh} .t3-cover{margin-bottom:12px} }
+/* วิธีใช้เว็บ ใต้ปุ่มรับตั๋ว (หน้าปกเลื่อนลงได้) */
+.guide{display:none}
+html[data-theme="3"] #cover{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+html[data-theme="3"] .guide{display:block;width:min(420px,100%);margin:18px auto 8px}
+.guide-more{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.14em;color:var(--red-soft);margin-bottom:4px}
+.t3-board.guide-board{margin-top:6px;text-align:center;background-image:none;padding:16px 14px 10px}
+.guide-board .t3-board-h{font-size:clamp(1.4rem,7vw,2rem)}
+.guide-board .t3-row{padding-top:8px}
+.guide-board .t3-desc{padding:0 0 6px 44px;font-size:.78rem;line-height:1.6;color:var(--ink);opacity:.85;border-bottom:1px dashed rgba(43,42,39,.18)}
+.guide-board .t3-desc b{color:var(--red)}
+.guide-board .t3-tm{font-size:1.05rem}
+.guide-tips{list-style:none;margin:0;padding:2px 2px 4px;text-align:left;font-size:.74rem;line-height:1.5;color:var(--red-soft)}
+.guide-tips li{padding-left:1.1em;position:relative}
+.guide-tips li::before{content:"★";position:absolute;left:0;color:var(--t3-goldd)}
 
 /* ----- ตัวแบ่ง / นับถอยหลัง (แบบเดิม สีใหม่) / วันที่ ----- */
 html[data-theme="3"] .count{display:inline-block;padding:.12em .45em;margin-top:14px;border-radius:14px;color:var(--t3-gold);background:var(--ink);

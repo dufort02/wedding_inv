@@ -104,14 +104,10 @@
     ],
     '3':[
       ['#cover','t3-popcorn','d-cover-br'],
-      ['.hero','t3-clapper','d-tl'],['.hero','t3-glasses','d-tr d-wide'],
-      ['#couple','t3-clapper','d-tl'],
+      ['.hero','t3-glasses','d-tr d-wide'],
       ['#countdown','t3-play','d-tr'],
-      ['#savethedate','t3-ticket','d-tl d-wide'],
-      ['#location','t3-camera','d-ml d-big'],['#location','t3-popcorn','d-mr'],
-      ['#program','t3-clapper','d-tr'],
-      ['#attire','t3-glasses','d-tl d-wide'],
-      ['#story','t3-clapper','d-tr'],
+      ['#location','t3-camera','d-ml d-big'],
+      ['#attire','t3-clapper','d-tl'],
       ['#rsvp','t3-ticket','d-tl d-wide'],
       ['#wishes','t3-popcorn','d-tr'],
 
@@ -199,7 +195,7 @@
     if(t==='3') SPRINKLE_AT.forEach(function(sel,si){
       Array.prototype.forEach.call(document.querySelectorAll(sel),function(host){
         host.classList.add('t-host');
-        for(var k=0;k<2;k++){
+        for(var k=0;k<1;k++){   // ดาว/ขดกระดาษ ส่วนละ 1 ชิ้น (เพิ่มเป็น 2 = มากขึ้น)
           var sp=SPRINKLES[(si*2+k)%SPRINKLES.length], side=(si+k)%2?'l':'r';
           var n=icon(sp[0],'d-spr',sp[1]); var sz=sp[0]==='t3-star'?13+((si+k)%3)*4:34;
           n.style.width=sz+'px'; n.style.height=(sp[0]==='t3-chev'?sz*.4:sz)+'px';
