@@ -217,6 +217,26 @@ html[data-theme="3"] .cp-role{background:var(--ink);color:var(--t3-gold)}
 html[data-theme="3"] .cp-role::before{content:"★ "}
 html[data-theme="3"] .couple::before{content:"★ STARRING ★";grid-column:1/-1;font-family:var(--display);font-weight:700;letter-spacing:.3em;font-size:.8rem;color:var(--t3-goldd);margin-bottom:6px}
 html[data-theme="3"] .cp-facts li{border:2px solid var(--ink);border-style:solid;background:var(--t3-gold);color:var(--ink)}
+/* ธีม 3: รูปคู่ใบเดียวในจอกล้อง (images/couple.jpg) — ธีมอื่นซ่อนไว้ */
+.cp-shot{display:none}
+html[data-theme="3"] .cp-shot:not([hidden]){display:block;margin:22px auto 0;max-width:460px}
+.cp-shot-frame{position:relative;border:2.5px solid var(--ink);border-radius:12px;overflow:hidden;box-shadow:5px 5px 0 var(--ink);background:var(--ink)}
+.cp-shot-frame img{display:block;width:100%;height:auto}
+.cp-shot .vf{position:absolute;inset:0;pointer-events:none;color:#fff;font-family:var(--display);font-weight:600;letter-spacing:.12em;font-size:.72rem;text-shadow:0 0 3px rgba(0,0,0,.55)}
+.cp-shot .vf i{width:20px;height:20px}
+.cp-shot .vf .rec{left:40px;top:auto;bottom:13px}.cp-shot .vf .tc{right:40px;top:auto;bottom:13px}
+/* ป้ายชื่อ: จุดกลมอยู่ที่ (--x, --y) ป้ายลอยอยู่เหนือจุด */
+.cp-pin{position:absolute;left:var(--x);top:var(--y);width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--t3-gold);border:2px solid #fff;box-shadow:0 0 0 1.5px var(--ink)}
+.cp-pin::before{content:"";position:absolute;left:50%;bottom:100%;width:2px;height:20px;margin-left:-1px;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.4)}
+.cp-pin b{position:absolute;left:50%;bottom:calc(100% + 20px);transform:translateX(-50%);white-space:nowrap;font-family:var(--display);font-weight:700;font-size:.64rem;letter-spacing:.06em;
+  background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:6px;padding:2px 7px;box-shadow:2px 2px 0 var(--ink)}
+.cp-slate{display:flex;margin-top:14px;border:2.5px solid var(--ink);border-top:0;border-radius:0 0 8px 8px;background:var(--white);font-family:var(--display);font-weight:600;font-size:.62rem;letter-spacing:.14em;text-align:left;position:relative}
+.cp-slate::before{content:"";position:absolute;left:-2.5px;right:-2.5px;bottom:100%;height:16px;border:2.5px solid var(--ink);border-radius:8px 8px 0 0;background:repeating-linear-gradient(-45deg,var(--ink) 0 11px,#fff 11px 22px)}
+.cp-slate span{flex:1;padding:6px 9px;border-right:2px solid var(--ink)}.cp-slate span:first-child{flex:2}.cp-slate span:last-child{border-right:0}
+.cp-slate em{display:block;font-style:normal;font-weight:700;font-size:.9rem;letter-spacing:.02em;color:var(--red);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="3"] #couple.has-shot .cp-slate{margin-top:30px}
+html[data-theme="3"] #couple.has-shot .cp-photo{display:none}
+html[data-theme="3"] #couple.has-shot .cp-and{margin-top:0}
 html[data-theme="3"] .rm-bg{fill:var(--t3-board);stroke-width:3}
 html[data-theme="3"] .rm-road{stroke:var(--t3-gold)}
 html[data-theme="3"] .rm-pin path{fill:var(--red)}
