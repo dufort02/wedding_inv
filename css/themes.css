@@ -108,6 +108,20 @@ html[data-theme="3"] #cover .cover-date{display:none}
   background:repeating-linear-gradient(0deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 13px)}
 .t3-bar span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--display);font-size:.6rem;letter-spacing:.2em;margin-top:6px;color:var(--ink)}
 @media (max-height:680px){ .t3-logo{max-height:16vh} .t3-cover{margin-bottom:12px} }
+/* วิธีใช้เว็บ ใต้ปุ่มรับตั๋ว (หน้าปกเลื่อนลงได้) */
+.guide{display:none}
+html[data-theme="3"] #cover{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch}
+html[data-theme="3"] .guide{display:block;width:min(420px,100%);margin:18px auto 8px}
+.guide-more{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.14em;color:var(--red-soft);margin-bottom:4px}
+.t3-board.guide-board{margin-top:6px;text-align:center;background-image:none;padding:16px 14px 10px}
+.guide-board .t3-board-h{font-size:clamp(1.4rem,7vw,2rem)}
+.guide-board .t3-row{padding-top:8px}
+.guide-board .t3-desc{padding:0 0 6px 44px;font-size:.78rem;line-height:1.6;color:var(--ink);opacity:.85;border-bottom:1px dashed rgba(43,42,39,.18)}
+.guide-board .t3-desc b{color:var(--red)}
+.guide-board .t3-tm{font-size:1.05rem}
+.guide-tips{list-style:none;margin:0;padding:2px 2px 4px;text-align:left;font-size:.74rem;line-height:1.5;color:var(--red-soft)}
+.guide-tips li{padding-left:1.1em;position:relative}
+.guide-tips li::before{content:"★";position:absolute;left:0;color:var(--t3-goldd)}
 
 /* ----- ตัวแบ่ง / นับถอยหลัง (แบบเดิม สีใหม่) / วันที่ ----- */
 html[data-theme="3"] .count{display:inline-block;padding:.12em .45em;margin-top:14px;border-radius:14px;color:var(--t3-gold);background:var(--ink);
@@ -219,7 +233,9 @@ html[data-theme="3"] .couple::before{content:"★ STARRING ★";grid-column:1/-1
 html[data-theme="3"] .cp-facts li{border:2px solid var(--ink);border-style:solid;background:var(--t3-gold);color:var(--ink)}
 /* ธีม 3: รูปคู่ใบเดียวในจอกล้อง (images/couple.jpg) — ธีมอื่นซ่อนไว้ */
 .cp-shot{display:none}
-html[data-theme="3"] .cp-shot:not([hidden]){display:block;margin:22px auto 0;max-width:460px}
+html[data-theme="3"] .cp-shot{display:block;margin:22px auto 0;max-width:460px}
+.cp-shot--empty .cp-shot-frame{aspect-ratio:4/3;background:radial-gradient(circle at 50% 45%,#5a4a40,var(--ink))}
+.cp-shot--empty .cp-shot-frame::after{content:"รูปคู่ · images/couple.jpg";position:absolute;left:50%;top:58%;transform:translateX(-50%);font-size:.75rem;color:rgba(255,255,255,.5);white-space:nowrap}
 .cp-shot-frame{position:relative;border:2.5px solid var(--ink);border-radius:12px;overflow:hidden;box-shadow:5px 5px 0 var(--ink);background:var(--ink)}
 .cp-shot-frame img{display:block;width:100%;height:auto}
 .cp-shot .vf{position:absolute;inset:0;pointer-events:none;color:#fff;font-family:var(--display);font-weight:600;letter-spacing:.12em;font-size:.72rem;text-shadow:0 0 3px rgba(0,0,0,.55)}
@@ -234,9 +250,9 @@ html[data-theme="3"] .cp-shot:not([hidden]){display:block;margin:22px auto 0;max
 .cp-slate::before{content:"";position:absolute;left:-2.5px;right:-2.5px;bottom:100%;height:16px;border:2.5px solid var(--ink);border-radius:8px 8px 0 0;background:repeating-linear-gradient(-45deg,var(--ink) 0 11px,#fff 11px 22px)}
 .cp-slate span{flex:1;padding:6px 9px;border-right:2px solid var(--ink)}.cp-slate span:first-child{flex:2}.cp-slate span:last-child{border-right:0}
 .cp-slate em{display:block;font-style:normal;font-weight:700;font-size:.9rem;letter-spacing:.02em;color:var(--red);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html[data-theme="3"] #couple.has-shot .cp-slate{margin-top:30px}
-html[data-theme="3"] #couple.has-shot .cp-photo{display:none}
-html[data-theme="3"] #couple.has-shot .cp-and{margin-top:0}
+html[data-theme="3"] .cp-slate{margin-top:30px}
+html[data-theme="3"] #couple .cp-photo{display:none}
+html[data-theme="3"] #couple .cp-and{margin-top:0}
 html[data-theme="3"] .rm-bg{fill:var(--t3-board);stroke-width:3}
 html[data-theme="3"] .rm-road{stroke:var(--t3-gold)}
 html[data-theme="3"] .rm-pin path{fill:var(--red)}

@@ -231,9 +231,10 @@ section{text-align:center;padding:34px 0}
 .hero .cover-title{font-size:clamp(2.2rem,10vw,3.2rem)}
 .hero-names{font-family:var(--display);font-weight:600;font-size:1.45rem;color:var(--red);letter-spacing:.14em;margin-top:18px}
 .hero-logo{width:min(320px,78vw);margin-top:16px}
-.title-pair{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,22px)}
-.title-pair .cover-title{text-align:left;font-size:clamp(1.8rem,8.4vw,3rem);flex:none}
-.title-pair .hero-logo{width:min(46%,230px);margin:0;flex:0 1 auto}
+/* หัวเรื่องตัวเล็กมุมซ้ายบน + โลโก้เยื้องลงขวาล่าง (วางทแยงกัน) */
+.title-pair{display:flex;flex-direction:column;width:min(100%,380px);margin:0 auto}
+.title-pair .cover-title{align-self:flex-start;text-align:left;font-size:clamp(1.35rem,6.2vw,2rem);line-height:1.18;position:relative;z-index:1}   /* line-height = ระยะบรรทัด (มากขึ้น = ห่างขึ้น) */
+.title-pair .hero-logo{align-self:flex-end;width:min(66%,250px);margin:-2.6em -2% 0 0}
 
 /* Couple */
 .couple{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:start;margin-top:24px}
@@ -446,7 +447,7 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .story-cap div{flex:1;display:flex;flex-direction:column;justify-content:center;font-size:.82rem;line-height:1.55;padding-bottom:10px}
 .story-cap b{font-family:var(--display);font-weight:600;color:var(--red);font-size:.95rem}
 
-.rsvp-big{font-family:var(--display);font-weight:700;color:var(--red);font-size:clamp(5.5rem,30vw,8rem);line-height:.86;letter-spacing:.02em;position:relative}
+.rsvp-big{font-family:var(--display);font-weight:700;color:var(--red);font-size:clamp(3rem,15vw,4.2rem);line-height:1;letter-spacing:.04em;position:relative;white-space:nowrap}
 .rsvp-lead{max-width:32ch;margin:14px auto 0}
 .form{text-align:left;margin:20px auto 0;max-width:400px}
 .field{margin-bottom:14px}
@@ -636,6 +637,29 @@ footer .script-h{font-size:2rem}
   <button class="btn" id="openBtn">เปิดคำเชิญ</button>
   <p class="cover-note">ก่อนเข้างาน มาเริ่มแต่งตัวละครของคุณ</p>
   <a class="wish-link" href="wishes.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 7.5l9 6.5 9-6.5"/></svg>อ่านคำอวยพรทั้งหมด</a>
+
+  <!-- วิธีใช้เว็บ (แสดงในธีม 3 ใต้ปุ่มรับตั๋ว — แบบบอร์ดเดียวกับกำหนดการ) -->
+  <section class="guide" aria-label="วิธีใช้คำเชิญ">
+    <div class="guide-more" aria-hidden="true">เลื่อนลงดูวิธีใช้ ↓</div>
+    <div class="t3-board guide-board">
+      <div class="t3-board-h">HOW TO WATCH</div>
+      <div class="t3-board-by">วิธีใช้คำเชิญนี้</div>
+      <div class="t3-stars">★<b>★</b>★</div>
+      <div class="t3-row is-red"><span class="t3-sc">SC.01</span><span class="t3-ti">แต่งตัวละคร รับตั๋ว</span><span class="t3-tm">🎭</span></div>
+      <div class="t3-desc">กด “รับตั๋ว” → แต่งตัว ใส่ชื่อ<br>บันทึกรูปตั๋ว / รูปตัวละครเก็บไว้ได้</div>
+      <div class="t3-row"><span class="t3-sc">SC.02</span><span class="t3-ti">ตอบรับ เลือก 1 แบบ</span><span class="t3-tm">✉️</span></div>
+      <div class="t3-desc">🥂 <b>มาร่วมงาน</b> · บอกจำนวนคน อาหาร<br>🎁 <b>ส่งของขวัญ</b> · ไปไม่ได้ ดูช่องทางโอน<br>💌 <b>อวยพรออนไลน์</b> · ฝากการ์ดอวยพร</div>
+      <div class="t3-row is-red"><span class="t3-sc">SC.03</span><span class="t3-ti">QR เข้างาน</span><span class="t3-tm">🎟️</span></div>
+      <div class="t3-desc">ขึ้นท้ายตั๋ว <b>หลังส่ง “มาร่วมงาน”</b> เท่านั้น<br>วันงานเปิดให้ทีมงานสแกน</div>
+      <div class="t3-row"><span class="t3-sc">SC.04</span><span class="t3-ti">เขียนคำอวยพร</span><span class="t3-tm">✍️</span></div>
+      <div class="t3-desc">เขียนในฟอร์มตอบรับ เลือกสีการ์ด<br>ขึ้นสมุดอวยพรหลังบ่าวสาวอ่าน</div>
+      <div class="t3-stars">★<b>★</b>★</div>
+      <ul class="guide-tips">
+        <li>มากันหลายคน? ส่งลิงก์ผู้ติดตามให้ทำตั๋วเอง</li>
+        <li>ตั๋วจำไว้ในเครื่องนี้ กลับมาแก้ได้</li>
+      </ul>
+    </div>
+  </section>
 </div>
 
 <!-- ===== โหมดทดสอบตัวละคร (index.html?avatar) — ไม่บันทึก ไม่ส่งเข้าชีต ===== -->
@@ -797,7 +821,7 @@ footer .script-h{font-size:2rem}
         <div class="t3tk-stub">
           <div class="t3tk-tear"></div>
           <div class="t3tk-qr" id="t3Stub" hidden><figure><img id="t3QrImg" alt="QR บัตรเข้างาน"><figcaption id="t3No"></figcaption></figure><div><small>ยื่น QR ที่จุดลงทะเบียน</small><span class="t3tk-who" id="t3Who"></span></div></div>
-          <div class="t3tk-wait" id="t3Wait"><span id="t3WaitTx">ตอบรับร่วมงานด้านล่าง เพื่อรับ QR บัตรเข้างาน</span><a class="btn btn--ghost" href="#rsvp" id="t3WaitBtn">ไปตอบรับ</a></div>
+          <div class="t3tk-wait" id="t3Wait"><span id="t3WaitTx">ตอบรับร่วมงานด้านล่าง เพื่อแสดงท้ายบัตร</span><a class="btn btn--ghost" href="#rsvp" id="t3WaitBtn">ไปตอบรับ</a></div>
         </div>
       </div>
       <div class="t3tk-acts"><button class="btn" type="button" id="t3Shot">บันทึกภาพตั๋ว</button><button class="btn btn--ghost" type="button" id="t3Dl">บันทึกรูปตัวละคร</button><button class="btn btn--ghost" type="button" id="t3Redo">แต่งตัวใหม่</button></div>
@@ -812,9 +836,9 @@ footer .script-h{font-size:2rem}
   <section id="couple">
     <h2 class="script-h">The Couple</h2>
     <div class="sub-h">ทำความรู้จักบ่าวสาว</div>
-    <!-- ธีม 3: รูปคู่ใบเดียวในจอกล้อง — ใช้ไฟล์ images/couple.jpg (ไม่มีไฟล์ = ใช้รูปเดี่ยว 2 ใบแบบเดิม)
+    <!-- ธีม 3: รูปคู่ใบเดียวในจอกล้อง — ใช้ไฟล์ images/couple.jpg (ยังไม่มีไฟล์ = แสดงกรอบเปล่า)
          ขยับป้ายชื่อ: แก้ --x (จากซ้าย) และ --y (จากบน) เป็น % ของรูป = ตำแหน่งจุดกลมที่ชี้หัวแต่ละคน -->
-    <figure class="cp-shot" hidden>
+    <figure class="cp-shot">
       <div class="cp-shot-frame">
         <img src="images/couple.jpg" alt="Palida &amp; Pachaya" decoding="async">
         <div class="vf" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><span class="rec">REC</span><span class="tc">19:12:69</span></div>
@@ -968,7 +992,7 @@ footer .script-h{font-size:2rem}
   <svg class="wave"><use href="#wave"/></svg>
 
   <section id="rsvp">
-    <div class="rsvp-big" aria-hidden="true">RS<br>VP</div>
+    <div class="rsvp-big" aria-hidden="true">RSVP</div>
     <h2 class="sr">ตอบรับคำเชิญ</h2>
     <p class="rsvp-lead">ขอบคุณที่ร่วมยินดี เลือกตามลิ้งก์ที่สะดวกได้เลย<br><small>รบกวนตอบรับภายใน 12 ธ.ค. เพื่อให้เราเตรียมงานได้ครบทุกท่าน</small></p>
     <div id="rsvpBox">
@@ -1846,13 +1870,11 @@ var STORE_KEY = 'wedding_guest_v1';
     im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
   });
 
-  /* รูปคู่ (ธีม 3): มีไฟล์ couple.jpg → แสดงจอกล้อง + ซ่อนรูปเดี่ยว */
+  /* รูปคู่ (ธีม 3): ยังไม่มีไฟล์ couple.jpg → กรอบเปล่า */
   (function(){
     var fig=$('.cp-shot'); if(!fig) return; var im=fig.querySelector('img');
-    function ok(){ fig.hidden=false; $('#couple').classList.add('has-shot'); }
-    function gone(){ fig.remove(); }
-    im.addEventListener('load',ok); im.addEventListener('error',gone);
-    if(im.complete){ if(im.naturalWidth) ok(); else gone(); }
+    function gone(){ im.remove(); fig.classList.add('cp-shot--empty'); }
+    im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
   })();
 
   /* ---------------- story photos fallback ---------------- */
@@ -1958,7 +1980,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var box=$('#passQr'), rec=loadRsvp();
     var on = !!guest && ((COMP && COMP.sent) || (!COMP && rec && rec.mode==='attend'));
     box.hidden=!on; $('#t3Stub').hidden=!on; $('#t3Badge').hidden=!on; $('#t3Wait').hidden=on;
-    $('#t3WaitTx').textContent = COMP ? 'QR บัตรเข้างานจะขึ้นเมื่อส่งบัตรผู้ติดตามแล้ว' : 'ตอบรับร่วมงานด้านล่าง เพื่อรับ QR บัตรเข้างาน';
+    $('#t3WaitTx').textContent = COMP ? 'QR บัตรเข้างานจะขึ้นเมื่อส่งบัตรผู้ติดตามแล้ว' : 'ตอบรับร่วมงานด้านล่าง เพื่อแสดงท้ายบัตร';
     $('#t3WaitBtn').hidden=!!COMP;
     $('#t3Who').textContent=t3Who(); if(!on || typeof qrcode!=='function') return;
     var q=qrcode(0,'M'); q.addData(checkinUrl(rsvpId())); q.make();
