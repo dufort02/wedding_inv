@@ -231,9 +231,10 @@ section{text-align:center;padding:34px 0}
 .hero .cover-title{font-size:clamp(2.2rem,10vw,3.2rem)}
 .hero-names{font-family:var(--display);font-weight:600;font-size:1.45rem;color:var(--red);letter-spacing:.14em;margin-top:18px}
 .hero-logo{width:min(320px,78vw);margin-top:16px}
-.title-pair{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,22px)}
-.title-pair .cover-title{text-align:left;font-size:clamp(1.8rem,8.4vw,3rem);flex:none}
-.title-pair .hero-logo{width:min(46%,230px);margin:0;flex:0 1 auto}
+/* หัวเรื่องตัวเล็กมุมซ้ายบน + โลโก้เยื้องลงขวาล่าง (วางทแยงกัน) */
+.title-pair{display:flex;flex-direction:column;width:min(100%,380px);margin:0 auto}
+.title-pair .cover-title{align-self:flex-start;text-align:left;font-size:clamp(1.35rem,6.2vw,2rem);line-height:1.04;position:relative;z-index:1}
+.title-pair .hero-logo{align-self:flex-end;width:min(66%,250px);margin:-2.6em -2% 0 0}
 
 /* Couple */
 .couple{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:start;margin-top:24px}
@@ -446,7 +447,7 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .story-cap div{flex:1;display:flex;flex-direction:column;justify-content:center;font-size:.82rem;line-height:1.55;padding-bottom:10px}
 .story-cap b{font-family:var(--display);font-weight:600;color:var(--red);font-size:.95rem}
 
-.rsvp-big{font-family:var(--display);font-weight:700;color:var(--red);font-size:clamp(5.5rem,30vw,8rem);line-height:.86;letter-spacing:.02em;position:relative}
+.rsvp-big{font-family:var(--display);font-weight:700;color:var(--red);font-size:clamp(3rem,15vw,4.2rem);line-height:1;letter-spacing:.04em;position:relative;white-space:nowrap}
 .rsvp-lead{max-width:32ch;margin:14px auto 0}
 .form{text-align:left;margin:20px auto 0;max-width:400px}
 .field{margin-bottom:14px}
@@ -968,7 +969,7 @@ footer .script-h{font-size:2rem}
   <svg class="wave"><use href="#wave"/></svg>
 
   <section id="rsvp">
-    <div class="rsvp-big" aria-hidden="true">RS<br>VP</div>
+    <div class="rsvp-big" aria-hidden="true">RSVP</div>
     <h2 class="sr">ตอบรับคำเชิญ</h2>
     <p class="rsvp-lead">ขอบคุณที่ร่วมยินดี เลือกตามลิ้งก์ที่สะดวกได้เลย<br><small>รบกวนตอบรับภายใน 12 ธ.ค. เพื่อให้เราเตรียมงานได้ครบทุกท่าน</small></p>
     <div id="rsvpBox">
