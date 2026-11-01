@@ -8,7 +8,7 @@
   รูปภาพเรื่องราว: 01n.jpg, 20170201_204855.jpg, IMG_1281.JPG, DSC02671.JPG (วางไว้โฟลเดอร์เดียวกับไฟล์นี้)
   เพลง: Forever Yours - Wayne Jones.mp3
 -->
-<html lang="th" data-theme="1" data-idc="pink" data-theme-switch="on">
+<html lang="th" data-theme="3" data-idc="pink">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -233,8 +233,10 @@ section{text-align:center;padding:34px 0}
 .hero-logo{width:min(320px,78vw);margin-top:16px}
 /* หัวเรื่องตัวเล็กมุมซ้ายบน + โลโก้เยื้องลงขวาล่าง (วางทแยงกัน) */
 .title-pair{display:flex;flex-direction:column;width:min(100%,380px);margin:0 auto}
-.title-pair .cover-title{align-self:flex-start;text-align:left;font-size:clamp(1.35rem,6.2vw,2rem);line-height:1.18;position:relative;z-index:1}   /* line-height = ระยะบรรทัด (มากขึ้น = ห่างขึ้น) */
-.title-pair .hero-logo{align-self:flex-end;width:min(66%,250px);margin:-2.6em -2% 0 0}
+.title-pair .cover-title{align-self:flex-start;text-align:left;font-weight:500;font-size:clamp(2.2rem,11vw,3rem);line-height:1;position:relative;z-index:1}
+.title-pair .ct-sm{display:block;font-size:.5em;letter-spacing:.02em}
+.title-pair .ct-lg{display:block;margin-top:-.02em}
+.title-pair .hero-logo{align-self:flex-end;width:min(62%,240px);margin:-4px -2% 0 0}
 
 /* Couple */
 .couple{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:start;margin-top:24px}
@@ -649,9 +651,7 @@ footer .script-h{font-size:2rem}
       <div class="t3-desc">กด “รับตั๋ว” → แต่งตัว ใส่ชื่อ<br>บันทึกรูปตั๋ว / รูปตัวละครเก็บไว้ได้</div>
       <div class="t3-row"><span class="t3-sc">SC.02</span><span class="t3-ti">ตอบรับ เลือก 1 แบบ</span><span class="t3-tm">✉️</span></div>
       <div class="t3-desc">🥂 <b>มาร่วมงาน</b> · บอกจำนวนคน อาหาร<br>🎁 <b>ส่งของขวัญ</b> · ไปไม่ได้ ดูช่องทางโอน<br>💌 <b>อวยพรออนไลน์</b> · ฝากการ์ดอวยพร</div>
-      <div class="t3-row is-red"><span class="t3-sc">SC.03</span><span class="t3-ti">QR เข้างาน</span><span class="t3-tm">🎟️</span></div>
-      <div class="t3-desc">ขึ้นท้ายตั๋ว <b>หลังส่ง “มาร่วมงาน”</b> เท่านั้น<br>วันงานเปิดให้ทีมงานสแกน</div>
-      <div class="t3-row"><span class="t3-sc">SC.04</span><span class="t3-ti">เขียนคำอวยพร</span><span class="t3-tm">✍️</span></div>
+      <div class="t3-row is-red"><span class="t3-sc">SC.03</span><span class="t3-ti">เขียนคำอวยพร</span><span class="t3-tm">✍️</span></div>
       <div class="t3-desc">เขียนในฟอร์มตอบรับ เลือกสีการ์ด<br>ขึ้นสมุดอวยพรหลังบ่าวสาวอ่าน</div>
       <div class="t3-stars">★<b>★</b>★</div>
       <ul class="guide-tips">
@@ -774,7 +774,7 @@ footer .script-h{font-size:2rem}
 
   <section class="hero">
     <div class="title-pair">
-      <h1 class="cover-title">WE'RE<br>GETTING<br>MARRIED!</h1>
+      <h1 class="cover-title"><span class="ct-sm">WE'RE GETTING</span><span class="ct-lg">MARRIED!</span></h1>
       <img class="logo hero-logo" src="images/logo.png" width="900" height="652" alt="Palida &amp; Pachaya">
     </div>
     <div class="hero-date"></div>
@@ -866,14 +866,12 @@ footer .script-h{font-size:2rem}
         <ul class="cp-facts"><li>🎮 [ชอบ...]</li><li>🍜 [ของโปรด...]</li></ul>
       </article>
     </div>
-    <p class="cp-quote">"[ประโยคสั้น ๆ ของเราสองคน เช่น จากเพื่อนร่วมทางสู่คู่ชีวิต]"</p>
   </section>
 
   <svg class="wave"><use href="#wave"/></svg>
 
   <section id="countdown">
     <h2 class="script-h">Counting Days</h2>
-    <div class="sub-h">นับถอยหลังสู่วันสำคัญ</div>
     <div class="count" id="count">000:00:00:00</div>
     <div class="count-labels"><span>วัน</span><span>ชั่วโมง</span><span>นาที</span><span>วินาที</span></div>
   </section>
@@ -1102,10 +1100,10 @@ footer .script-h{font-size:2rem}
     <div class="sub-h">ภาพระหว่างทางของเรา</div>
     <div class="story">
       <div class="strip">
-        <div class="shot"><img src="01n.jpg" alt="ครั้งแรกที่เจอกัน" loading="lazy"></div>
-        <div class="shot"><img src="20170201_204855.jpg" alt="เล่นด้วยกัน" loading="lazy"></div>
-        <div class="shot"><img src="IMG_1281.JPG" alt="ทริปด้วยกัน" loading="lazy"></div>
-        <div class="shot"><img src="DSC02671.JPG" alt="วันที่ขอแต่งงาน" loading="lazy"></div>
+        <div class="shot"><img src="images/gallery_1.jpg" alt="ครั้งแรกที่เจอกัน" loading="lazy"></div>
+        <div class="shot"><img src="images/gallery_2.jpg" alt="เล่นด้วยกัน" loading="lazy"></div>
+        <div class="shot"><img src="images/gallery_3.jpg" alt="ทริปด้วยกัน" loading="lazy"></div>
+        <div class="shot"><img src="images/gallery_4.jpg" alt="วันที่ขอแต่งงาน" loading="lazy"></div>
       </div>
       <div class="story-cap">
         <div><b>[ปี]</b>ครั้งแรกที่เจอกัน ไม่รู้เลยว่าจะเป็นจุดเริ่มต้นของเรื่องราวดี ๆ</div>
