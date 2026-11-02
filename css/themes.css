@@ -156,7 +156,12 @@ html[data-theme="3"] .strip{padding:10px 18px 0;background-color:var(--ink);
   background-image:linear-gradient(var(--paper) 0 7px,transparent 7px 16px),linear-gradient(var(--paper) 0 7px,transparent 7px 16px);
   background-size:6px 16px,6px 16px;background-position:5px 6px,calc(100% - 5px) 6px;background-repeat:repeat-y}
 html[data-theme="3"] .strip::before{background:var(--t3-gold);opacity:.9}
-html[data-theme="3"] .story-cap b{font-family:var(--display);letter-spacing:.06em}
+html[data-theme="3"] .strip::before{display:none}   /* ไม่มีเทปบนหัวฟิล์ม */
+html[data-theme="3"] .story{grid-template-columns:minmax(0,58%) minmax(0,1fr);gap:0 14px}
+html[data-theme="3"] .story-cap{counter-reset:sc}
+html[data-theme="3"] .story-cap div{counter-increment:sc;justify-content:flex-start;padding-top:12px;font-size:.8rem}
+html[data-theme="3"] .story-cap b{display:block;font-family:var(--display);font-weight:700;font-size:.66rem;letter-spacing:.18em;color:var(--t3-goldd);margin-bottom:3px}
+html[data-theme="3"] .story-cap b::before{content:"SCENE 0" counter(sc) " · "}
 
 /* ----- บัตรเชิญ: ตั๋วทองแบบ mockup (ตัวตั๋ว = .pass-row, ปุ่มอยู่ใต้ตั๋ว) ----- */
 html[data-theme="3"] .pass{background:none;border:none;box-shadow:none;padding:0;max-width:380px}

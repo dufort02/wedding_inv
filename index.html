@@ -448,6 +448,31 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .story-cap{display:flex;flex-direction:column}
 .story-cap div{flex:1;display:flex;flex-direction:column;justify-content:center;font-size:.82rem;line-height:1.55;padding-bottom:10px}
 .story-cap b{font-family:var(--display);font-weight:600;color:var(--red);font-size:.95rem}
+.shot{position:relative;cursor:zoom-in}
+.g-more{position:absolute;right:6px;bottom:6px;display:flex;align-items:center;gap:4px;background:rgba(43,42,39,.86);color:#F2C46D;font:600 11px var(--display);letter-spacing:.06em;padding:3px 7px 3px 6px;border-radius:4px;border:1px solid rgba(242,196,109,.6);pointer-events:none}
+.g-more svg{width:12px;height:12px}
+/* อัลบั้มเต็มจอ */
+.glb{position:fixed;inset:0;z-index:200;background:#1d1c1a;display:flex;flex-direction:column;color:#F3EADB;padding-bottom:env(safe-area-inset-bottom,0px)}
+.glb[hidden]{display:none}
+.glb-bars{display:flex;gap:4px;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 0;min-height:3px}.glb-bars i{flex:1;height:3px;border-radius:2px;background:rgba(243,234,219,.25)}.glb-bars i.on{background:#F2C46D}.glb-bars i.done{background:rgba(242,196,109,.7)}
+.glb-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 16px 0;text-align:left}
+.glb-sc{font:700 11px var(--display);letter-spacing:.22em;color:#F2C46D}
+.glb-t{font-size:1.02rem;font-weight:600;line-height:1.45;margin-top:2px}
+.glb-x{width:38px;height:38px;flex:none;border-radius:50%;border:1.5px solid rgba(243,234,219,.4);background:none;color:#F3EADB;font-size:22px;line-height:1;cursor:pointer}
+.glb-mid{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding:10px 0 18px}
+.glb-stage{position:relative;display:flex;justify-content:center;padding:0 16px;touch-action:pan-y}
+.glb-stage img{display:block;max-width:100%;max-height:58vh;width:auto;height:auto;object-fit:contain;border-radius:4px;box-shadow:0 0 0 1px rgba(242,196,109,.35),0 18px 40px rgba(0,0,0,.5);transition:opacity .25s}
+.glb-stage img.fade{opacity:0}
+.glb-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(243,234,219,.4);background:rgba(29,28,26,.45);color:#F3EADB;font-size:22px;line-height:1;cursor:pointer}
+.glb-nav.l{left:8px}.glb-nav.r{right:8px}.glb-nav[hidden]{display:none}
+.glb-cap{text-align:center;font-size:.85rem;color:rgba(243,234,219,.78);margin:12px 20px 0;min-height:1em}
+.glb-cnt{text-align:center;font:600 11px var(--display);letter-spacing:.2em;color:rgba(243,234,219,.55);margin-top:4px}
+.glb-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:14px 16px 0}
+.glb-thumbs button{padding:0;border:2px solid transparent;border-radius:4px;background:none;cursor:pointer;opacity:.45;line-height:0}
+.glb-thumbs button.on{opacity:1;border-color:#F2C46D}
+.glb-thumbs img{width:56px;height:44px;object-fit:cover;border-radius:2px}
+html.glb-open{overflow:hidden}
+.glb button:focus-visible{outline:2px solid #F2C46D;outline-offset:2px}
 
 .rsvp-big{font-family:var(--display);font-weight:700;color:var(--red);font-size:clamp(3rem,15vw,4.2rem);line-height:1;letter-spacing:.04em;position:relative;white-space:nowrap}
 .rsvp-lead{max-width:32ch;margin:14px auto 0}
@@ -1095,6 +1120,22 @@ footer .script-h{font-size:2rem}
       </div>
     </div>
   </section>
+
+  <!-- อัลบั้ม Gallery (กดรูปบนแถบฟิล์ม) — รูปเพิ่มของช่อง N: images/gallery_N_2.jpg, gallery_N_3.jpg, … -->
+  <div class="glb" id="glb" role="dialog" aria-modal="true" aria-labelledby="glbT" hidden>
+    <div class="glb-bars" id="glbBars"></div>
+    <div class="glb-top"><div><div class="glb-sc" id="glbSc"></div><div class="glb-t" id="glbT"></div></div><button type="button" class="glb-x" id="glbX" aria-label="ปิด">×</button></div>
+    <div class="glb-mid">
+      <div class="glb-stage" id="glbStage">
+        <img id="glbImg" alt="">
+        <button type="button" class="glb-nav l" id="glbPrev" aria-label="รูปก่อนหน้า">‹</button>
+        <button type="button" class="glb-nav r" id="glbNext" aria-label="รูปถัดไป">›</button>
+      </div>
+      <div class="glb-cap" id="glbCap"></div>
+      <div class="glb-cnt" id="glbCnt"></div>
+      <div class="glb-thumbs" id="glbThumbs"></div>
+    </div>
+  </div>
 
 </main>
 
@@ -1858,7 +1899,57 @@ var STORE_KEY = 'wedding_guest_v1';
   })();
 
   /* ---------------- story photos fallback ---------------- */
-  $$('.shot img').forEach(function(im){ im.addEventListener('error',function(){ var p=im.parentNode; p.textContent=im.alt; }); });
+  $$('.shot img').forEach(function(im){ im.addEventListener('error',function(){ var p=im.parentNode; p.classList.add('noimg'); p.textContent=im.alt; }); });
+
+  /* ---------------- Gallery: อัลบั้มต่อช่อง ----------------
+     รูปเพิ่ม: images/gallery_N_2.jpg, _3, … (เรียงเลขต่อกัน สูงสุด GALLERY_MAX รูปต่อช่อง) — เว็บตรวจหาเอง
+     คำบรรยายรายรูป (ไม่บังคับ): GALLERY_NOTES = {'1':['รูปแรก','รูปที่ 2', …]} */
+  var GALLERY_MAX = 10;
+  var GALLERY_NOTES = {};
+  (function(){
+    var shots=$$('.shot'), caps=$$('.story-cap > div'), albums=[];
+    function exists(u){ return fetch(u,{method:'HEAD',cache:'no-store'}).then(function(r){ return r.ok && /^image\//.test(r.headers.get('content-type')||''); },function(){ return false; }); }
+    shots.forEach(function(sh,i){
+      var im=sh.querySelector('img'); if(!im) return;
+      var base=im.getAttribute('src').replace(/\.jpg$/i,''), list=[im.getAttribute('src')]; albums[i]=list;
+      (function probe(k){ if(k>GALLERY_MAX) return done();
+        exists(base+'_'+k+'.jpg').then(function(ok){ if(ok){ list.push(base+'_'+k+'.jpg'); probe(k+1); } else done(); }); })(2);
+      function done(){ if(list.length<2 || sh.classList.contains('noimg')) return;
+        var t=document.createElement('span'); t.className='g-more';
+        t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h14v14"/></svg>+'+(list.length-1);
+        sh.appendChild(t); sh.setAttribute('aria-label','ดูรูปทั้งหมด '+list.length+' รูป'); }
+      sh.setAttribute('role','button'); sh.tabIndex=0;
+      sh.addEventListener('click',function(){ if(!sh.classList.contains('noimg')) open(i,0); });
+      sh.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); sh.click(); } });
+    });
+
+    var box=$('#glb'), img=$('#glbImg'), cur=0, at=0, last=null;
+    function sceneText(i){ var c=caps[i]; if(!c) return ['','']; var b=c.querySelector('b'), yr=b?b.textContent.trim():'';
+      var t=c.textContent.replace(yr,'').trim(); return [yr,t]; }
+    function open(i,k){ last=document.activeElement; cur=i; box.hidden=false; document.documentElement.classList.add('glb-open');
+      var st=sceneText(i); $('#glbSc').textContent='SCENE '+String(i+1).padStart(2,'0')+(st[0]?' · '+st[0]:''); $('#glbT').textContent=shots[i].querySelector('img').alt||st[1];
+      var th=$('#glbThumbs'); th.innerHTML='';
+      albums[i].forEach(function(u,j){ var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','รูปที่ '+(j+1));
+        var t=new Image(); t.alt=''; t.loading='lazy'; t.src=u; b.appendChild(t); b.addEventListener('click',function(){ go(j); }); th.appendChild(b); });
+      th.hidden=albums[i].length<2; go(k||0,true); $('#glbX').focus(); }
+    function go(k,first){ var L=albums[cur]; at=(k+L.length)%L.length;
+      if(!first){ img.classList.add('fade'); setTimeout(function(){ img.src=L[at]; },150); } else img.src=L[at];
+      var n=(GALLERY_NOTES[String(cur+1)]||[])[at]||''; $('#glbCap').textContent=n;
+      $('#glbCnt').textContent=L.length>1?(at+1)+' / '+L.length:'';
+      $('#glbBars').innerHTML=L.length>1?L.map(function(_,j){ return '<i class="'+(j<at?'done':j===at?'on':'')+'"></i>'; }).join(''):'';
+      $$('#glbThumbs button').forEach(function(b,j){ b.classList.toggle('on',j===at); });
+      $('#glbPrev').hidden=$('#glbNext').hidden=L.length<2;
+      if(L[at+1]) (new Image()).src=L[at+1]; }
+    img.addEventListener('load',function(){ img.classList.remove('fade'); });
+    function close(){ box.hidden=true; img.removeAttribute('src'); document.documentElement.classList.remove('glb-open'); if(last&&last.focus) last.focus(); }
+    $('#glbX').addEventListener('click',close);
+    $('#glbPrev').addEventListener('click',function(){ go(at-1); }); $('#glbNext').addEventListener('click',function(){ go(at+1); });
+    box.addEventListener('click',function(e){ if(e.target===box||e.target.classList.contains('glb-mid')) close(); });
+    document.addEventListener('keydown',function(e){ if(box.hidden) return;
+      if(e.key==='Escape') close(); else if(e.key==='ArrowLeft') go(at-1); else if(e.key==='ArrowRight') go(at+1); });
+    var sx=null; $('#glbStage').addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+    $('#glbStage').addEventListener('touchend',function(e){ if(sx==null) return; var dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>40) go(at+(dx<0?1:-1)); });
+  })();
 
   /* ---------------- gift account ---------------- */
   $('#giftBank').textContent=CONFIG.GIFT.BANK;
