@@ -6,7 +6,7 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
-const VERSION          = 5;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
+const VERSION          = 6;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
 const SAVE_AVATAR      = true;             // true = เก็บรูปตัวละครของแขกลง Google Drive และโชว์ในชีต
@@ -25,10 +25,11 @@ const STAFF_KEY        = '';
 const S_SHOW = 'แสดง', S_HIDE = 'ไม่แสดง', S_PENDING = 'รออนุมัติ';
 const HEADERS = ['เวลา', 'ชื่อ', 'รูปแบบ', 'มาร่วมงาน', 'จำนวนคน', 'อาหาร', 'แพ้อาหาร/หมายเหตุ',
                  'คำอวยพร', 'แสดงบนเว็บ', 'สีการ์ด', 'ตัวละคร', 'ลิงก์รูป', 'ค่าตัวละคร (JSON)', 'mode', 'ปักหมุด',
-                 'rsvpId', 'แก้ไขล่าสุด', 'ผู้ติดตามของ', 'เช็กอิน'];
+                 'rsvpId', 'แก้ไขล่าสุด', 'ผู้ติดตามของ', 'เช็กอิน', 'ฝั่ง'];
 const PAPERS  = ['blush', 'cream', 'sky', 'sage', 'lilac'];
 const MODES   = ['attend', 'gift', 'wish', 'companion'];   // companion = ผู้ติดตามที่ทำบัตรเองจากลิงก์ของแขก
 const FOODS   = ['ทานได้ทุกอย่าง', 'มังสวิรัติ/เจ', 'ฮาลาล'];
+const SIDES   = ['เจ้าสาว', 'เจ้าบ่าว', 'ทั้งสองฝั่ง'];   // แขกฝั่งไหน (ไม่บังคับ — เฉพาะมาร่วมงาน)
 
 /* ============================ รับคำตอบจากเว็บ ============================ */
 function doPost(e) {
@@ -74,7 +75,7 @@ function doPost(e) {
     const v = {
       'เวลา': updated ? prev('เวลา') : new Date(), 'ชื่อ': clean_(p.name), 'รูปแบบ': clean_(p.modeLabel), 'มาร่วมงาน': clean_(p.attending),
       'จำนวนคน': comp ? 0 : (Number(p.guests) || 0),   // ผู้ติดตามนับรวมในจำนวนคนของแขกหลักแล้ว
-      'ผู้ติดตามของ': comp ? String(p.parentId || '').replace(/[^\w-]/g, '').slice(0, 40) : '', 'อาหาร': clean_(p.food), 'แพ้อาหาร/หมายเหตุ': clean_(p.allergy),
+      'ผู้ติดตามของ': comp ? String(p.parentId || '').replace(/[^\w-]/g, '').slice(0, 40) : '', 'อาหาร': clean_(p.food), 'ฝั่ง': mode === 'attend' && SIDES.indexOf(p.side) >= 0 ? p.side : '', 'แพ้อาหาร/หมายเหตุ': clean_(p.allergy),
       'คำอวยพร': message, 'แสดงบนเว็บ': status, 'สีการ์ด': PAPERS.indexOf(p.paper) >= 0 ? p.paper : 'blush',
       'ตัวละคร': imgFormula, 'ลิงก์รูป': link, 'ค่าตัวละคร (JSON)': clean_(p.avatarConfig) || prev('ค่าตัวละคร (JSON)'), 'mode': mode,
       'ปักหมุด': updated ? prev('ปักหมุด') === true : false, 'rsvpId': rid, 'แก้ไขล่าสุด': updated ? new Date() : ''
@@ -264,6 +265,10 @@ function buildSummary_(sh, c) {
     ['', ''],
     ['อาหาร (จำนวนคน)', '']
   ].concat(FOODS.map(f => ['   ' + f, '=SUMIFS(' + guests + ',' + mode + ',"attend",' + food + ',"' + f + '")']));
+  const side = R('ฝั่ง'), sideHead = rows.length + 2;
+  rows.push(['', ''], ['แขกแต่ละฝั่ง (จำนวนคน)', '']);
+  SIDES.forEach(x => rows.push(['   ฝั่ง' + x.replace('ทั้งสองฝั่ง', 'ทั้งสอง'), '=SUMIFS(' + guests + ',' + mode + ',"attend",' + side + ',"' + x + '")']));
+  rows.push(['   ไม่ระบุ', '=SUMIFS(' + guests + ',' + mode + ',"attend",' + side + ',"")']);
   s.getRange(1, 1, rows.length, 2).setValues(rows);
 
   s.getRange('D1').setValue('แพ้อาหาร / หมายเหตุ');
@@ -275,7 +280,8 @@ function buildSummary_(sh, c) {
 
   s.getRange('A1').setFontSize(14).setFontWeight('bold');
   s.getRangeList(['A12', 'D1', 'H1', 'D2:F2']).setFontWeight('bold');
-  s.getRange('B3:B15').setFontWeight('bold').setHorizontalAlignment('center');
+  s.getRange('A' + sideHead).setFontWeight('bold');
+  s.getRange('B3:B' + rows.length).setFontWeight('bold').setHorizontalAlignment('center');
   s.setColumnWidth(1, 240); s.setColumnWidth(4, 160); s.setColumnWidth(6, 220); s.setColumnWidth(8, 220);
   s.setFrozenRows(2);
 }
@@ -294,7 +300,7 @@ function notify_(p, mode, status, updated) {
     }[mode] + (status === S_PENDING ? ' • รออนุมัติ' : '');
     const subj = (updated ? '[แก้ไข] ' : '') + subject;
     const lines = ['ชื่อ: ' + name, 'รูปแบบ: ' + (p.modeLabel || mode)];
-    if (mode === 'attend') lines.push('จำนวนคน: ' + (p.guests || 1), 'อาหาร: ' + (p.food || '-'), 'แพ้อาหาร/หมายเหตุ: ' + (p.allergy || '-'));
+    if (mode === 'attend') lines.push('จำนวนคน: ' + (p.guests || 1), 'ฝั่ง: ' + (p.side || 'ไม่ระบุ'), 'อาหาร: ' + (p.food || '-'), 'แพ้อาหาร/หมายเหตุ: ' + (p.allergy || '-'));
     if (p.message) lines.push('', 'คำอวยพร:', String(p.message).slice(0, 1000));
     if (status === S_PENDING) lines.push('', 'คำอวยพรนี้ "รออนุมัติ" — เปลี่ยนเป็น "แสดง" ในชีต หรือใช้เมนู 💌 งานแต่ง');
     lines.push('', 'เปิดชีต: ' + SpreadsheetApp.getActiveSpreadsheet().getUrl());

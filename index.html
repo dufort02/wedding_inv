@@ -1080,6 +1080,14 @@ footer .script-h{font-size:2rem}
               <input type="number" id="rGuests" min="1" max="10" value="1" inputmode="numeric">
             </div>
             <div class="field">
+              <span class="lbl">คุณเป็นแขกฝั่งไหน (ไม่บังคับ)</span>
+              <div class="choice">
+                <label><input type="radio" name="side" value="เจ้าสาว">ฝั่งเจ้าสาว</label>
+                <label><input type="radio" name="side" value="เจ้าบ่าว">ฝั่งเจ้าบ่าว</label>
+                <label><input type="radio" name="side" value="ทั้งสองฝั่ง">ทั้งสองฝั่ง</label>
+              </div>
+            </div>
+            <div class="field">
               <span class="lbl">อาหาร</span>
               <div class="choice">
                 <label><input type="radio" name="food" value="ทานได้ทุกอย่าง" checked>ทานได้ทุกอย่าง</label>
@@ -2150,7 +2158,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var editing=!!loadRsvp();
     var data=buildData({mode:mode,name:name,message:message,
       guests: mode==='attend'?String(Math.min(10,Math.max(1,parseInt($('#rGuests').value,10)||1))):'0',
-      food: mode==='attend'?checked('food'):'', allergy: mode==='attend'?$('#rAllergy').value.trim():'',
+      food: mode==='attend'?checked('food'):'', side: mode==='attend'?checked('side'):'', allergy: mode==='attend'?$('#rAllergy').value.trim():'',
       showOnWall:(message && $('#rShow').checked)?'แสดง':'ไม่แสดง', paper:checked('paper')||'blush'});
     sub.disabled=true; st.textContent='';
     sub.textContent = guest ? 'กำลังเตรียมรูปตัวละคร...' : 'กำลังส่ง...';
@@ -2163,7 +2171,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function buildData(v){
     return {
       rsvpId:rsvpId(), mode:v.mode, modeLabel:MODES[v.mode].label, name:v.name,
-      attending: v.mode==='attend'?'มา':'ไม่มา', guests:v.guests, food:v.food||'', allergy:v.allergy||'',
+      attending: v.mode==='attend'?'มา':'ไม่มา', guests:v.guests, food:v.food||'', side:v.side||'', allergy:v.allergy||'',
       message:v.message||'', showOnWall:v.showOnWall, paper:v.paper||'blush',
       avatarName: guest?guest.name:'',
       avatarConfig: guest?JSON.stringify({sel:guest.sel,colors:guest.colors}):'',
@@ -2205,7 +2213,7 @@ var STORE_KEY = 'wedding_guest_v1';
   function syncRsvpToGuest(prevName){
     var rec=loadRsvp(); if(!rec || !rec.mode || !guest) return;
     var name = (!rec.name || rec.name===prevName) ? guest.name : rec.name;   // ถ้าเคยพิมพ์ชื่ออื่นเองใน RSVP ใช้ชื่อนั้นต่อ
-    var data=buildData({mode:rec.mode,name:name,message:rec.message,guests:rec.guests,food:rec.food,allergy:rec.allergy,showOnWall:rec.showOnWall,paper:rec.paper});
+    var data=buildData({mode:rec.mode,name:name,message:rec.message,guests:rec.guests,food:rec.food,side:rec.side,allergy:rec.allergy,showOnWall:rec.showOnWall,paper:rec.paper});
     toast('กำลังอัปเดตชื่อและตัวละครในคำตอบของคุณ...');
     sendRsvp(data).then(function(){ finishRsvp(data,{edited:true,returning:true}); toast('อัปเดตคำตอบแล้ว'); },
                         function(){ toast('อัปเดตคำตอบไม่สำเร็จ ลองกด "แก้ไขคำตอบ" อีกครั้งนะ'); });
@@ -2254,6 +2262,7 @@ var STORE_KEY = 'wedding_guest_v1';
     $('#rName').value=rec.name||''; $('#rGuests').value=rec.guests>0?rec.guests:1; $('#rAllergy').value=rec.allergy||'';
     msgIn.value=rec.message||''; $('#rShow').checked=rec.showOnWall==='แสดง'||!rec.message;
     var f=form.querySelector('input[name=food][value="'+rec.food+'"]'); if(f) f.checked=true;
+    form.querySelectorAll('input[name=side]').forEach(function(x){ x.checked = x.value===rec.side; });
     var pp=form.querySelector('input[name=paper][value="'+rec.paper+'"]'); if(pp) pp.checked=true;
     sub.textContent='บันทึกการแก้ไข';
   }
@@ -2266,7 +2275,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var ep=CONFIG.RSVP_ENDPOINT; if(!ep || AVATAR_TEST) return;
     var rec=loadRsvp();
     if(!COMP && rec && rec.mode && rec.ep!==ep){
-      var data=buildData({mode:rec.mode,name:rec.name,message:rec.message,guests:rec.guests,food:rec.food,allergy:rec.allergy,showOnWall:rec.showOnWall,paper:rec.paper});
+      var data=buildData({mode:rec.mode,name:rec.name,message:rec.message,guests:rec.guests,food:rec.food,side:rec.side,allergy:rec.allergy,showOnWall:rec.showOnWall,paper:rec.paper});
       sendRsvp(data).then(function(){ var r=loadRsvp(); if(r){ r.ep=ep; saveRsvp(r); } }).catch(function(){});
     }
     if(COMP && COMP.sent && COMP.ep!==ep && guest){
