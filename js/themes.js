@@ -149,16 +149,15 @@
       logo.before(t);
       var ob=document.getElementById('openBtn'); if(ob){ ob.dataset.t3orig=ob.textContent; ob.textContent='รับตั๋ว · เปิดคำเชิญ'; }
     }
-    // กำหนดการ → บอร์ด NOW SHOWING (อ่านจากรายการเดิม — แก้กำหนดการที่ <ol class="timeline"> ที่เดียว)
+    // กำหนดการ → บอร์ด SHOWTIMES (รอบฉาย) (อ่านจากรายการเดิม — แก้กำหนดการที่ <ol class="timeline"> ที่เดียว)
     var ol=document.querySelector('ol.timeline');
     if(ol){
-      var b=el('div','t3x t3-board','<div class="t3-board-h">NOW SHOWING</div><div class="t3-board-by">Palida &amp; Pachaya Film Co.</div><div class="t3-stars">★<b>★</b>★</div>');
+      var b=el('div','t3x t3-board','<div class="t3-board-h">SHOWTIMES</div><div class="t3-board-by">Palida &amp; Pachaya Film Co.</div><div class="t3-stars">★<b>★</b>★</div>');
       Array.prototype.forEach.call(ol.children,function(li,i){
         var q=function(c){ var n=li.querySelector(c); return n?n.textContent.trim():''; };
-        var r=el('div','t3-row'+(i%2?'':' is-red'));
-        r.appendChild(el('span','t3-sc','SC.'+String(i+1).padStart(2,'0')));
-        r.appendChild(el('span','t3-ti')); r.lastChild.textContent=q('.tl-title');
+        var r=el('div','t3-row t3-row--time'+(i%2?'':' is-red'));
         r.appendChild(el('span','t3-tm')); r.lastChild.textContent=q('.tl-time').replace(/\s*น\.?$/,'');
+        r.appendChild(el('span','t3-ti')); r.lastChild.textContent=q('.tl-title');
         var d=el('div','t3-desc'); d.textContent=q('.tl-desc');
         b.appendChild(r); b.appendChild(d);
       });
