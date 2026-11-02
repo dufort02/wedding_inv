@@ -526,7 +526,7 @@ body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave
 .avt-ctrl{max-width:400px;margin:16px auto 0;text-align:left;display:grid;gap:10px}
 .avt-ctrl textarea{width:100%;border:none;border-bottom:1.8px solid var(--red);background:transparent;color:var(--red);font-size:.95rem;padding:4px 2px;resize:vertical}
 .avt-ctrl .choice label{font-size:.8rem;padding:3px 12px}
-.avt-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:30px;align-items:start;--wfs:12.5px}
+.avt-cards{display:grid;grid-template-columns:minmax(0,300px);justify-content:center;gap:18px;margin-top:30px;align-items:start;--wfs:13px}
 .avt-cards figure{margin:0}
 .avt-cards figcaption{font-size:.78rem;margin-top:-10px}
 .avt-note{font-size:.75rem;opacity:.8;margin-top:14px}
@@ -687,7 +687,7 @@ footer .script-h{font-size:2rem}
     </div>
 
     <h2 class="script-h" style="margin-top:34px">Wish Cards</h2>
-    <div class="sub-h">การ์ดอวยพรทั้ง 2 แบบ (บนเว็บจะสุ่มให้แต่ละคน)</div>
+    <div class="sub-h">การ์ดอวยพรแบบรีวิว (หน้าตาเดียวกับบนเว็บ)</div>
     <div class="avt-ctrl">
       <label class="field"><span class="lbl">ข้อความทดลอง</span><textarea id="avtMsg" rows="2" maxlength="500">ยินดีด้วยจ้า 💕</textarea></label>
       <div class="choice" id="avtMode">
@@ -695,19 +695,11 @@ footer .script-h{font-size:2rem}
         <label><input type="radio" name="avtMode" value="gift">Sent a Gift</label>
         <label><input type="radio" name="avtMode" value="wish">Online Wish</label>
       </div>
-      <div class="papers" id="avtPapers">
-        <label style="--c:#FBE3DD"><input type="radio" name="avtPaper" value="blush" checked><span class="sr">ชมพู</span></label>
-        <label style="--c:#FFF3DA"><input type="radio" name="avtPaper" value="cream"><span class="sr">ครีม</span></label>
-        <label style="--c:#E1ECF6"><input type="radio" name="avtPaper" value="sky"><span class="sr">ฟ้า</span></label>
-        <label style="--c:#E4EEDC"><input type="radio" name="avtPaper" value="sage"><span class="sr">เขียว</span></label>
-        <label style="--c:#ECE3F5"><input type="radio" name="avtPaper" value="lilac"><span class="sr">ม่วง</span></label>
-      </div>
     </div>
     <div class="avt-cards">
-      <figure><div id="avtPol"></div><figcaption>โพลารอยด์</figcaption></figure>
-      <figure><div id="avtPost"></div><figcaption>โปสการ์ด</figcaption></figure>
+      <figure><div id="avtPol"></div></figure>
     </div>
-    <p class="avt-note">แขกที่ไม่ได้แต่งตัวละคร จะได้โปสการ์ดที่แสตมป์เป็นตัวอักษรแรกของชื่อ</p>
+    <p class="avt-note">แขกที่ไม่ได้แต่งตัวละคร จะได้วงกลมเป็นตัวอักษรแรกของชื่อแทนรูป</p>
     <div class="btn-row" style="margin:22px 0 40px"><a class="btn btn--ghost" href="index.html">ไปหน้าเว็บจริง</a></div>
   </div>
 </div>
@@ -1059,16 +1051,6 @@ footer .script-h{font-size:2rem}
           <div class="field">
             <label for="rMsg" id="rMsgLbl">คำอวยพรถึงบ่าวสาว (ไม่บังคับ)</label>
             <textarea id="rMsg" rows="4" maxlength="500" placeholder="ขอให้รักกันแบบนี้ตลอดไป..."></textarea>
-          </div>
-          <div class="field paper-field">
-            <span class="lbl">สีการ์ดอวยพร</span>
-            <div class="papers" id="papers">
-              <label style="--c:#FBE3DD"><input type="radio" name="paper" value="blush" checked><span class="sr">ชมพู</span></label>
-              <label style="--c:#FFF3DA"><input type="radio" name="paper" value="cream"><span class="sr">ครีม</span></label>
-              <label style="--c:#E1ECF6"><input type="radio" name="paper" value="sky"><span class="sr">ฟ้า</span></label>
-              <label style="--c:#E4EEDC"><input type="radio" name="paper" value="sage"><span class="sr">เขียว</span></label>
-              <label style="--c:#ECE3F5"><input type="radio" name="paper" value="lilac"><span class="sr">ม่วง</span></label>
-            </div>
           </div>
           <label class="check"><input type="checkbox" id="rShow" checked> <span>แสดงคำอวยพรบนสมุดอวยพรหน้าเว็บ<small class="js-approval-note"> (หลังบ่าวสาวอ่านแล้ว)</small></span></label>
 
@@ -1826,7 +1808,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var pick=function(n){ var e=document.querySelector('input[name='+n+']:checked'); return e?e.value:''; };
     var w={name:guest.name, message:$('#avtMsg').value.trim()||'ยินดีด้วยนะ', mode:pick('avtMode'), paper:pick('avtPaper'),
            avatar:guest.thumb||guest.img, ts:1};
-    [['#avtPol','pol'],['#avtPost','post']].forEach(function(x){
+    [['#avtPol','rv']].forEach(function(x){
       var box=$(x[0]); box.innerHTML=''; var c=WishCard.build(w,{kind:x[1]});
       c.addEventListener('click',function(){ c.classList.toggle('open'); }); box.appendChild(c);
     });
@@ -1835,7 +1817,7 @@ var STORE_KEY = 'wedding_guest_v1';
     $('#avtDl').addEventListener('click',function(){ downloadAvatar(this); });
     $('#avtRedo').addEventListener('click',openStage);
     $('#avtMsg').addEventListener('input',renderAvtCards);
-    ['avtMode','avtPapers'].forEach(function(id){ $('#'+id).addEventListener('change',renderAvtCards); });
+    ['avtMode'].forEach(function(id){ $('#'+id).addEventListener('change',renderAvtCards); });
   }
 
   function applyGuest(prevName){

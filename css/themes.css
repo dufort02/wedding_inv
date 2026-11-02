@@ -176,13 +176,13 @@ html[data-theme="3"] .pass .pass-name{color:var(--ink);font-size:1.45rem}
 html[data-theme="3"] .pass-actions{margin-top:16px}
 
 /* ----- การ์ดอวยพร = รีวิวบนตั๋วทอง (★★★★★) ----- */
-html[data-theme="3"] .wc::before{top:-.9em;width:1.9em;height:1.9em;transform:translateX(-50%) rotate(var(--t,-3deg));background:var(--t3-gold);
+html[data-theme="3"] .wc:not(.wc--rv)::before{top:-.9em;width:1.9em;height:1.9em;transform:translateX(-50%) rotate(var(--t,-3deg));background:var(--t3-gold);
   -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat;
           mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.6l-6.4 3.5L7 14 1.7 9l7.2-.9z'/></svg>") center/contain no-repeat;
   filter:drop-shadow(0 1px 0 var(--ink))}
-html[data-theme="3"] .wc.pinned::before{background:var(--red)}
-html[data-theme="3"] .wc{border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
-html[data-theme="3"] .wc-msg::before{content:"★★★★★";display:block;color:var(--red);letter-spacing:.14em;font-size:.85em;line-height:1.6;margin-bottom:.1em}
+html[data-theme="3"] .wc:not(.wc--rv).pinned::before{background:var(--red)}
+html[data-theme="3"] .wc:not(.wc--rv){border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+html[data-theme="3"] .wc:not(.wc--rv) .wc-msg::before{content:"★★★★★";display:block;color:var(--red);letter-spacing:.14em;font-size:.85em;line-height:1.6;margin-bottom:.1em}
 /* โปสการ์ด → ตั๋วทองกรอบคู่ */
 html[data-theme="3"] .wc--post{background:var(--t3-gold);border-radius:6px;
   box-shadow:inset 0 0 0 .35em var(--t3-gold),inset 0 0 0 .45em var(--t3-goldd),4px 4px 0 var(--ink)}
