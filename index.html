@@ -471,6 +471,15 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .pnow{position:absolute;top:8px;left:8px;z-index:2;background:#2B2A27;color:#F2C46D;font:700 8px var(--display);letter-spacing:.2em;padding:3px 6px;border-radius:2px}
 .pst--soon .pc{cursor:default;background:repeating-linear-gradient(-45deg,#33312d 0 10px,#2B2A27 10px 20px)}
 .soon{font:700 1.6rem/1.05 var(--display);color:#F2C46D;letter-spacing:.06em;margin-top:10px}
+/* บอกว่าเลื่อนได้: ขอบขวาจาง ๆ + ปุ่ม ‹ › (เฉพาะคอม) + ลากด้วยเมาส์ */
+.shelf-wrap{position:relative}
+.shelf-wrap::after{content:"";position:absolute;top:0;bottom:20px;right:-22px;width:42px;pointer-events:none;background:linear-gradient(90deg,rgba(243,236,224,0),var(--paper));transition:opacity .2s}
+.shelf-wrap.at-end::after{opacity:0}
+.shelf.dragging{scroll-snap-type:none;cursor:grabbing}.shelf.dragging .pc{pointer-events:none}
+.shelf-nav{display:none;position:absolute;z-index:4;top:calc(6px + min(46vw,168px)*.75);transform:translateY(-50%);width:42px;height:42px;border-radius:50%;border:2px solid #2B2A27;background:#FFFDF8;color:#2B2A27;font:700 24px/1 var(--display);box-shadow:3px 3px 0 #2B2A27;cursor:pointer;align-items:center;justify-content:center;padding-bottom:3px}
+.shelf-nav.l{left:-12px}.shelf-nav.r{right:-12px}
+.shelf-nav[disabled]{visibility:hidden}
+@media (hover:hover) and (pointer:fine){ .shelf-nav{display:flex} .shelf{cursor:grab} }
 .shelf-dots{display:flex;justify-content:center;gap:6px;margin-top:-2px}
 .shelf-dots i{width:6px;height:6px;border-radius:3px;background:#d6c9b4;transition:width .2s,background .2s}.shelf-dots i.on{background:var(--red);width:16px}
 .shot{position:relative;cursor:zoom-in}
@@ -1133,6 +1142,9 @@ footer .script-h{font-size:2rem}
     <h2 class="script-h">The Collection</h2>
     <div class="sub-h">Palida &amp; Pachaya · Film Series</div>
     <!-- ภาพยนตร์ชุด: แก้ชื่อภาค (ttl) ปี (yr) คำโปรย (tag) ได้ตรงนี้ · รูปปก = images/gallery_N.jpg · รูปเพิ่มในอัลบั้ม = gallery_N_2.jpg, _3, … -->
+    <div class="shelf-wrap" id="shelfWrap">
+    <button type="button" class="shelf-nav l" id="shelfPrev" aria-label="โปสเตอร์ก่อนหน้า">‹</button>
+    <button type="button" class="shelf-nav r" id="shelfNext" aria-label="โปสเตอร์ถัดไป">›</button>
     <div class="shelf" id="shelf">
       <article class="pst">
         <button type="button" class="shot pc"><img src="images/gallery_1.jpg" alt="School Days" loading="lazy"><span class="pt"><span class="part">PART 1</span><span class="ttl">School Days</span><span class="yr">[ปี]</span></span></button>
@@ -1158,6 +1170,7 @@ footer .script-h{font-size:2rem}
         <div class="pc"><span class="pin"><span class="part">PART 6</span><span class="soon">COMING<br>SOON</span></span></div>
         <p class="tag">เรื่องราวต่อจากนี้ ฝากติดตามด้วยนะ</p>
       </article>
+    </div>
     </div>
     <div class="shelf-dots" id="shelfDots" aria-hidden="true"></div>
   </section>
@@ -1947,8 +1960,26 @@ var STORE_KEY = 'wedding_guest_v1';
     dots.innerHTML=new Array(n+1).join('<i></i>');
     function upd(){ var w=sh.children[0].getBoundingClientRect().width+14, k=Math.round(sh.scrollLeft/w);
       if(sh.scrollLeft+sh.clientWidth>=sh.scrollWidth-4) k=n-1; Array.prototype.forEach.call(dots.children,function(d,j){ d.classList.toggle('on',j===k); }); }
-    sh.addEventListener('scroll',upd,{passive:true}); upd();
-    dots.hidden = sh.scrollWidth<=sh.clientWidth+4; })();
+    var wrap=$('#shelfWrap'), prev=$('#shelfPrev'), next=$('#shelfNext');
+    function edges(){ var end=sh.scrollLeft+sh.clientWidth>=sh.scrollWidth-4; wrap.classList.toggle('at-end',end);
+      next.disabled=end; prev.disabled=sh.scrollLeft<=4; }
+    sh.addEventListener('scroll',function(){ upd(); edges(); },{passive:true}); upd(); edges();
+    window.addEventListener('resize',edges);
+    dots.hidden = sh.scrollWidth<=sh.clientWidth+4;
+    function step(d){ var w=sh.children[0].getBoundingClientRect().width+14; sh.scrollBy({left:d*w,behavior:'smooth'}); }
+    prev.addEventListener('click',function(){ step(-1); }); next.addEventListener('click',function(){ step(1); });
+    // ลากด้วยเมาส์ (มือถือปัดได้อยู่แล้ว)
+    var down=null, moved=false;
+    sh.addEventListener('pointerdown',function(e){ if(e.pointerType!=='mouse'||e.button!==0) return; down={x:e.clientX,l:sh.scrollLeft}; moved=false; });
+    window.addEventListener('pointermove',function(e){ if(!down) return; var dx=e.clientX-down.x;
+      if(!moved && Math.abs(dx)>6){ moved=true; sh.classList.add('dragging'); }
+      if(moved){ sh.scrollLeft=down.l-dx; e.preventDefault(); } });
+    window.addEventListener('pointerup',function(){ if(!down) return; down=null; if(!moved) return;
+      var w=sh.children[0].getBoundingClientRect().width+14, k=Math.round(sh.scrollLeft/w);
+      sh.classList.remove('dragging'); sh.scrollTo({left:k*w,behavior:'smooth'}); });
+    sh.addEventListener('click',function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } },true);
+    sh.addEventListener('dragstart',function(e){ e.preventDefault(); });
+  })();
 
   /* ---------------- Gallery: อัลบั้มต่อช่อง ----------------
      รูปเพิ่ม: images/gallery_N_2.jpg, _3, … (เรียงเลขต่อกัน สูงสุด GALLERY_MAX รูปต่อช่อง) — เว็บตรวจหาเอง
