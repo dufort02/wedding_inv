@@ -8,7 +8,7 @@
 (function(){
   var PAPERS = {blush:'#FBE3DD', cream:'#FFF3DA', sky:'#E1ECF6', sage:'#E4EEDC', lilac:'#ECE3F5'};
   var TAGS   = {attend:'Attending', gift:'Sent a Gift', wish:'Online Wish'};
-  var RV_TAGS= {attend:'Attending · Premiere', gift:'Sent a Gift', wish:'Online Wish'};
+  var RV_TAGS= {attend:'Attending', gift:'Sent a Gift', wish:'Online Wish'};
   var POP = '<svg class="rv-ic" viewBox="0 0 30 34" aria-hidden="true"><path d="M5 12h20l-3 20H8z" fill="#fff"/><path d="M9 12l1.6 20M15 12v20M21 12l-1.6 20" stroke="#B8312F" stroke-width="3"/><path d="M5 12h20l-3 20H8z" fill="none" stroke="#2B2A27" stroke-width="2" stroke-linejoin="round"/><g fill="#FFF3D6" stroke="#2B2A27" stroke-width="1.6"><circle cx="9" cy="10" r="4"/><circle cx="15" cy="7" r="4.5"/><circle cx="21" cy="10" r="4"/><circle cx="12" cy="4.5" r="3"/><circle cx="18.5" cy="4.5" r="3"/></g></svg>';
   var STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F2C46D" stroke="#2B2A27" stroke-width="1.6" stroke-linejoin="round" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg>';
   var TILTS  = [-4,-2.5,-1.2,0,0,0,1.2,2.5,4];      // เอียงบ้าง ตรงบ้าง
