@@ -526,6 +526,8 @@ html.glb-open{overflow:hidden}
 .choice input{position:absolute;opacity:0;pointer-events:none}
 .choice label:has(input:checked){background:var(--red);color:var(--white)}
 .choice label:has(input:focus-visible){outline:2px dashed var(--red);outline-offset:2px}
+.side-opt{display:inline-flex;align-items:center;gap:6px}
+.side-ic{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
 .rsvp-who{display:none;align-items:center;gap:10px;margin-bottom:14px;font-size:.85rem}
 .rsvp-who.show{display:flex}
 .rsvp-who img{width:52px;height:52px;border-radius:50%;background:var(--blush);border:1.5px solid var(--red);object-fit:contain}
@@ -708,11 +710,11 @@ footer .script-h{font-size:2rem}
       <div class="t3-board-h">HOW TO WATCH</div>
       <div class="t3-board-by">วิธีใช้คำเชิญนี้</div>
       <div class="t3-stars">★<b>★</b>★</div>
-      <div class="t3-row is-red"><span class="t3-sc">STEP 1</span><span class="t3-ti">แต่งตัวละคร รับตั๋ว</span><span class="t3-tm">🎭</span></div>
+      <div class="t3-row is-red"><span class="t3-sc">STEP 1</span><span class="t3-ti">แต่งตัวละคร รับตั๋ว</span></div>
       <div class="t3-desc">กด “รับตั๋ว” → แต่งตัว ใส่ชื่อ<br>บันทึกรูปตั๋ว / รูปตัวละครเก็บไว้ได้</div>
-      <div class="t3-row"><span class="t3-sc">STEP 2</span><span class="t3-ti">ตอบรับ เลือก 1 แบบ</span><span class="t3-tm">✉️</span></div>
+      <div class="t3-row"><span class="t3-sc">STEP 2</span><span class="t3-ti">ตอบรับ เลือก 1 แบบ</span></div>
       <div class="t3-desc">🥂 <b>มาร่วมงาน</b> · บอกจำนวนคน อาหาร<br>🎁 <b>ส่งของขวัญ</b> · ไปไม่ได้ ดูช่องทางโอน<br>💌 <b>อวยพรออนไลน์</b> · ฝากการ์ดอวยพร</div>
-      <div class="t3-row is-red"><span class="t3-sc">STEP 3</span><span class="t3-ti">เขียนคำอวยพร</span><span class="t3-tm">✍️</span></div>
+      <div class="t3-row is-red"><span class="t3-sc">STEP 3</span><span class="t3-ti">เขียนคำอวยพร</span></div>
       <div class="t3-desc">เขียนในฟอร์มตอบรับ เลือกสีการ์ด<br>ขึ้นสมุดอวยพรหลังบ่าวสาวอ่าน</div>
       <div class="t3-stars">★<b>★</b>★</div>
       <ul class="guide-tips">
@@ -1082,9 +1084,9 @@ footer .script-h{font-size:2rem}
             <div class="field">
               <span class="lbl">คุณเป็นแขกฝั่งไหน (ไม่บังคับ)</span>
               <div class="choice">
-                <label><input type="radio" name="side" value="เจ้าสาว">ฝั่งเจ้าสาว</label>
-                <label><input type="radio" name="side" value="เจ้าบ่าว">ฝั่งเจ้าบ่าว</label>
-                <label><input type="radio" name="side" value="ทั้งสองฝั่ง">ทั้งสองฝั่ง</label>
+                <label class="side-opt"><input type="radio" name="side" value="เจ้าสาว"><svg class="side-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.6 2.5v3.3M14.4 2.5v3.3"/><path d="M8.8 6.2q3.2 1.9 6.4 0l-.9 4.3H9.7z"/><path d="M9.7 10.5 4.5 21.5h15l-5.2-11"/></svg>ฝั่งเจ้าสาว</label>
+                <label class="side-opt"><input type="radio" name="side" value="เจ้าบ่าว"><svg class="side-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5l7 3v3l-7 3z"/><path d="M21 7.5l-7 3v3l7 3z"/><rect x="10" y="10" width="4" height="4" rx="1"/></svg>ฝั่งเจ้าบ่าว</label>
+                <label class="side-opt"><input type="radio" name="side" value="ทั้งสองฝั่ง"><svg class="side-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="13" r="5.5"/><circle cx="15" cy="13" r="5.5"/><path d="M7.5 5.5L9 3.5l1.5 2"/></svg>ทั้งสองฝั่ง</label>
               </div>
             </div>
             <div class="field">
