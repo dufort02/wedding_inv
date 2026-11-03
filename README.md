@@ -203,7 +203,7 @@
 - แก้ข้อความบนป้ายได้ในแท็ก `<b>...</b>` · ข้อความบนกระดานสเลต อยู่ใน `<figcaption class="cp-slate">` ถัดลงมา
 
 ## The Collection (ภาพยนตร์ชุด — เดิมชื่อ Gallery)
-- โปสเตอร์ PART 1–4 = เรื่องราวที่ผ่านมา · PART 5 The Wedding (กดแล้วไปส่วนตอบรับ) · PART 6 COMING SOON
+- โปสเตอร์ PART 1–4 = เรื่องราวที่ผ่านมา · PART 4.5 Pre-Wedding (ภาคเสริม — รูป `gallery_pre.jpg`, เพิ่มรูป `gallery_pre_2.jpg`, `_3`, …) · PART 5 The Wedding (กดแล้วไปส่วนตอบรับ) · PART 6 COMING SOON
 - แก้ชื่อภาค / ปี / คำโปรย ใน `index.html` ค้น `class="pst"` → `ttl` = ชื่อภาค · `yr` = ปี · `<p class="tag">` = คำโปรย
 - รูปปกเป็นแนวตั้ง (ครอปจากรูป) — กดโปสเตอร์ดูรูปเต็มในอัลบั้ม
 

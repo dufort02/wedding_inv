@@ -468,6 +468,8 @@ html[data-theme="1"] .tl-desc{font-size:.8rem;line-height:1.5;margin-top:2px}
 .pst--prem .pin img{width:86%;height:auto;margin:6px 0 4px}
 .pst--prem .ttl{font-size:1.3rem}
 .pbadge{background:#B8312F;color:#fff;font:700 9px var(--display);letter-spacing:.16em;padding:4px 8px;border-radius:3px;margin-top:8px}
+.pspin{position:absolute;top:8px;left:8px;z-index:3;background:#F2C46D;color:#2B2A27;font:700 8px var(--display);letter-spacing:.2em;padding:3px 6px;border-radius:2px}
+.pst--extra .pc{border-color:#B8862E;box-shadow:4px 4px 0 #B8862E}
 .pnow{position:absolute;top:8px;left:8px;z-index:2;background:#2B2A27;color:#F2C46D;font:700 8px var(--display);letter-spacing:.2em;padding:3px 6px;border-radius:2px}
 .pst--soon .pc{cursor:default;background:repeating-linear-gradient(-45deg,#33312d 0 10px,#2B2A27 10px 20px)}
 .soon{font:700 1.6rem/1.05 var(--display);color:#F2C46D;letter-spacing:.06em;margin-top:10px}
@@ -1170,6 +1172,10 @@ footer .script-h{font-size:2rem}
       <article class="pst">
         <button type="button" class="shot pc"><img src="images/gallery_4.jpg" alt="The Proposal" loading="lazy"><span class="pt"><span class="part">PART 4</span><span class="ttl">The Proposal</span><span class="yr">[ปี]</span></span></button>
         <p class="tag">เปลี่ยนสถานะจาก "เพื่อนร่วมทริป"</p>
+      </article>
+      <article class="pst pst--extra">
+        <button type="button" class="shot pc"><span class="pspin">SPECIAL EDITION</span><img src="images/gallery_pre.jpg" alt="Pre-Wedding" loading="lazy"><span class="pt"><span class="part">PART 4.5 · SPIN-OFF</span><span class="ttl">Pre-Wedding</span><span class="yr">2569</span></span></button>
+        <p class="tag">เบื้องหลังก่อนวันฉายจริง</p>
       </article>
       <article class="pst pst--prem">
         <a class="pc" href="#rsvp"><span class="pnow">NOW SHOWING</span><span class="pin"><span class="part">PART 5</span><img src="images/logo.png" alt="" width="900" height="652" loading="lazy"><span class="ttl">The Wedding</span><span class="pbadge">PREMIERE 19.12.2569</span></span></a>
@@ -2049,7 +2055,7 @@ var STORE_KEY = 'wedding_guest_v1';
     function sceneText(i){ var p=shots[i].closest('.pst'), q=function(c){ var e=p&&p.querySelector(c); return e?e.textContent.trim():''; };
       return [q('.yr'), q('.ttl'), q('.tag')]; }
     function open(i,k){ last=document.activeElement; cur=i; box.hidden=false; document.documentElement.classList.add('glb-open');
-      var st=sceneText(i); $('#glbSc').textContent='PART '+(i+1)+(st[0]?' · '+st[0]:''); var gt=$('#glbT'); gt.textContent=st[1]; if(st[2]){ var sm=document.createElement('small'); sm.textContent=st[2]; gt.appendChild(sm); }
+      var st=sceneText(i), pt=shots[i].querySelector('.part'); $('#glbSc').textContent=(pt?pt.textContent.trim():'PART '+(i+1))+(st[0]?' · '+st[0]:''); var gt=$('#glbT'); gt.textContent=st[1]; if(st[2]){ var sm=document.createElement('small'); sm.textContent=st[2]; gt.appendChild(sm); }
       var th=$('#glbThumbs'); th.innerHTML='';
       albums[i].forEach(function(u,j){ var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','รูปที่ '+(j+1));
         var t=new Image(); t.alt=''; t.loading='lazy'; t.src=u; b.appendChild(t); b.addEventListener('click',function(){ go(j); }); th.appendChild(b); });
