@@ -238,3 +238,11 @@
 
 ## ชุดที่ซ่อนไว้ (ชุดพิเศษ)
 - `VIP_ONLY` ใน `index.html` = `{shirt:[25,26]}` → เสื้อ 25, 26 ไม่โผล่ในแท็บเสื้อ และไม่ถูกสุ่ม จนกว่าเครื่องนั้นจะปลดล็อกชุดพิเศษ (แตะหัวข้อ Dress up 5 ครั้ง)
+
+## Cloudflare Pages: ตั้งค่า build (กัน deploy timeout)
+- **Settings → Builds → Build configurations → Edit**
+  - Framework preset: `None`
+  - Build command: `bash scripts/cf-build.sh`
+  - Build output directory: `dist`
+- สคริปต์จะไม่อัปรูปต้นฉบับ 5000px (`images/*.png`) ขึ้นเว็บ — เว็บใช้ `images/web` + `images/icons` อยู่แล้ว · ขนาดที่อัปลดจาก ~126MB เหลือ ~36MB
+- รูปต้นฉบับยังอยู่ใน GitHub ตามเดิม (ใช้สร้างสำเนา images/web)
