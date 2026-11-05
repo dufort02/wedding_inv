@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&family=Fredoka:wght@500;600;700&family=Dancing+Script:wght@600;700&family=Itim&family=Mitr:wght@600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&display=swap&text=%E3%82%A4%E3%83%A9%E3%82%B9%E3%83%88%E3%83%BBShiro%E3%81%95%E3%82%93" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&display=swap&text=Illust%20by%20%E3%81%97%E3%82%8D%E3%81%95%E3%82%93" rel="stylesheet">
 <style>
 :root{
   --paper:#F3ECE0;
@@ -819,7 +819,7 @@ footer .script-h{font-size:2rem}
           <div class="dots" id="dots"></div>
         </div>
         <p class="stage-hint">ตัวละครจะถูกจำไว้ในเครื่องนี้ เปิดคำเชิญครั้งหน้าจะเห็นตัวเดิม</p>
-        <p class="illust-credit" lang="ja"><span>イラスト</span><span class="ic-dot">・</span><b>Shiroさん</b></p>
+        <p class="illust-credit">Illust by <b lang="ja">しろさん</b></p>
       </div>
     </div>
   </div>
@@ -1237,7 +1237,7 @@ var CONFIG = {
   SHOW_AVATAR_GAME: true,
   SHOW_MUSIC: false,
   NAME_ON_AVATAR: true,       // ให้แขกเลือกฟอนต์ใส่ชื่อลงรูปตัวละคร (เฉพาะรูปที่ดาวน์โหลด) — false = ปิด          // ปุ่มเพลง + เล่นเพลงตอนเปิดการ์ด (true = เปิดใช้)
-  SHOW_SKIP: true,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
+  SHOW_SKIP: false,            // ปุ่ม "ข้าม" สำหรับทดสอบ → ใช้จริงเปลี่ยนเป็น false
   EVENT_DATE: '2026-12-19T11:09:00+07:00',   // เวลาแขก = งานเลี้ยงใน SHOWTIMES (นับถอยหลังถึงเวลานี้)
   // ช่องทางร่วมอวยพร (RSVP แบบที่ 2) — QR: วางรูปไว้ที่ path นี้ ถ้าไม่มีไฟล์จะซ่อนเอง
   GIFT: {
@@ -1536,6 +1536,9 @@ var STORE_KEY = 'wedding_guest_v1';
   var VIP_KEY='wedding_vip', vipTab=null;
   function vipOn(){ try{ return localStorage.getItem(VIP_KEY)==='1'; }catch(e){ return false; } }
   function showVipTab(){ if(!vipTab) vipTab=addTab(SPECIAL,-1); }
+  /* ชิ้นที่ซ่อนไว้ โผล่เฉพาะเครื่องที่ปลดล็อกชุดพิเศษแล้ว (แตะหัวข้อ Dress up 5 ครั้ง) */
+  var VIP_ONLY = {shirt:[25,26]};
+  function vipHidden(k,n){ return !vipOn() && !!VIP_ONLY[k] && VIP_ONLY[k].indexOf(n)>=0; }
   if(vipOn()) showVipTab();
   (function(){
     var taps=[], t=$('#stageTitle'); if(!t) return;
@@ -1543,7 +1546,7 @@ var STORE_KEY = 'wedding_guest_v1';
     t.addEventListener('click',function(){
       var now=Date.now(); taps=taps.filter(function(x){ return now-x<3000; }); taps.push(now);
       if(taps.length>=5 && !vipTab){ taps=[]; try{ localStorage.setItem(VIP_KEY,'1'); }catch(e){}
-        showVipTab(); toast('✨ ปลดล็อกชุดพิเศษแล้ว'); vipTab.click(); }
+        showVipTab(); toast('✨ ปลดล็อกชุดพิเศษแล้ว'); vipTab.click(); }   // หลังปลดล็อก แท็บเสื้อจะมีชุดใน VIP_ONLY ด้วย
     });
   })();
   // ชุดพิเศษมีผิวหน้าในภาพ → ย้าย "ของบนหน้า" ขึ้นไปอยู่เหนือหน้าพิเศษ (ใต้ที่คาดผม)
@@ -1583,7 +1586,7 @@ var STORE_KEY = 'wedding_guest_v1';
       sb.addEventListener('click',function(){ sel.shiBack=1; renderSpecialSet(); buildGrid(); });
       gridEl.appendChild(sb);
     }
-    var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) nums.push(n);
+    var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) if(!vipHidden(L.key,n) || sel[L.key]===n) nums.push(n);
     // ชิ้นที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับชิ้นที่ใส่อยู่ → เทา กดได้ (ชิ้นนั้นจะถอดออก)
     var worn=LINKED.filter(function(k){ return sel[k]; });
     var mismatch=function(n){ return n>0 && ((FOR_SHIRT[L.key] ? !linkOk(L.key,n,sel.shirt) : L.key==='shirt' && worn.some(function(k){ return !linkOk(k,sel[k],n); }))
@@ -1703,7 +1706,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var pick=function(a){ return a[Math.floor(Math.random()*a.length)][0]; };
     Object.keys(UNIFORMS).forEach(function(n){ sel['uni'+n]=Math.floor(Math.random()*UNIFORMS[n].pairs.length); });
     LAYERS.forEach(function(L){
-      sel[L.key] = (L.removable && Math.random()<.3) ? 0 : 1+Math.floor(Math.random()*L.count);
+      do { sel[L.key] = (L.removable && Math.random()<.3) ? 0 : 1+Math.floor(Math.random()*L.count); } while(vipHidden(L.key,sel[L.key]));
       delete colors[L.key];
     });
     if(!backOk(sel.back_hair,sel.hair)){ var bk=LAYER_BY_KEY.back_hair, okb=[]; for(var q=1;q<=bk.count;q++) if(backOk(q,sel.hair)) okb.push(q); sel.back_hair=okb[Math.floor(Math.random()*okb.length)]; }
@@ -2032,7 +2035,7 @@ var STORE_KEY = 'wedding_guest_v1';
   /* ---------------- Gallery: อัลบั้มต่อช่อง ----------------
      รูปเพิ่ม: images/gallery_N_2.jpg, _3, … (เรียงเลขต่อกัน สูงสุด GALLERY_MAX รูปต่อช่อง) — เว็บตรวจหาเอง
      คำบรรยายรายรูป (ไม่บังคับ): GALLERY_NOTES = {'1':['รูปแรก','รูปที่ 2', …]} */
-  var GALLERY_MAX = 10;
+  var GALLERY_MAX = 20;
   var GALLERY_NOTES = {};
   (function(){
     var shots=$$('.shot'), albums=[];
