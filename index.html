@@ -1558,7 +1558,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var n=L.count+1;
     function probe(){
       if(n>L.count+30) return;
-      fetch(srcFor(L.key,n),{method:'HEAD',cache:'no-cache'}).then(function(r){
+      fetch(webFor(srcFor(L.key,n)),{method:'HEAD',cache:'no-cache'}).then(function(r){   // ตรวจจากสำเนา images/web (ต้นฉบับ 5000px ไม่ได้อัปขึ้นเว็บ)
         // ต้องเป็นไฟล์รูปจริง — บางที่ฝากเว็บ (Cloudflare Pages) ตอบหน้า index.html พร้อมสถานะ 200 แทน 404
         if(!r.ok || !/^image\//.test(r.headers.get('content-type')||'')) return;
         L.count=n; n++;
