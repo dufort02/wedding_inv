@@ -563,7 +563,10 @@ body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave
 .form [data-show]{display:none}
 .form[data-mode=attend] [data-show~=attend],.form[data-mode=gift] [data-show~=gift]{display:block}
 .form .gift{margin:4px auto 20px}
-.gift-qr{width:180px;height:180px;object-fit:contain;margin:4px auto 10px;background:var(--white);border-radius:8px}
+.gift-qr{display:block;width:min(250px,82%);height:auto;margin:8px auto 14px;background:var(--white);border-radius:12px;border:2.5px solid var(--ink,#2B2A27);box-shadow:4px 4px 0 var(--ink,#2B2A27)}
+.gift-qr[hidden]{display:none}
+.gift-qr-save{margin-top:2px}
+.gift-qr-save[hidden]{display:none}
 .gift-bank{font-size:.85rem}
 .gift-acc{font-family:var(--display);letter-spacing:.06em;font-size:1.2rem;margin:0}
 .gift-name{font-size:.85rem;margin-bottom:12px}
@@ -1117,6 +1120,7 @@ footer .script-h{font-size:2rem}
               <p>ขอบคุณสำหรับคำอวยพร ร่วมอวยพรของขวัญผ่านช่องทางด้านล่างได้</p>
               <img class="gift-qr" id="giftQr" alt="QR สำหรับร่วมอวยพร" hidden>
               <div class="gift-qr-wait" id="giftQrWait">QR code<br><small>เร็ว ๆ นี้</small></div>
+              <a class="btn btn--ghost gift-qr-save" id="giftQrSave" download="PP-wedding-QR.png" hidden>บันทึกรูป QR</a>
             </div>
           </div>
 
@@ -2080,7 +2084,7 @@ var STORE_KEY = 'wedding_guest_v1';
   })();
 
   /* ---------------- gift account ---------------- */
-  if(CONFIG.GIFT.QR){ var qr=$('#giftQr'); qr.onload=function(){ qr.hidden=false; $('#giftQrWait').hidden=true; }; qr.src=CONFIG.GIFT.QR; }
+  if(CONFIG.GIFT.QR){ var qr=$('#giftQr'); qr.onload=function(){ qr.hidden=false; $('#giftQrWait').hidden=true; var sv=$('#giftQrSave'); sv.href=CONFIG.GIFT.QR; sv.hidden=false; }; qr.src=CONFIG.GIFT.QR; }   // บันทึกรูป QR → เปิดแอปธนาคาร สแกนจากรูปในเครื่องได้
 
   /* ---------------- RSVP → Google Sheet ---------------- */
   var form=$('#rsvpForm'), st=$('#rStatus'), sub=$('#rSubmit'), msgIn=$('#rMsg');
