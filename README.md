@@ -4,8 +4,8 @@
 
 ## ช่องทางร่วมอวยพร (RSVP แบบที่ 2)
 
-แก้ที่ `CONFIG.GIFT` ใน `index.html`: `BANK`, `NUMBER`, `NAME`
-ถ้ามี QR พร้อมเพย์ ให้อัปโหลดเป็น `images/promptpay.png` (ไม่มีไฟล์ = ไม่แสดง QR)
+ช่องทางร่วมอวยพร (ของขวัญ): อัปรูป QR เป็น `images/promptpay.png` → ขึ้นแทนกล่อง "QR code เร็ว ๆ นี้" เอง (ไม่มีเลขบัญชี/ปุ่มคัดลอกแล้ว)
+
 
 ## เชื่อม RSVP กับ Google Sheet
 
