@@ -3,7 +3,7 @@ name: Make web images
 on:
   push:
     branches: [main]
-    paths: ['images/*.png', 'images/*.PNG', 'scripts/make_web_images.py']
+    paths: ['images/*.png', 'images/*.PNG', 'images/icons/*.png', 'scripts/make_web_images.py']
   workflow_dispatch:
 permissions:
   contents: write
@@ -25,7 +25,7 @@ jobs:
         run: |
           CHANGED=""
           if [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
-            CHANGED=$(git diff --name-only --diff-filter=AM "${{ github.event.before }}" "${{ github.sha }}" -- 'images/*.png' 'images/*.PNG' | tr '\n' ' ')
+            CHANGED=$(git diff --name-only --diff-filter=AM "${{ github.event.before }}" "${{ github.sha }}" -- 'images/*.png' 'images/*.PNG' 'images/icons/*.png' | tr '\n' ' ')
           fi
           python3 scripts/make_web_images.py $CHANGED
       - name: Commit
