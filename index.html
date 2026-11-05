@@ -567,6 +567,9 @@ body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave
 .gift-bank{font-size:.85rem}
 .gift-acc{font-family:var(--display);letter-spacing:.06em;font-size:1.2rem;margin:0}
 .gift-name{font-size:.85rem;margin-bottom:12px}
+.gift-qr-wait{width:180px;height:180px;margin:4px auto 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed currentColor;border-radius:8px;opacity:.55;font-family:var(--display);font-weight:600;letter-spacing:.12em;font-size:.95rem;line-height:1.5}
+.gift-qr-wait small{font-family:var(--body);letter-spacing:0;font-weight:400;font-size:.8rem}
+.gift-qr-wait[hidden]{display:none}
 .form .gift .btn{width:auto;padding:10px 24px}
 .papers{display:flex;gap:10px;margin-top:4px}
 .papers label{width:34px;height:34px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1.5px rgba(194,59,59,.35);cursor:pointer;position:relative}
@@ -906,19 +909,19 @@ footer .script-h{font-size:2rem}
     <div class="couple">
       <article class="cp">
         <div class="cp-photo"><img src="images/couple_1.jpg" alt="Palida" loading="lazy"><span class="cp-ini">P</span></div>
-        <div class="cp-role">[เจ้าสาว]</div>
+        <div class="cp-role">เจ้าสาว</div>
         <div class="cp-name">Palida</div>
         <div class="cp-nick">ปาลิดา แก้วสวนจิก · เซฟ</div>
-        <p class="cp-bio">[สาววิศวะ ผู้ชอบของหวานเป็นที่สุด]</p>
+        <p class="cp-bio">สาววิศวะ ผู้ชอบของหวานเป็นที่สุด</p>
         <ul class="cp-facts"><li>🍰✈️❤😘</li></ul>
       </article>
       <div class="cp-and" aria-hidden="true">&amp;</div>
       <article class="cp">
         <div class="cp-photo"><img src="images/couple_2.jpg" alt="Pachaya" loading="lazy"><span class="cp-ini">P</span></div>
-        <div class="cp-role">[เจ้าบ่าว]</div>
+        <div class="cp-role">เจ้าบ่าว</div>
         <div class="cp-name">Pachaya</div>
         <div class="cp-nick">ปราชญา ศรีจรัส · ดิว</div>
-        <p class="cp-bio">[หนุ่มนักสะสม แต่ไม่รู้ไปเก็บที่ไหน]</p>
+        <p class="cp-bio">หนุ่มนักสะสม แต่ไม่รู้ไปเก็บที่ไหน</p>
         <ul class="cp-facts"><li>🍕🎞🚅😳</li></ul>
       </article>
     </div>
@@ -1112,11 +1115,8 @@ footer .script-h{font-size:2rem}
               <svg class="bow"><use href="#bow"/></svg>
               <h3>WEDDING GIFT</h3>
               <p>ขอบคุณสำหรับคำอวยพร ร่วมอวยพรของขวัญผ่านช่องทางด้านล่างได้</p>
-              <img class="gift-qr" id="giftQr" alt="QR พร้อมเพย์สำหรับร่วมอวยพร" hidden>
-              <div class="gift-bank" id="giftBank"></div>
-              <div class="gift-acc" id="accText"></div>
-              <div class="gift-name" id="giftName"></div>
-              <button class="btn" id="copyAcc" type="button">คัดลอกเลขบัญชี</button>
+              <img class="gift-qr" id="giftQr" alt="QR สำหรับร่วมอวยพร" hidden>
+              <div class="gift-qr-wait" id="giftQrWait">QR code<br><small>เร็ว ๆ นี้</small></div>
             </div>
           </div>
 
@@ -1241,10 +1241,7 @@ var CONFIG = {
   EVENT_DATE: '2026-12-19T11:09:00+07:00',   // เวลาแขก = งานเลี้ยงใน SHOWTIMES (นับถอยหลังถึงเวลานี้)
   // ช่องทางร่วมอวยพร (RSVP แบบที่ 2) — QR: วางรูปไว้ที่ path นี้ ถ้าไม่มีไฟล์จะซ่อนเอง
   GIFT: {
-    BANK:   '[ธนาคาร]',
-    NUMBER: '[เลขบัญชี]',
-    NAME:   '[ชื่อบัญชี]',
-    QR:     'images/promptpay.png'
+    QR:     'images/promptpay.png'   // อัปรูป QR ชื่อนี้ → ขึ้นแทนกล่อง "QR code เร็ว ๆ นี้" เอง
   }
 };
 
@@ -2083,14 +2080,7 @@ var STORE_KEY = 'wedding_guest_v1';
   })();
 
   /* ---------------- gift account ---------------- */
-  $('#giftBank').textContent=CONFIG.GIFT.BANK;
-  $('#accText').textContent=CONFIG.GIFT.NUMBER;
-  $('#giftName').textContent=CONFIG.GIFT.NAME;
-  if(CONFIG.GIFT.QR){ var qr=$('#giftQr'); qr.onload=function(){ qr.hidden=false; }; qr.src=CONFIG.GIFT.QR; }
-  $('#copyAcc').addEventListener('click',function(){
-    var txt=CONFIG.GIFT.NUMBER.replace(/[\s-]/g,'');
-    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){ toast('คัดลอกเลขบัญชีแล้ว'); },function(){ toast(CONFIG.GIFT.NUMBER); });
-  });
+  if(CONFIG.GIFT.QR){ var qr=$('#giftQr'); qr.onload=function(){ qr.hidden=false; $('#giftQrWait').hidden=true; }; qr.src=CONFIG.GIFT.QR; }
 
   /* ---------------- RSVP → Google Sheet ---------------- */
   var form=$('#rsvpForm'), st=$('#rStatus'), sub=$('#rSubmit'), msgIn=$('#rMsg');
