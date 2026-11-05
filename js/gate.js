@@ -6,7 +6,7 @@
    หน้าทดสอบตัวละคร (?avatar) ไม่ถูกปิด
    หมายเหตุ: เป็นการซ่อนหน้าเว็บแบบง่าย ไม่ใช่ระบบความปลอดภัยจริง (ไฟล์ยังเปิดตรงได้ถ้ารู้ที่อยู่) */
 (function(){
-  var GATE_ON = true;
+  var GATE_ON = false;   // ปิดแล้ว — เปิดหน้ารหัสอีกครั้ง: เปลี่ยนเป็น true
   var GATE_HASH = '02516262316eb32082f986379efad4a6ca1ec4b140c340f3dcb4fe1a4122e00a';
   var KEY = 'pp_gate_ok';
   if(!GATE_ON) return;
