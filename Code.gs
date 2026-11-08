@@ -41,6 +41,8 @@ function doPost(e) {
   let p, status, mode, updated = false;
   try {
     p = (e && e.parameter) || {};
+    // ไม่ใช่คำตอบจากฟอร์ม (ไม่มีแบบตอบรับ / ไม่มีชื่อ) → ไม่บันทึกลงตาราง RSVP
+    if (MODES.indexOf(p.mode) < 0 || !String(p.name || '').trim()) return json_({ ok: false, error: 'not an RSVP' });
     const sh = getSheet_(), c = cols_(sh);
 
     // แขกคนเดิม (เบราว์เซอร์เดิม) ส่งซ้ำ/แก้คำตอบ → อัปเดตแถวเดิม ไม่เพิ่มแถวใหม่

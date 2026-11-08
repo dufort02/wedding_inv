@@ -1887,11 +1887,16 @@ var STORE_KEY = 'wedding_guest_v1';
   function logEvent(ev){
     if(!CONFIG.RSVP_ENDPOINT || AVATAR_TEST) return;
     try{ localStorage.setItem('pp_log_day',new Date().toDateString()); }catch(e){}   // วันนี้บันทึกแล้ว → ไม่ส่ง "กลับมาเปิด" ซ้ำ
-    try{
-      var ua=navigator.userAgent, dev=/Line\//i.test(ua)?'LINE':/FBAN|FBAV|Messenger|Instagram/i.test(ua)?'Facebook/IG':/iPhone|iPad/i.test(ua)?'iPhone':/Android/i.test(ua)?'Android':'คอม';
-      fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,
-        body:new URLSearchParams({action:'log',ev:ev,name:(guest&&guest.name)||'',rid:rsvpId(),dev:dev})}).catch(function(){});
-    }catch(e){}
+    var ua=navigator.userAgent, dev=/Line\//i.test(ua)?'LINE':/FBAN|FBAV|Messenger|Instagram/i.test(ua)?'Facebook/IG':/iPhone|iPad/i.test(ua)?'iPhone':/Android/i.test(ua)?'Android':'คอม';
+    var body=new URLSearchParams({action:'log',ev:ev,name:(guest&&guest.name)||'',rid:rsvpId(),dev:dev});
+    // ส่งเฉพาะเมื่อ Apps Script เป็นเวอร์ชันที่รู้จัก "บันทึก" (7+) — เวอร์ชันเก่าจะเข้าใจผิดว่าเป็นคำตอบ RSVP
+    logReady().then(function(ok){ if(ok) return fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,body:body}); }).catch(function(){});
+  }
+  var logReadyP=null;
+  function logReady(){
+    if(!logReadyP) logReadyP=fetch(CONFIG.RSVP_ENDPOINT+(CONFIG.RSVP_ENDPOINT.indexOf('?')<0?'?':'&')+'t='+Date.now())
+      .then(function(r){ return r.json(); }).then(function(j){ return (Number(j&&j.version)||0)>=7; },function(){ return false; });
+    return logReadyP;
   }
   // แขกที่เคยแต่งตัวไว้แล้วกลับมาเปิดเว็บ → บันทึกวันละครั้ง
   if(guest){ try{ var today=new Date().toDateString(); if(localStorage.getItem('pp_log_day')!==today){ localStorage.setItem('pp_log_day',today); setTimeout(function(){ logEvent('กลับมาเปิด'); },1500); } }catch(e){} }
