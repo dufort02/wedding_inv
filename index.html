@@ -1876,11 +1876,25 @@ var STORE_KEY = 'wedding_guest_v1';
     Promise.all([compose(600),compose(256)]).then(function(r){
       guest={selV:RENUM_V, name:name, sel:Object.assign({},sel), colors:Object.assign({},colors), nameStyle:nameStyle, img:r[0], thumb:r[1], ts:Date.now()};
       saveGuest(guest); applyGuest(prevName); closeStage();
+      logEvent(prevName ? 'แต่งตัวใหม่' : 'แต่งตัวเสร็จ');
       if(AVATAR_TEST) showAvTest();
       else if(COMP) sendCompanion();     // ผู้ติดตาม: ส่งบัตร (ชื่อ + ตัวละคร) ให้บ่าวสาว
       else syncRsvpToGuest(prevName);   // เคยตอบ RSVP แล้ว → อัปเดตชื่อ/ตัวละครในคำตอบให้เอง
     }).then(function(){ btn.disabled=false; btn.innerHTML=lbl; });
   });
+
+  /* บันทึกการใช้งาน → แท็บ "บันทึก" ในไฟล์ชีต (แยกจากตาราง RSVP) — ส่งเงียบ ๆ ส่งไม่ได้ก็ไม่เป็นไร */
+  function logEvent(ev){
+    if(!CONFIG.RSVP_ENDPOINT || AVATAR_TEST) return;
+    try{ localStorage.setItem('pp_log_day',new Date().toDateString()); }catch(e){}   // วันนี้บันทึกแล้ว → ไม่ส่ง "กลับมาเปิด" ซ้ำ
+    try{
+      var ua=navigator.userAgent, dev=/Line\//i.test(ua)?'LINE':/FBAN|FBAV|Messenger|Instagram/i.test(ua)?'Facebook/IG':/iPhone|iPad/i.test(ua)?'iPhone':/Android/i.test(ua)?'Android':'คอม';
+      fetch(CONFIG.RSVP_ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,
+        body:new URLSearchParams({action:'log',ev:ev,name:(guest&&guest.name)||'',rid:rsvpId(),dev:dev})}).catch(function(){});
+    }catch(e){}
+  }
+  // แขกที่เคยแต่งตัวไว้แล้วกลับมาเปิดเว็บ → บันทึกวันละครั้ง
+  if(guest){ try{ var today=new Date().toDateString(); if(localStorage.getItem('pp_log_day')!==today){ localStorage.setItem('pp_log_day',today); setTimeout(function(){ logEvent('กลับมาเปิด'); },1500); } }catch(e){} }
 
   // รูปตัวละครความละเอียดสูง พื้นโปร่งใส (ใช้ส่งเข้าชีต / ดาวน์โหลด / พิมพ์สติกเกอร์)
   var AVATAR_UPLOAD=1500, AVATAR_DOWNLOAD=2000;

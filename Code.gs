@@ -6,9 +6,11 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
-const VERSION          = 6;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
+const VERSION          = 7;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
+const LOG_NAME         = 'บันทึก';         // แท็บบันทึกการใช้งาน (แต่งตัวเสร็จ / กลับมาเปิด / ตอบรับ) — แยกจากตาราง RSVP
+const LOG_EVENTS       = ['แต่งตัวเสร็จ', 'แต่งตัวใหม่', 'กลับมาเปิด'];
 const SAVE_AVATAR      = true;             // true = เก็บรูปตัวละครของแขกลง Google Drive และโชว์ในชีต
 const FOLDER_NAME      = 'Wedding Guest Avatars';
 const WALL_LIMIT       = 300;              // จำนวนคำอวยพรล่าสุดที่ส่งไปหน้าเว็บ
@@ -33,6 +35,7 @@ const SIDES   = ['เจ้าสาว', 'เจ้าบ่าว', 'ทั้
 
 /* ============================ รับคำตอบจากเว็บ ============================ */
 function doPost(e) {
+  if (e && e.parameter && e.parameter.action === 'log') return log_(e.parameter);
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   let p, status, mode, updated = false;
@@ -97,7 +100,28 @@ function doPost(e) {
     lock.releaseLock();
   }
   notify_(p, mode, status, updated);
+  addLog_(p.name, (updated ? 'แก้คำตอบ: ' : 'ตอบรับ: ') + (p.modeLabel || mode), p.rsvpId, '');
   return json_({ ok: true, status: status, updated: updated });
+}
+
+/* ================= บันทึกการใช้งาน (แท็บ "บันทึก") ================= */
+function log_(p) {
+  const ev = LOG_EVENTS.indexOf(p.ev) >= 0 ? p.ev : '';
+  if (ev) addLog_(p.name, ev, p.rid, p.dev);
+  return json_({ ok: !!ev });
+}
+function addLog_(name, ev, rid, dev) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let s = ss.getSheetByName(LOG_NAME);
+    if (!s) {
+      s = ss.insertSheet(LOG_NAME);
+      s.appendRow(['เวลา', 'ชื่อ', 'ทำอะไร', 'รหัสแขก', 'เปิดจาก']);
+      s.setFrozenRows(1); s.getRange('A1:E1').setFontWeight('bold'); s.setColumnWidth(1, 150); s.setColumnWidth(2, 160); s.setColumnWidth(3, 200);
+    }
+    s.appendRow([new Date(), clean_(name).slice(0, 60), clean_(ev).slice(0, 60),
+                 String(rid || '').replace(/[^\w-]/g, '').slice(0, 40), clean_(dev).slice(0, 20)]);
+  } catch (err) { console.warn('log: ' + err); }
 }
 
 /* ================= ส่งคำอวยพรให้หน้าเว็บ (?action=wishes) ================= */
