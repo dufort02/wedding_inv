@@ -23,4 +23,16 @@ keep = {lower_stem(f) for f in originals}
 gone = 0
 for w in glob.glob('images/web/*.png'):
     if lower_stem(w) not in keep: os.remove(w); gone += 1
-print('resized', n, 'files, removed', gone, 'orphans')
+# ไอคอนในเมนูแต่งตัว (500px) -> images/web/icons/ (192px) — แสดงจริงแค่ ~64px
+ICON = 192
+os.makedirs('images/web/icons', exist_ok=True)
+icons = sorted(glob.glob('images/icons/*.png'))
+ni = 0
+for f in icons:
+    out = 'images/web/icons/' + os.path.basename(f)
+    if os.path.exists(out) and os.path.normpath(f) not in forced: continue
+    im = Image.open(f).convert('RGBA'); im.thumbnail((ICON, ICON), Image.LANCZOS); im.save(out, optimize=True); ni += 1
+ikeep = {os.path.basename(f) for f in icons}
+for w in glob.glob('images/web/icons/*.png'):
+    if os.path.basename(w) not in ikeep: os.remove(w); gone += 1
+print('resized', n, 'files +', ni, 'icons, removed', gone, 'orphans')

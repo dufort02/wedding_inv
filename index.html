@@ -902,7 +902,7 @@ footer .script-h{font-size:2rem}
          ขยับป้ายชื่อ: แก้ --x (จากซ้าย) และ --y (จากบน) เป็น % ของรูป = ตำแหน่งจุดกลมที่ชี้หัวแต่ละคน -->
     <figure class="cp-shot">
       <div class="cp-shot-frame">
-        <img src="images/couple.jpg" alt="Palida &amp; Pachaya" decoding="async">
+        <img data-src="images/couple.jpg" alt="Palida &amp; Pachaya" decoding="async">
         <div class="vf" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><span class="rec">REC</span><span class="tc">19:12:69</span></div>
         <span class="cp-pin" style="--x:29%;--y:30%"><b>CAST 01 · PALIDA</b></span>
         <span class="cp-pin" style="--x:75%;--y:20%"><b>CAST 02 · PACHAYA</b></span>
@@ -1118,7 +1118,7 @@ footer .script-h{font-size:2rem}
               <svg class="bow"><use href="#bow"/></svg>
               <h3>WEDDING GIFT</h3>
               <p>ขอบคุณสำหรับคำอวยพร ร่วมอวยพรของขวัญผ่านช่องทางด้านล่างได้</p>
-              <img class="gift-qr" id="giftQr" alt="QR สำหรับร่วมอวยพร" hidden>
+              <img class="gift-qr" id="giftQr" alt="QR สำหรับร่วมอวยพร" loading="lazy" hidden>
               <div class="gift-qr-wait" id="giftQrWait">QR code<br><small>เร็ว ๆ นี้</small></div>
               <a class="btn btn--ghost gift-qr-save" id="giftQrSave" download="PP-wedding-QR.png" hidden>บันทึกรูป QR</a>
             </div>
@@ -1254,7 +1254,7 @@ var CONFIG = {
    ไฟล์ไอคอน   : <AVATAR_BASE>/icons/<thumb>_<n>_thumb.png */
 /* sides:[n] = ชิ้นที่มี 2 ด้าน: ไฟล์ <key>_n_L.png / <key>_n_R.png + ไอคอนรูปเดียว → มีปุ่ม ⇄ สลับซ้าย-ขวา (ด้านเริ่มต้น L) */
 var LAYERS = [
-  {key:'hair',             label:'ทรงผม',        count:11, thumb:'hair',       color:true},
+  {key:'hair',             label:'ทรงผม',        count:14, thumb:'hair',       color:true},
   {key:'back_hair',        label:'ผมด้านหลัง',   count:15, thumb:'back_hair',  color:true},
   {key:'eyes',             label:'ดวงตา',        count:6,  thumb:'eyes',       color:true},
   {key:'mouth',            label:'ปาก',          count:3,  thumb:'mouth'},
@@ -1440,7 +1440,10 @@ var STORE_KEY = 'wedding_guest_v1';
   // รูปที่แสดงบนหน้าจอใช้สำเนาย่อ images/web/ (2048px) — ไฟล์ต้นฉบับ 5000px กินหน่วยความจำ ~100MB ต่อชั้น ทำให้มือถือ/เบราว์เซอร์ในแอปเด้ง
   // อัปรูปใหม่แล้วต้องรัน scripts/make_web_images.py แล้ว commit images/web/ ด้วย
   function webFor(u){ var i=u.lastIndexOf('/')+1, f=u.slice(i).replace(/\.PNG$/,'.png'); return u.slice(0,i)+'web/'+f; }
-  function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'icons/' + L.thumb + '_' + n + '_thumb.png'; }
+  // ไอคอนเมนู: ใช้สำเนาเล็ก images/web/icons (192px) — ยังไม่มีสำเนา (เพิ่งอัป) → ใช้ไฟล์ใน icons/ แทน
+  function thumbFor(L,n){ return CONFIG.AVATAR_BASE + 'web/icons/' + L.thumb + '_' + n + '_thumb.png'; }
+  function thumbFail(img,fail){ return function(){   // ลองไฟล์ต้นฉบับใน icons/ ก่อน แล้วค่อยยอมแพ้
+    var u=img.getAttribute('src')||''; if(u.indexOf('/web/icons/')>=0){ img.src=u.replace('/web/icons/','/icons/'); return; } if(fail) fail(); }; }
 
   function rgb2hsl(r,g,b){ r/=255;g/=255;b/=255; var mx=Math.max(r,g,b),mn=Math.min(r,g,b),h=0,s=0,l=(mx+mn)/2;
     if(mx!==mn){ var d=mx-mn; s=l>.5?d/(2-mx-mn):d/(mx+mn);
@@ -1582,24 +1585,23 @@ var STORE_KEY = 'wedding_guest_v1';
     if(shiBackPick){
       var sb=document.createElement('button'); sb.type='button'; sb.className='opt opt--shi'+(sel.shiBack?' on':'');
       sb.setAttribute('aria-label','ผมด้านหลังของชุดพิเศษ');
-      var si=new Image(); si.alt=''; si.src=thumbFor({thumb:'shi_back_hair'},sel.special); si.onerror=function(){ sb.classList.add('noimg'); si.remove(); };
+      var si=new Image(); si.alt=''; si.src=thumbFor({thumb:'shi_back_hair'},sel.special); si.onerror=thumbFail(si,function(){ sb.classList.add('noimg'); si.remove(); });
       var sf=document.createElement('span'); sf.className='fallback'; sf.textContent='✨'; sb.appendChild(si); sb.appendChild(sf);
       sb.addEventListener('click',function(){ sel.shiBack=1; renderSpecialSet(); buildGrid(); });
       gridEl.appendChild(sb);
     }
     var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) if(!vipHidden(L.key,n) || sel[L.key]===n) nums.push(n);
-    // ชิ้นที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับชิ้นที่ใส่อยู่ → เทา กดได้ (ชิ้นนั้นจะถอดออก)
-    var worn=LINKED.filter(function(k){ return sel[k]; });
-    var mismatch=function(n){ return n>0 && ((FOR_SHIRT[L.key] ? !linkOk(L.key,n,sel.shirt) : L.key==='shirt' && worn.some(function(k){ return !linkOk(k,sel[k],n); }))
-      || (L.key==='back_hair' && !shiBackPick && !backOk(n,sel.hair)) || (L.key==='hair' && !backOk(sel.back_hair,n))); };
-    if(!replaced && (FOR_SHIRT[L.key]||(L.key==='shirt'&&worn.length)||L.key==='hair'||L.key==='back_hair') && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='hair'?'ตัวสีเทาไม่เข้ากับผมด้านหลังที่ใช้อยู่ (เลือกแล้วผมด้านหลังจะเปลี่ยน)':L.key==='back_hair'?'ตัวสีเทาใช้กับทรงผมนี้ไม่ได้':L.key!=='shirt'?'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้':'ตัวสีเทาไม่เข้ากับเสื้อนอก/เครื่องประดับที่ใส่อยู่ (เลือกแล้วจะถอดชิ้นนั้นออก)'; gridEl.appendChild(mn); }
+    // สีเทา = กดไม่ได้เท่านั้น (เสื้อนอก/เครื่องประดับที่ไม่เข้ากับเสื้อ, ผมหลังที่ไม่เข้ากับทรงผม)
+    // แท็บเสื้อ/ทรงผมไม่ทำสีเทา — เลือกแล้วถ้าชิ้นอื่นไม่เข้ากัน จะถอด/เปลี่ยนให้เองพร้อมข้อความเด้ง
+    var mismatch=function(n){ return n>0 && ((FOR_SHIRT[L.key] && !linkOk(L.key,n,sel.shirt)) || (L.key==='back_hair' && !shiBackPick && !backOk(n,sel.hair))); };
+    if(!replaced && (FOR_SHIRT[L.key]||L.key==='back_hair') && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='back_hair'?'ตัวสีเทาใช้กับทรงผมนี้ไม่ได้':'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้'; gridEl.appendChild(mn); }
     nums.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.className='opt'+(n===0?' opt--none':'');
       b.setAttribute('aria-label',L.label+' '+(n===0?'ไม่ใส่':n));
       if(n===0){ b.textContent='ไม่ใส่'; }
       else{
         var img=new Image(); img.alt=''; img.loading='lazy'; img.src=thumbFor(L,n);
-        img.onerror=function(){ b.classList.add('noimg'); img.remove(); };
+        img.onerror=thumbFail(img,function(){ b.classList.add('noimg'); img.remove(); });
         var fb=document.createElement('span'); fb.className='fallback'; fb.textContent=n;
         b.appendChild(img); b.appendChild(fb);
       }
@@ -1612,8 +1614,13 @@ var STORE_KEY = 'wedding_guest_v1';
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
-        if(L.key==='hair' && !backOk(sel.back_hair,n)){ sel.back_hair=BACK_FALLBACK; renderLayer('back_hair'); buildGrid(); return; }
-        if(L.key==='shirt'){ var hadOuter=LINKED.some(function(k){ return sel[k]; }); LINKED.forEach(function(k){ if(!linkOk(k,sel[k],n)) sel[k]=0; renderLayer(k); }); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); if(hadOuter){ buildGrid(); return; } buildPalette(); }
+        if(L.key==='hair' && !backOk(sel.back_hair,n)){ sel.back_hair=BACK_FALLBACK; renderLayer('back_hair'); toast('เปลี่ยนผมด้านหลังแล้ว · แบบเดิมใช้กับทรงนี้ไม่ได้'); }
+        if(L.key==='shirt'){
+          var off=LINKED.filter(function(k){ return sel[k] && !linkOk(k,sel[k],n); });
+          off.forEach(function(k){ sel[k]=0; renderLayer(k); });
+          renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette();
+          if(off.length) toast('ถอด'+off.map(function(k){ return LAYER_BY_KEY[k].label; }).join(' + ')+'แล้ว (ไม่เข้ากับเสื้อนี้)');
+        }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(L.key==='eyes') renderLayer('eyes_wink');
         if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
@@ -1677,7 +1684,7 @@ var STORE_KEY = 'wedding_guest_v1';
     WINK_EYES.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','ตาหลับแบบ '+n);
       if(sel.winkEye===n) b.classList.add('on');
-      var im=new Image(); im.alt=''; im.src=thumbFor(LAYER_BY_KEY.eyes,n); b.appendChild(im);
+      var im=new Image(); im.alt=''; im.onerror=thumbFail(im); im.src=thumbFor(LAYER_BY_KEY.eyes,n); b.appendChild(im);
       b.addEventListener('click',function(){ sel.winkEye=n; redraw(); });
       r2.appendChild(b);
     });
@@ -1761,7 +1768,7 @@ var STORE_KEY = 'wedding_guest_v1';
   }
 
   $('#openBtn').addEventListener('click',function(){
-    cover.classList.add('hide'); if(CONFIG.SHOW_MUSIC) setMusic(true);
+    cover.classList.add('hide'); loadLate(); if(CONFIG.SHOW_MUSIC) setMusic(true);
     if(CONFIG.SHOW_AVATAR_GAME && !guest) openStage(); else document.body.classList.remove('locked');
   });
   $('#skipBtn').addEventListener('click',closeStage);
@@ -2001,8 +2008,10 @@ var STORE_KEY = 'wedding_guest_v1';
   (function(){
     var fig=$('.cp-shot'); if(!fig) return; var im=fig.querySelector('img');
     function gone(){ im.remove(); fig.classList.add('cp-shot--empty'); }
-    im.addEventListener('error',gone); if(im.complete && !im.naturalWidth) gone();
+    im.addEventListener('error',gone); if(im.getAttribute('src') && im.complete && !im.naturalWidth) gone();
   })();
+  // รูปใหญ่ที่ไม่ต้องใช้ตอนหน้าปก (data-src) → โหลดหลังกด "เปิดคำเชิญ" ให้หน้าปกขึ้นเร็ว
+  function loadLate(){ $$('img[data-src]').forEach(function(i){ i.src=i.getAttribute('data-src'); i.removeAttribute('data-src'); }); }
 
   /* ---------------- story photos fallback ---------------- */
   $$('.shot img').forEach(function(im){ function gone(){ im.parentNode.classList.add('noimg'); im.remove(); }
