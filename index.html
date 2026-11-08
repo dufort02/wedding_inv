@@ -1591,11 +1591,10 @@ var STORE_KEY = 'wedding_guest_v1';
       gridEl.appendChild(sb);
     }
     var nums=[]; if(L.removable||shiBackPick) nums.push(0); for(var n=1;n<=L.count;n++) if(!vipHidden(L.key,n) || sel[L.key]===n) nums.push(n);
-    // ชิ้นที่ไม่เข้ากับเสื้อ → เทา กดไม่ได้ · เสื้อที่ไม่เข้ากับชิ้นที่ใส่อยู่ → เทา กดได้ (ชิ้นนั้นจะถอดออก)
-    var worn=LINKED.filter(function(k){ return sel[k]; });
-    var mismatch=function(n){ return n>0 && ((FOR_SHIRT[L.key] ? !linkOk(L.key,n,sel.shirt) : L.key==='shirt' && worn.some(function(k){ return !linkOk(k,sel[k],n); }))
-      || (L.key==='back_hair' && !shiBackPick && !backOk(n,sel.hair)) || (L.key==='hair' && !backOk(sel.back_hair,n))); };
-    if(!replaced && (FOR_SHIRT[L.key]||(L.key==='shirt'&&worn.length)||L.key==='hair'||L.key==='back_hair') && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='hair'?'ตัวสีเทาไม่เข้ากับผมด้านหลังที่ใช้อยู่ (เลือกแล้วผมด้านหลังจะเปลี่ยน)':L.key==='back_hair'?'ตัวสีเทาใช้กับทรงผมนี้ไม่ได้':L.key!=='shirt'?'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้':'ตัวสีเทาไม่เข้ากับเสื้อนอก/เครื่องประดับที่ใส่อยู่ (เลือกแล้วจะถอดชิ้นนั้นออก)'; gridEl.appendChild(mn); }
+    // สีเทา = กดไม่ได้เท่านั้น (เสื้อนอก/เครื่องประดับที่ไม่เข้ากับเสื้อ, ผมหลังที่ไม่เข้ากับทรงผม)
+    // แท็บเสื้อ/ทรงผมไม่ทำสีเทา — เลือกแล้วถ้าชิ้นอื่นไม่เข้ากัน จะถอด/เปลี่ยนให้เองพร้อมข้อความเด้ง
+    var mismatch=function(n){ return n>0 && ((FOR_SHIRT[L.key] && !linkOk(L.key,n,sel.shirt)) || (L.key==='back_hair' && !shiBackPick && !backOk(n,sel.hair))); };
+    if(!replaced && (FOR_SHIRT[L.key]||L.key==='back_hair') && nums.some(mismatch)){ var mn=document.createElement('p'); mn.className='opt-note opt-note--soft'; mn.textContent=L.key==='back_hair'?'ตัวสีเทาใช้กับทรงผมนี้ไม่ได้':'ตัวสีเทาใส่กับเสื้อตัวนี้ไม่ได้'; gridEl.appendChild(mn); }
     nums.forEach(function(n){
       var b=document.createElement('button'); b.type='button'; b.className='opt'+(n===0?' opt--none':'');
       b.setAttribute('aria-label',L.label+' '+(n===0?'ไม่ใส่':n));
@@ -1615,8 +1614,13 @@ var STORE_KEY = 'wedding_guest_v1';
         if(sel.special && SPECIAL_REPLACES.indexOf(L.key)>=0){ sel.special=0; sel[L.key]=n; renderSpecialSet(); buildGrid(); return; }
         if(shiBackPick){ sel.shiBack=0; sel.back_hair=n; renderSpecialSet(); buildGrid(); return; }
         sel[L.key]=n; renderLayer(L.key);
-        if(L.key==='hair' && !backOk(sel.back_hair,n)){ sel.back_hair=BACK_FALLBACK; renderLayer('back_hair'); buildGrid(); return; }
-        if(L.key==='shirt'){ var hadOuter=LINKED.some(function(k){ return sel[k]; }); LINKED.forEach(function(k){ if(!linkOk(k,sel[k],n)) sel[k]=0; renderLayer(k); }); renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); if(hadOuter){ buildGrid(); return; } buildPalette(); }
+        if(L.key==='hair' && !backOk(sel.back_hair,n)){ sel.back_hair=BACK_FALLBACK; renderLayer('back_hair'); toast('เปลี่ยนผมด้านหลังแล้ว · แบบเดิมใช้กับทรงนี้ไม่ได้'); }
+        if(L.key==='shirt'){
+          var off=LINKED.filter(function(k){ return sel[k] && !linkOk(k,sel[k],n); });
+          off.forEach(function(k){ sel[k]=0; renderLayer(k); });
+          renderLayer('body'); renderLayer('uni_belt'); renderLayer('uni_bottom'); buildPalette();
+          if(off.length) toast('ถอด'+off.map(function(k){ return LAYER_BY_KEY[k].label; }).join(' + ')+'แล้ว (ไม่เข้ากับเสื้อนี้)');
+        }
         $$('#optGrid .opt').forEach(function(o){o.classList.remove('on');}); b.classList.add('on');
         if(L.key==='eyes') renderLayer('eyes_wink');
         if(Array.isArray(L.color)||L.noColor||L.sides||L.key==='eyes') buildPalette();   // บางชิ้นเปลี่ยนสีได้ บางชิ้นไม่ได้
