@@ -312,6 +312,15 @@ html[data-theme="3"] .t3tk:not([hidden]){display:block;max-width:360px;margin:22
 .t3tk-win img{position:absolute;left:50%;bottom:0;width:112%;max-width:none;transform:translateX(-50%)}
 .t3tk-badge{position:absolute;right:28px;top:28px;z-index:2;padding:4px 14px;border-radius:999px;background:var(--t3-teal);color:#fff;font-weight:700;font-size:.85rem;line-height:1.7;box-shadow:0 3px 8px rgba(0,0,0,.25)}
 .t3tk-badge[hidden]{display:none}
+/* ตราประทับ "ยังไม่ตอบรับ" — กดแล้วเลื่อนไปฟอร์มตอบรับ · หายเมื่อตอบรับแล้ว */
+.t3tk-stamp{position:absolute;right:24px;top:30px;z-index:3;display:flex;flex-direction:column;align-items:center;padding:4px 10px 3px;
+  border:2.5px solid var(--red);border-radius:7px;background:rgba(255,253,248,.93);color:var(--red);text-decoration:none;line-height:1.15;
+  box-shadow:0 0 0 2px rgba(255,253,248,.93),2px 3px 0 rgba(43,42,39,.22);transform:rotate(9deg);animation:t3Stamp 2.4s ease-in-out infinite}
+.t3tk-stamp small{font-family:var(--display);font-weight:700;font-size:.55rem;letter-spacing:.18em}
+.t3tk-stamp b{font-family:var(--body);font-weight:700;font-size:.88rem}
+.t3tk-stamp[hidden]{display:none}
+@keyframes t3Stamp{50%{transform:rotate(9deg) scale(1.05)}}
+@media (prefers-reduced-motion:reduce){ .t3tk-stamp{animation:none} }
 .t3tk-title{font-family:var(--display);font-weight:700;color:var(--t3-pink);font-size:1.5rem;line-height:1.4;margin-top:12px}
 .t3tk-star{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.22em;opacity:.85}
 .t3tk-star b{font-family:var(--body);font-size:1rem;letter-spacing:0;color:var(--t3-pink);line-height:1.8}
