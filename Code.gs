@@ -6,7 +6,7 @@
  * หลังวางโค้ดเวอร์ชันนี้: เลือกฟังก์ชัน setup แล้วกด ▶ เรียกใช้ 1 ครั้ง (อนุญาตสิทธิ์อีเมล)
  * แล้ว ทำให้ใช้งานได้ → จัดการ → แก้ไข → เวอร์ชันใหม่
  */
-const VERSION          = 7;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
+const VERSION          = 8;                // เปิด URL /exec แล้วเห็นเลขนี้ = deploy เวอร์ชันล่าสุดแล้ว
 const SHEET_NAME       = 'RSVP';
 const SUMMARY_NAME     = 'สรุป';
 const LOG_NAME         = 'บันทึก';         // แท็บบันทึกการใช้งาน (แต่งตัวเสร็จ / กลับมาเปิด / ตอบรับ) — แยกจากตาราง RSVP
@@ -107,20 +107,26 @@ function doPost(e) {
 /* ================= บันทึกการใช้งาน (แท็บ "บันทึก") ================= */
 function log_(p) {
   const ev = LOG_EVENTS.indexOf(p.ev) >= 0 ? p.ev : '';
-  if (ev) addLog_(p.name, ev, p.rid, p.dev);
+  // ค่าตัวละคร (เลขชิ้น + สี) — เก็บเฉพาะตอนแต่งตัว เผื่อแขกลืมตอบรับ
+  let cfg = '';
+  if (ev && /^แต่งตัว/.test(ev) && p.cfg) { try { cfg = JSON.stringify(JSON.parse(String(p.cfg).slice(0, 1500))); } catch (err) {} }
+  if (ev) addLog_(p.name, ev, p.rid, p.dev, cfg);
   return json_({ ok: !!ev });
 }
-function addLog_(name, ev, rid, dev) {
+const LOG_HEADERS = ['เวลา', 'ชื่อ', 'ทำอะไร', 'รหัสแขก', 'เปิดจาก', 'ค่าตัวละคร (JSON)'];
+function addLog_(name, ev, rid, dev, cfg) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let s = ss.getSheetByName(LOG_NAME);
     if (!s) {
       s = ss.insertSheet(LOG_NAME);
-      s.appendRow(['เวลา', 'ชื่อ', 'ทำอะไร', 'รหัสแขก', 'เปิดจาก']);
-      s.setFrozenRows(1); s.getRange('A1:E1').setFontWeight('bold'); s.setColumnWidth(1, 150); s.setColumnWidth(2, 160); s.setColumnWidth(3, 200);
+      s.appendRow(LOG_HEADERS);
+      s.setFrozenRows(1); s.setColumnWidth(1, 150); s.setColumnWidth(2, 160); s.setColumnWidth(3, 200);
     }
+    if (s.getRange(1, LOG_HEADERS.length).getValue() === '') s.getRange(1, 1, 1, LOG_HEADERS.length).setValues([LOG_HEADERS]);   // แท็บเดิมจากเวอร์ชัน 7 → เติมหัวคอลัมน์ใหม่
+    s.getRange(1, 1, 1, LOG_HEADERS.length).setFontWeight('bold');
     s.appendRow([new Date(), clean_(name).slice(0, 60), clean_(ev).slice(0, 60),
-                 String(rid || '').replace(/[^\w-]/g, '').slice(0, 40), clean_(dev).slice(0, 20)]);
+                 String(rid || '').replace(/[^\w-]/g, '').slice(0, 40), clean_(dev).slice(0, 20), cfg || '']);
   } catch (err) { console.warn('log: ' + err); }
 }
 
