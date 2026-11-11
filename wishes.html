@@ -53,10 +53,11 @@ body.slide-view .back{display:none!important}   /* สไลด์โชว์�
 .cols{columns:auto clamp(150px,20vw,280px);column-gap:clamp(18px,2.4vw,36px);max-width:1800px;margin:0 auto;--wfs:clamp(13px,.55vw + 7px,17px)}
 
 /* ---------- slideshow ---------- */
-.center{display:flex;align-items:center;justify-content:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
+.center{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
 .wc.slide{opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
 .wc.slide.in{opacity:1}
 .wc.slide.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
+.wc.slide.out{position:absolute;pointer-events:none}   /* ใบเก่าที่กำลังจาง ไม่จองที่ — ใบใหม่อยู่กลางทันที */
 
 .empty{text-align:center;align-self:center;padding:0 16px}
 .empty p{font-size:clamp(1.1rem,3.5vh,2rem)}

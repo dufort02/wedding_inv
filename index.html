@@ -202,6 +202,7 @@ input,textarea{font-family:inherit}
 .dots{display:flex;flex-wrap:wrap;gap:8px}
 .dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1.5px rgba(194,59,59,.35)}
 .dot.dot--pair{width:56px;border-radius:999px}
+.dot.dot--combo{width:44px}
 .opt.has-sides::after{content:'⇄';position:absolute;right:3px;top:2px;font-size:.7rem;font-weight:700;color:var(--red);background:var(--white);border-radius:50%;width:1.35em;height:1.35em;line-height:1.35em;text-align:center;box-shadow:0 0 0 1px rgba(194,59,59,.35)}
 .wink{margin-top:4px}.wink:empty{display:none}
 .wink-lbl{display:block;font-size:.8rem;margin:10px 0 6px;padding-top:10px;border-top:1.5px dashed rgba(194,59,59,.3)}
@@ -1268,7 +1269,7 @@ var SPECIAL = {key:'special', label:'✨ พิเศษ', count:1, thumb:'shi_h
 /* ขยิบตา: ตาข้างหนึ่งใช้ "ตาหลับ" จากไฟล์ตาเบอร์ในรายการนี้ (ตัดครึ่งภาพ) อีกข้างเป็นตาที่เลือกไว้
    เพิ่มแบบตาหลับ = วาดไฟล์ตาหลับสองข้าง eyes_N.png แล้วเติมเลข N · ปุ่มสุ่มขยิบ 1 ใน 10 (WINK_RANDOM) */
 /* เสื้อบางตัวต้องใช้ตัว (body) แบบอื่น — {เลขเสื้อ: เลข body}  เลือกเสื้อนั้นแล้วสลับ body_N.png ให้เอง เปลี่ยนเสื้อตัวอื่นกลับเป็น body_1 */
-var BODY_FOR_SHIRT = {16:2, 17:2, 27:2, 28:2, 29:2, 30:2, 31:2};   // หลายตัวคั่นด้วยจุลภาคในวงเล็บเดียว
+var BODY_FOR_SHIRT = {16:2, 17:2, 27:2, 28:2, 29:2, 30:2, 31:2, 32:2};   // หลายตัวคั่นด้วยจุลภาคในวงเล็บเดียว
 /* ชิ้นที่ใส่ได้เฉพาะกับเสื้อบางตัว — {หมวด: {เลขชิ้น: [เลขเสื้อ...]}}  ชิ้นที่ไม่เข้ากับเสื้อ → สีเทา กดไม่ได้ */
 var FOR_SHIRT = {
   outerwear:   {1:[1,4], 2:[8], 3:[10,11,12], 4:[18,19], 5:[1,2,3,7,8,9,21,23,24], 6:[1,2,8,9,21,23,24]},
@@ -1316,6 +1317,13 @@ var UNIFORMS = {
   24:{belt:true, def:0, pairs:[['#936C55','#1A1B31','น้ำตาล / กรม'],['#191818','#1A1B31','ดำ / กรม'],['#191818','#191818','ดำ / ดำ']]}
 };
 /* สีให้เลือก — [โค้ดสี, ชื่อ]  ปุ่ม ↺ = สีเดิมของภาพ (ค่าเริ่มต้น) */
+/* ชุดสี (หลายสีพร้อมกัน) ของเสื้อบางตัว — {เลขเสื้อ: [[สีพื้น, สีรองอ่อน, สีรองเข้ม, ชื่อ], ...]}
+   แถวแรก = สีในไฟล์รูปจริง (ใช้เป็นต้นแบบเทียบสี) · สีขาว/เส้นดำไม่เปลี่ยน · เสื้อตัวนี้ยังเลือก "สีเดียว" ได้ตามปกติ */
+var SHIRT_COMBOS = {
+  32: [['#9EEBFF','#FF98DD','#F261C2','ฟ้า-ชมพู'], ['#FF98DD','#F261C2','#F261C2','ชมพู'], ['#9EEBFF','#C9B1FF','#AD70FF','ฟ้า-ม่วง'],
+       ['#FF98DD','#9EEBFF','#46B1FF','ชมพู-ฟ้า'], ['#C295FF','#FFEA8C','#FFDE55','ม่วง-เหลือง']]
+};
+function comboOf(v){ var m=/^combo:(\d+):(\d+)$/.exec(v||''); return m && SHIRT_COMBOS[m[1]] && SHIRT_COMBOS[m[1]][m[2]] ? {shirt:+m[1], i:+m[2], set:SHIRT_COMBOS[m[1]]} : null; }
 var PALETTE = [['#f7d794','เหลืองพาสเทล'],['#f8a5c2','ชมพู'],['#c7ace4','ม่วงพาสเทล'],['#778beb','น้ำเงินพาสเทล'],['#b8e994','เขียวพาสเทล'],['#e55039','แดงส้ม'],
                ['#5dade2','ฟ้า'],['#f0a500','ส้มทอง'],['#ffffff','ขาว'],['#555555','เทาเข้ม'],['#3b2a24','น้ำตาลเข้ม'],['#c23b3b','แดง']];
 var PALETTES = {
@@ -1462,7 +1470,9 @@ var STORE_KEY = 'wedding_guest_v1';
               var sc=Math.min(1,TINT_MAX/Math.max(o.naturalWidth,o.naturalHeight));
               var c=document.createElement('canvas'); c.width=Math.round(o.naturalWidth*sc); c.height=Math.round(o.naturalHeight*sc);
               var x=c.getContext('2d'); x.drawImage(o,0,0,c.width,c.height);
-              var d=x.getImageData(0,0,c.width,c.height), a=d.data, t=hex2hsl(hex);
+              var d=x.getImageData(0,0,c.width,c.height), a=d.data, cb=comboOf(hex);
+              if(cb){ comboPaint(a,cb); x.putImageData(d,0,0); var co=c.toDataURL('image/png'); c.width=c.height=0; a=d=null; res(co); return; }
+              var t=hex2hsl(hex);
               // หาความสว่างของ "สีพื้น" ของภาพ (median ของพิกเซลที่มีสี) แล้วเทียบสัดส่วน
               // → สีพื้นกลายเป็นสีที่เลือกจริง ๆ, เส้นดำยังดำ, ไฮไลต์ขาวยังขาว
               // วนลูปแบบไม่สร้างอาร์เรย์ต่อพิกเซล (เดิมสร้างหลายล้านอาร์เรย์ต่อครั้ง → หน่วยความจำพุ่งบนมือถือ)
@@ -1490,6 +1500,23 @@ var STORE_KEY = 'wedding_guest_v1';
     return tintCache[key];
   }
 
+  // ชุดสี: แยกพิกเซลเป็น สีพื้น / สีรองอ่อน / สีรองเข้ม (เทียบกับแถวแรกของ SHIRT_COMBOS) แล้วย้อมแต่ละกลุ่มเป็นสีใหม่
+  // คงความสว่าง-เงาเดิมไว้ · ขาว เทา เส้นดำ ไม่เปลี่ยน
+  function comboPaint(a,cb){
+    var src=cb.set[0].slice(0,3).map(hex2hsl), tgt=cb.set[cb.i].slice(0,3).map(hex2hsl), i,j,R,G,B,mx,mn,l,sa,h,dd,best,bd,dh,dist,S,T,q,pp,ns;
+    for(i=0;i<a.length;i+=4){ if(!a[i+3]) continue;
+      R=a[i]/255;G=a[i+1]/255;B=a[i+2]/255; mx=R>G?(R>B?R:B):(G>B?G:B); mn=R<G?(R<B?R:B):(G<B?G:B); l=(mx+mn)/2; dd=mx-mn;
+      if(!dd) continue; sa=l>.5?dd/(2-mx-mn):dd/(mx+mn); if(sa<.22||l<.06||l>.97) continue;
+      h=(mx===R?((G-B)/dd+(G<B?6:0)):mx===G?((B-R)/dd+2):((R-G)/dd+4))*60;
+      best=0; bd=9; for(j=0;j<3;j++){ dh=Math.abs(h-src[j][0]); if(dh>180) dh=360-dh; dist=dh/60+Math.abs(l-src[j][2])*1.6; if(dist<bd){ bd=dist; best=j; } }
+      if(bd>1.6) continue;   // สีอื่นที่ไม่ใช่ 3 สีหลัก → คงไว้
+      S=src[best]; T=tgt[best];
+      l = l<=S[2] ? T[2]*l/S[2] : T[2]+(l-S[2])/(1-S[2])*(1-T[2]);
+      ns=Math.min(1,T[1]*Math.min(1.3,sa/(S[1]||1)));
+      q=l<.5?l*(1+ns):l+ns-l*ns; pp=2*l-q;
+      a[i]=Math.round(hue2rgb(pp,q,T[0]/360+1/3)*255); a[i+1]=Math.round(hue2rgb(pp,q,T[0]/360)*255); a[i+2]=Math.round(hue2rgb(pp,q,T[0]/360-1/3)*255); }
+  }
+
   var warnedTint=false;
   function renderLayer(k){
     var im=layerEls[k]; if(!im) return;
@@ -1507,6 +1534,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var url=webFor(srcFor(k,n)), c=colors[k];
     if(uni){ var up=U.pairs[sel['uni'+sel.shirt]]||U.pairs[U.def]; c=up[k==='uni_belt'?0:1]; }
     if(!uni && c && LAYER_BY_KEY[k] && !canColor(LAYER_BY_KEY[k],n)) c=null;   // ชิ้นนี้เปลี่ยนสีไม่ได้ → ใช้สีเดิม
+    if(c && comboOf(c) && !(k==='shirt' && comboOf(c).shirt===n && comboOf(c).i>0)) c=null;   // ชุดสีใช้ได้กับเสื้อตัวของมันเท่านั้น
     if(!c){ im.src=url; return; }
     busy++; win.classList.add('busy');
     tint(url,c).then(function(out){ if(im._tok===tok) im.src=out; })
@@ -1656,10 +1684,23 @@ var STORE_KEY = 'wedding_guest_v1';
       dotsEl.appendChild(fb);
     }
     if(!ok) return;
+    var combos=L.key==='shirt' && SHIRT_COMBOS[sel.shirt];
+    if(combos){   // เสื้อที่มีชุดสี: แถวชุดสีก่อน (อันแรก = สีเดิม) แล้วตามด้วยสีเดียว
+      $('#paletteLabel').textContent='สีเสื้อ — เลือกชุดสี หรือสีเดียว';
+      combos.forEach(function(cs,i){
+        var v=i?'combo:'+sel.shirt+':'+i:null, d=document.createElement('button'); d.type='button'; d.className='dot dot--pair dot--combo';
+        d.style.background='linear-gradient(90deg,'+cs[0]+' 0 50%,'+cs[1]+' 50% 75%,'+cs[2]+' 75%)';
+        d.setAttribute('aria-label','ชุดสี '+cs[3]); d.title=cs[3]+(i?'':' (สีเดิม)');
+        if((colors[L.key]||null)===v) d.classList.add('on');
+        d.addEventListener('click',function(){ applyColor(L.key,v); });
+        dotsEl.appendChild(d);
+      });
+    } else {
     var reset=document.createElement('button'); reset.type='button'; reset.className='dot dot--reset'; reset.textContent='↺';
     reset.setAttribute('aria-label','สีเดิม'); if(!colors[L.key]) reset.classList.add('on');
     reset.addEventListener('click',function(){ applyColor(L.key,null); });
     dotsEl.appendChild(reset);
+    }
     var pal=paletteFor(L);
     if(L.key==='back_hair' && vipOn()) pal=pal.concat([SPECIAL_HAIR_COLOR]);   // ปลดล็อกชุดพิเศษแล้ว → มีสีชมพูของชุดพิเศษต่อท้าย
     pal.forEach(function(p){
@@ -1731,6 +1772,8 @@ var STORE_KEY = 'wedding_guest_v1';
         colors[L.key]=hex; if(HAIR_PAIR[L.key]) colors[HAIR_PAIR[L.key]]=hex;
       }
     });
+    var cs=SHIRT_COMBOS[sel.shirt];   // เสื้อที่มีชุดสี: สุ่มชุดสีบ่อยกว่าสีเดียว
+    if(cs && Math.random()<.6){ var ci=Math.floor(Math.random()*cs.length); if(ci) colors.shirt='combo:'+sel.shirt+':'+ci; else delete colors.shirt; }
     renderAll(); buildGrid();
   }
 
