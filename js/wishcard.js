@@ -57,7 +57,7 @@
 /* รีวิวนักวิจารณ์ (ธีม 3) */
 .wc.wc--rv{box-shadow:none;--r:0deg;--x:0;margin-bottom:1.8em;color:#2B2A27}
 .wc.wc--rv::before,.wc.wc--rv::after{display:none}
-.wc--rv:hover{transform:translateY(-3px)}
+.wc--rv:hover{transform:translateY(-3px) rotate(0deg)}
 .rv-bub{position:relative;background:#FFFDF8;border:2px solid #2B2A27;border-radius:.9em;padding:.85em .85em .7em;box-shadow:3px 3px 0 #2B2A27}
 .rv-bub::after{content:"";position:absolute;left:1.6em;bottom:-.95em;width:1.25em;height:1em;background:#FFFDF8;border-left:2px solid #2B2A27;border-bottom:2px solid #2B2A27;transform:skewY(-35deg);transform-origin:0 0}
 .rv-ic{float:left;width:2.1em;height:2.4em;margin:0 .45em .1em 0}
@@ -117,6 +117,8 @@
 
   function buildReview(w,opt){
     var a=el('article','wc wc--rv'+(w.pinned?' pinned':'')+(opt.big?' wc--big':''));
+    // เอียงสุ่มไม่เกิน ±1.5° (คงที่ต่อใบ) · ใบใหญ่ในสไลด์โชว์ตรงเสมอ
+    if(!opt.big) a.style.setProperty('--r',((hash(key(w))%31)/10-1.5).toFixed(1)+'deg');
     var len=String(w.message).length;
     if(opt.big) a.style.setProperty('--mfs', len>320?'1.05em':len>160?'1.2em':'1.4em');
     if(w.pinned) a.appendChild(el('span','rv-top','Top Critic'));
