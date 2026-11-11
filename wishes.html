@@ -38,6 +38,12 @@ body.idle{cursor:none}
 .top a{display:block}
 .top img{height:clamp(48px,10vh,110px);width:auto}
 .top .ttl{text-align:right}
+.top .lead{display:flex;align-items:center;gap:clamp(10px,1.6vw,20px)}
+.back{display:inline-flex!important;align-items:center;gap:4px;height:38px;padding:0 14px 0 10px;border:1.8px solid var(--red);border-radius:999px;background:rgba(255,253,248,.92);color:var(--red);font-weight:600;font-size:.88rem;text-decoration:none;white-space:nowrap}
+.back svg{width:18px;height:18px}
+.back:hover{background:rgba(239,211,203,.6)}
+.back:focus-visible{outline:2px dashed var(--red);outline-offset:2px}
+body.slide-view .back{display:none!important}   /* สไลด์โชว์บนจอในงาน: ซ่อนปุ่มกลับ */
 .top h1{font-family:var(--script);color:var(--red);font-size:clamp(2rem,6vh,4rem);line-height:1}
 .top small{font-size:clamp(.75rem,1.8vh,1rem)}
 
@@ -83,6 +89,7 @@ body.idle .ctrls{opacity:0}
   .qr{display:none} .spacer{display:none} .dock{justify-content:center}
   .cb span{display:none} .cb--main{padding:0 14px}
   .top h1{font-size:2rem}
+  .top .lead img{height:44px}
 }
 @media (prefers-reduced-motion:reduce){ .slide{transition:opacity .3s} }
 </style>
@@ -92,7 +99,10 @@ body.idle .ctrls{opacity:0}
 <body>
 <div class="stage">
   <header class="top wishes-top">
-    <a href="index.html" aria-label="กลับหน้าการ์ดเชิญ"><img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652"></a>
+    <div class="lead">
+      <a class="back" id="bBack" href="index.html#wishes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>กลับการ์ดเชิญ</a>
+      <a href="index.html" aria-label="กลับหน้าการ์ดเชิญ"><img src="images/logo.png" alt="Palida &amp; Pachaya" width="900" height="652"></a>
+    </div>
     <div class="ttl"><h1>Wishes</h1><small id="count"></small></div>
   </header>
 
@@ -120,6 +130,7 @@ body.idle .ctrls{opacity:0}
 
 <script src="js/qrcode.js"></script>
 <script src="js/wishcard.js"></script>
+<script>WishCard.hideName = true;   // หน้านี้ไม่โชว์ชื่อแขก (เปลี่ยนเป็น false ถ้าอยากให้ชื่อกลับมา)</script>
 <script>
 (function(){
   var REFRESH_MS=45000, DEMO_KEY='wedding_rsvp_demo';
@@ -221,7 +232,7 @@ body.idle .ctrls{opacity:0}
 
   /* ---------- สไลด์โชว์ ---------- */
   function setView(v){
-    view=v;
+    view=v; document.body.classList.toggle('slide-view', v==='slide');
     board.hidden = v!=='board'; center.hidden = v!=='slide';
     $('#bBoard').hidden=$('#bPrev').hidden=$('#bNext').hidden = v!=='slide';
     $('#barWrap').hidden = !(v==='slide' && playing);
@@ -270,6 +281,10 @@ body.idle .ctrls{opacity:0}
   $('#bNext').addEventListener('click',function(){ next(); });
   $('#bPrev').addEventListener('click',function(){ prev(); });
   $('#bBoard').addEventListener('click',function(){ setView('board'); });
+  $('#bBack').addEventListener('click',function(e){
+    var ref=document.referrer; try{ ref=ref && new URL(ref).origin===location.origin && /\/(index\.html)?$/.test(new URL(ref).pathname); }catch(_){ ref=false; }
+    if(ref && history.length>1){ e.preventDefault(); history.back(); }   // มาจากหน้าการ์ดเชิญ → ย้อนไปตรงที่เปิดค้างไว้
+  });
   $('#bFull').addEventListener('click',fullscreen);
   center.addEventListener('click',function(e){ if(e.target.closest('.slide')) next(); });
   document.addEventListener('keydown',function(e){
