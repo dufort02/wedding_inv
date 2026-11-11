@@ -584,9 +584,7 @@ body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave
 .my-card{max-width:250px;margin:16px auto 4px;--wfs:13px}
 .my-note{font-size:.78rem;opacity:.85}
 
-/* Wish wall (ตัวอย่างล่าสุด — การ์ดอยู่ใน js/wishcard.js) */
-.wall{columns:2;column-gap:14px;margin-top:30px;--wfs:12.5px}
-.wall-empty{font-size:.88rem;margin:18px auto 10px;max-width:30ch}
+/* Wishes: หน้าหลักไม่โชว์การ์ดของแขกคนอื่น — มีแค่ปุ่มไปหน้า wishes.html */
 
 /* โหมดทดสอบตัวละคร */
 #avTest{position:fixed;inset:0;z-index:85;overflow-y:auto;background-color:var(--paper);background-image:inherit;text-align:center}
@@ -1142,10 +1140,8 @@ footer .script-h{font-size:2rem}
   <section id="wishes">
     <h2 class="script-h">Wishes</h2>
     <div class="sub-h">สมุดอวยพร</div>
-    <div class="wall" id="wall" aria-live="polite"></div>
-    <p class="wall-empty" id="wallEmpty" hidden>ยังไม่มีคำอวยพร เขียนการ์ดอวยพรได้ที่แบบตอบรับนะ</p>
-    <div class="btn-row" style="margin-top:6px">
-      <a class="btn" href="wishes.html" id="wallMore" hidden>ดูคำอวยพรทั้งหมด</a>
+    <div class="btn-row" style="margin-top:22px">
+      <a class="btn" href="wishes.html" id="wallMore">ดูคำอวยพรทั้งหมด</a>
       <a class="btn btn--ghost" href="#rsvp" id="wallWrite">เขียนคำอวยพร</a>
     </div>
   </section>
@@ -1780,6 +1776,8 @@ var STORE_KEY = 'wedding_guest_v1';
   $('#openBtn').addEventListener('click',function(){
     cover.classList.add('hide'); loadLate(); if(CONFIG.SHOW_MUSIC) setMusic(true);
     if(CONFIG.SHOW_AVATAR_GAME && !guest) openStage(); else document.body.classList.remove('locked');
+    // กลับมาจากหน้าคำอวยพร (index.html#wishes) → เลื่อนไปหัวข้อคำอวยพรเลย
+    if(guest && location.hash==='#wishes') setTimeout(function(){ var t=$('#wishes'); if(t) t.scrollIntoView(); },60);
   });
   $('#skipBtn').addEventListener('click',closeStage);
   $('#randBtn').addEventListener('click',randomize);
@@ -2279,11 +2277,6 @@ var STORE_KEY = 'wedding_guest_v1';
       pending: CONFIG.WISH_APPROVAL && !!CONFIG.RSVP_ENDPOINT && data.showOnWall==='แสดง' &&
                !(old && !old.pending && old.message===data.message && old.showOnWall==='แสดง')});   // ข้อความเดิมที่อนุมัติแล้ว ไม่ต้องรอใหม่
     saveRsvp(rec);
-    wishes=wishes.filter(function(w){ return !w._mine; });
-    if(rec.showOnWall==='แสดง' && !rec.pending){
-      wishes.unshift({name:rec.name,message:rec.message,mode:rec.mode,paper:rec.paper,avatar:guest?(guest.thumb||guest.img):'',ts:rec.ts,_mine:true});
-    }
-    renderWall();
     showThanks(rec,opt);
     updatePassQr();
   }
@@ -2364,30 +2357,6 @@ var STORE_KEY = 'wedding_guest_v1';
     }
   },4000);
 
-  /* ---------------- wish wall ---------------- */
-  var wall=$('#wall'), wishes=[], WALL_PREVIEW=4;   // หน้าหลักโชว์แค่ล่าสุด 4 ใบ ที่เหลือดูใน wishes.html
-  function renderWall(){
-    wall.innerHTML='';
-    wishes.slice(0,WALL_PREVIEW).forEach(function(w,i){
-      var c=WishCard.build(w); c.classList.add('drop'); c.style.animationDelay=i*60+'ms';
-      c.addEventListener('click',function(){ c.classList.toggle('open'); });
-      wall.appendChild(c);
-    });
-    $('#wallEmpty').hidden=wishes.length>0;
-    var more=$('#wallMore'); more.hidden=!wishes.length;
-    more.textContent='ดูคำอวยพรทั้งหมด'+(wishes.length>WALL_PREVIEW?' ('+wishes.length+')':'');
-  }
-  function loadWishes(){
-    if(!CONFIG.RSVP_ENDPOINT){
-      try{ wishes=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]').filter(function(w){ return w.message&&w.showOnWall==='แสดง'; }).reverse(); }catch(e){ wishes=[]; }
-      renderWall(); return;
-    }
-    fetch(CONFIG.RSVP_ENDPOINT+(CONFIG.RSVP_ENDPOINT.indexOf('?')<0?'?':'&')+'action=wishes')
-      .then(function(r){ return r.json(); })
-      .then(function(j){ wishes=(j&&j.wishes)||[]; renderWall(); })
-      .catch(function(){ renderWall(); });
-  }
-  loadWishes();
 
   function burst(){
     var cols=['#C23B3B','#EFD3CB','#9F2C2E','#FFFDF8'];

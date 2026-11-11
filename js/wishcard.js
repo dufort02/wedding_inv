@@ -4,6 +4,7 @@
 
    ธีม 3 (หลัก): การ์ดแบบ "รีวิวนักวิจารณ์หนัง" — กล่องคำพูด + ป๊อปคอร์น + ดาว 5 ดวง / รูปตัวละคร ชื่อ และแบบตอบรับ
    WishCard.build(wish, {big:true, kind:'rv'|'pol'|'post'})  → <article>
+   ซ่อนชื่อ: WishCard.hideName = true (รูปตัวละคร/หัวใจ + แบบตอบรับยังแสดง)
    wish = {name, message, mode:'attend'|'gift'|'wish', paper, avatar, pinned, ts} */
 (function(){
   var PAPERS = {blush:'#FBE3DD', cream:'#FFF3DA', sky:'#E1ECF6', sage:'#E4EEDC', lilac:'#ECE3F5'};
@@ -108,8 +109,10 @@
     im.onload=function(){ box.textContent=''; box.classList.remove('ini'); box.appendChild(im); };
     im.onerror=fallback||null; im.src=src;
   }
+  // ซ่อนชื่อแขก: หน้าไหนอยากซ่อนให้ตั้ง WishCard.hideName = true (ตอนนี้ใช้ใน wishes.html)
+  function hidden(){ return !!(window.WishCard && window.WishCard.hideName); }
   function nameBlock(w,prefix){
-    var n=el('div','wc-name',(prefix||'')+w.name); n.appendChild(el('span','wc-tag',TAGS[w.mode]||TAGS.wish)); return n;
+    var n=el('div','wc-name',hidden()?'':(prefix||'')+w.name); n.appendChild(el('span','wc-tag',TAGS[w.mode]||TAGS.wish)); return n;
   }
 
   function buildReview(w,opt){
@@ -121,9 +124,9 @@
     bub.appendChild(el('p','wc-msg',w.message));
     var st=el('div','rv-stars'); st.innerHTML=STAR+STAR+STAR+STAR+STAR; bub.appendChild(st);
     a.appendChild(bub);
-    var by=el('div','rv-by'), av=el('div','rv-av ini',initial(w)); by.appendChild(av);
+    var hide=hidden(), by=el('div','rv-by'), av=el('div','rv-av ini',hide?'♥':initial(w)); by.appendChild(av);
     if(w.avatar) img(w.avatar,av);
-    var who=el('div'); who.appendChild(el('div','rv-nm',w.name)); who.appendChild(el('div','rv-pub',RV_TAGS[w.mode]||RV_TAGS.wish));
+    var who=el('div'); if(!hide) who.appendChild(el('div','rv-nm',w.name)); who.appendChild(el('div','rv-pub',RV_TAGS[w.mode]||RV_TAGS.wish));
     by.appendChild(who); a.appendChild(by);
     return a;
   }
@@ -144,12 +147,12 @@
     if(pol){
       var ph=el('div','wc-ph'); img(w.avatar,ph); a.appendChild(ph);
       var body=el('div','wc-body');
-      body.appendChild(el('div','wc-name',w.name));
+      if(!hidden()) body.appendChild(el('div','wc-name',w.name));
       body.appendChild(el('p','wc-msg',w.message));
       body.appendChild(el('span','wc-tag',TAGS[w.mode]||TAGS.wish));
       a.appendChild(body);
     } else {
-      var stamp=el('div','wc-stamp'), inner=el('div','ini',initial(w)); stamp.appendChild(inner);
+      var stamp=el('div','wc-stamp'), inner=el('div','ini',hidden()?'♥':initial(w)); stamp.appendChild(inner);
       if(w.avatar) img(w.avatar,inner);
       var pm=el('div','wc-pm'); pm.innerHTML=POSTMARK;
       a.appendChild(stamp); a.appendChild(pm);
