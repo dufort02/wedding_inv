@@ -59,12 +59,10 @@ body.slide-view .back{display:none!important}   /* สไลด์โชว์�
 .wc.slide.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
 
 .empty{text-align:center;align-self:center;padding:0 16px}
-.empty p{font-size:clamp(1.1rem,3.5vh,2rem);margin-bottom:20px}
-.empty .code{width:clamp(180px,32vh,320px);height:clamp(180px,32vh,320px);margin:0 auto;background:#fff;padding:12px;border-radius:14px;box-shadow:0 0 0 2px var(--red)}
-.empty .code svg{width:100%;height:100%;display:block}
+.empty p{font-size:clamp(1.1rem,3.5vh,2rem)}
 
-/* ---------- controls + QR ---------- */
-.dock{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 clamp(16px,4vw,56px) clamp(12px,2.6vh,30px);pointer-events:none}
+/* ---------- controls ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:0 clamp(16px,4vw,56px) clamp(12px,2.6vh,30px);pointer-events:none}
 .dock>*{pointer-events:auto}
 .ctrls{display:flex;align-items:center;gap:8px;background:rgba(255,253,248,.92);border:1.8px solid var(--red);border-radius:999px;padding:6px;box-shadow:0 6px 18px rgba(120,60,40,.15);transition:opacity .5s}
 body.idle .ctrls{opacity:0}
@@ -77,16 +75,10 @@ body.idle .ctrls{opacity:0}
 .bar{height:3px;width:100%;background:rgba(194,59,59,.15);border-radius:3px;overflow:hidden;position:absolute;left:18px;right:18px;bottom:3px;width:auto}
 .bar i{display:block;height:100%;width:0;background:var(--red)}
 .ctrls{position:relative}
-.qr{display:flex;align-items:center;gap:14px;text-align:right;font-size:clamp(.85rem,2vh,1.15rem);line-height:1.4;margin-left:auto}
-.qr b{display:block;color:var(--red);font-size:1.1em}
-.qr .code{width:clamp(84px,14vh,140px);height:clamp(84px,14vh,140px);background:#fff;padding:8px;border-radius:10px;box-shadow:0 0 0 2px var(--red)}
-.qr .code svg{width:100%;height:100%;display:block}
-.spacer{flex:1}
 
 .hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--red);color:var(--white);padding:6px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .4s;z-index:5}
 .hint.show{opacity:1}
 @media (max-width:700px){
-  .qr{display:none} .spacer{display:none} .dock{justify-content:center}
   .cb span{display:none} .cb--main{padding:0 14px}
   .top h1{font-size:2rem}
   .top .lead img{height:44px}
@@ -110,12 +102,10 @@ body.idle .ctrls{opacity:0}
   <main class="center" id="center" hidden></main>
   <div class="empty" id="empty" hidden>
     <p id="emptyMsg">กำลังโหลดคำอวยพร...</p>
-    <div class="code js-qr"></div>
   </div>
 </div>
 
 <div class="dock">
-  <div class="spacer"></div>
   <div class="ctrls" id="ctrls" hidden>
     <button class="cb" id="bBoard" type="button" hidden aria-label="ดูทั้งหมด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>ดูทั้งหมด</span></button>
     <button class="cb" id="bPrev" type="button" hidden aria-label="ก่อนหน้า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -124,11 +114,9 @@ body.idle .ctrls{opacity:0}
     <button class="cb" id="bFull" type="button" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     <div class="bar" id="barWrap" hidden><i id="bar"></i></div>
   </div>
-  <div class="qr" id="qrBox"><span><b>สแกนเพื่อเขียนคำอวยพร</b>ขึ้นจอนี้ได้เลย</span><div class="code js-qr"></div></div>
 </div>
 <div class="hint" id="hint"></div>
 
-<script src="js/qrcode.js"></script>
 <script src="js/wishcard.js"></script>
 <script>WishCard.hideName = true;   // หน้านี้ไม่โชว์ชื่อแขก (เปลี่ยนเป็น false ถ้าอยากให้ชื่อกลับมา)</script>
 <script>
@@ -138,14 +126,6 @@ body.idle .ctrls{opacity:0}
   var board=$('#board'), cols=$('#cols'), center=$('#center'), empty=$('#empty');
   var list=[], order={}, seenAny=false, endpoint='';
   var view='board', playing=false, idx=-1, timer=null, t0=0, dwell=0, queue=[];
-
-  /* ---------- QR ไปหน้าเชิญ ---------- */
-  var siteUrl=location.href.replace(/[#?].*$/,'').replace(/wishes\.html$/,'')+'#rsvp';
-  try{
-    var qr=qrcode(0,'M'); qr.addData(siteUrl); qr.make();
-    var svg=qr.createSvgTag({cellSize:4,margin:0,scalable:true});
-    Array.prototype.forEach.call(document.querySelectorAll('.js-qr'),function(el){ el.innerHTML=svg; });
-  }catch(e){ $('#qrBox').hidden=true; }
 
   function findEndpoint(){
     var q=new URLSearchParams(location.search).get('endpoint');
@@ -190,13 +170,13 @@ body.idle .ctrls{opacity:0}
 
   function showEmpty(on){
     empty.hidden=!on; $('#ctrls').hidden=on;
-    if(on){ board.hidden=true; center.hidden=true; $('#qrBox').style.visibility='hidden'; }
-    else { $('#qrBox').style.visibility=''; setView(view); }
+    if(on){ board.hidden=true; center.hidden=true; }
+    else setView(view);
   }
 
   function render(changed, fresh){
     $('#count').textContent = list.length ? 'คำอวยพร '+list.length+' ใบ' : '';
-    if(!list.length){ $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — สแกนเพื่อเป็นคนแรกกันนะ'; showEmpty(true); stop(); return; }
+    if(!list.length){ $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — เขียนได้ที่แบบตอบรับในการ์ดเชิญนะ'; showEmpty(true); stop(); return; }
     showEmpty(false);
     if(changed) renderBoard(fresh||[]);
     if(view==='slide' && playing && !timer) next();
