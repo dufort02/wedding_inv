@@ -214,20 +214,23 @@ body.idle .ctrls{opacity:0}
     });
   }
 
-  // เลื่อนลงช้า ๆ เมื่อการ์ดล้นจอ (หยุด 8 วิ ถ้ามีคนเลื่อนเอง)
+  // เลื่อนลงช้า ๆ เมื่อการ์ดล้นจอ — เฉพาะจอใหญ่ (โปรเจกเตอร์/โน้ตบุ๊ก) มือถือให้แขกเลื่อนเอง
+  // หยุด 8 วิ ถ้ามีคนเลื่อนเอง · ตอนไม่ต้องเลื่อน เช็กแค่วินาทีละครั้ง (ไม่กินเครื่อง)
+  var AUTO_SCROLL_MIN_W=900;
   var userHold=0, pauseUntil=0, pos=0, last=performance.now();
   ['wheel','touchstart','keydown','mousedown'].forEach(function(ev){ board.addEventListener(ev,function(){ userHold=performance.now()+8000; pos=board.scrollTop; },{passive:true}); });
   (function drift(now){
-    var dt=Math.min(100,now-last); last=now;
-    if(view==='board' && !board.hidden && now>userHold && now>pauseUntil){
+    var dt=Math.min(100,now-last); last=now; var moving=false;
+    if(view==='board' && !board.hidden && window.innerWidth>=AUTO_SCROLL_MIN_W && now>userHold && now>pauseUntil){
       var max=board.scrollHeight-board.clientHeight;
       if(max>4){
-        pos+=dt*0.028;
+        moving=true; pos+=dt*0.028;
         if(pos>=max){ pos=max; pauseUntil=now+4000; setTimeout(function(){ board.scrollTo({top:0,behavior:'smooth'}); pos=0; pauseUntil=performance.now()+5000; },4000); }
         board.scrollTop=pos;
       }
     }
-    requestAnimationFrame(drift);
+    if(moving) requestAnimationFrame(drift);
+    else setTimeout(function(){ requestAnimationFrame(function(t){ last=t; drift(t); }); },1000);
   })(performance.now());
 
   /* ---------- สไลด์โชว์ ---------- */
@@ -253,11 +256,19 @@ body.idle .ctrls{opacity:0}
     var old=center.querySelector('.slide');
     if(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); }
     var el=WishCard.build(w,{big:true}); el.classList.add('slide'); center.appendChild(el);
+    fit(el); if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(el); });
     var len=String(w.message).length;
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('in'); }); });
     dwell=Math.min(20000,Math.max(7000,5000+len*55));
     schedule();
   }
+  // ย่อตัวหนังสือทีละนิดจนข้อความพอดีกรอบ (ข้อความยาว/ขึ้นบรรทัดใหม่บ่อย จะได้ไม่หายท้าย)
+  function fit(el){
+    var m=el.querySelector('.wc-msg'); if(!m) return;
+    m.style.fontSize=''; var fs=parseFloat(getComputedStyle(m).fontSize), min=11;
+    while(m.scrollHeight>m.clientHeight+1 && fs>min){ fs=Math.max(min,fs*0.94); m.style.fontSize=fs+'px'; }
+  }
+  var fitT; window.addEventListener('resize',function(){ clearTimeout(fitT); fitT=setTimeout(function(){ var c=center.querySelector('.slide:last-child'); if(c) fit(c); },150); });
   function next(){
     if(!list.length) return;
     var w=null;
@@ -268,8 +279,9 @@ body.idle .ctrls{opacity:0}
   function prev(){ if(!list.length) return; idx=(idx-1+list.length)%list.length; show(list[idx]); }
 
   (function tick(){
-    $('#bar').style.width = (playing&&timer ? Math.min(1,(performance.now()-t0)/dwell)*100 : 0)+'%';
-    requestAnimationFrame(tick);
+    var on=playing&&timer;
+    $('#bar').style.width = (on ? Math.min(1,(performance.now()-t0)/dwell)*100 : 0)+'%';
+    if(on) requestAnimationFrame(tick); else setTimeout(function(){ requestAnimationFrame(tick); },500);   // ไม่เล่น = เช็กแค่ครึ่งวินาทีครั้ง
   })();
 
   /* ---------- ปุ่ม / คีย์บอร์ด ---------- */
