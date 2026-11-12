@@ -53,11 +53,14 @@ body.slide-view .back{display:none!important}   /* สไลด์โชว์�
 .cols{columns:auto clamp(150px,20vw,280px);column-gap:clamp(18px,2.4vw,36px);max-width:1800px;margin:0 auto;--wfs:clamp(13px,.55vw + 7px,17px)}
 
 /* ---------- slideshow ---------- */
-.center{position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
+/* ใบเก่า (กำลังจาง) กับใบใหม่ วางซ้อนในช่องเดียวกันของ grid → ใบใหม่อยู่กลางทันที ไม่ไปต่อทางขวา (ใช้ได้ทั้ง Safari/iPad) */
+.center{display:grid;place-items:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
+.center>.wc.slide{grid-area:1/1}
 .wc.slide{opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.wc.slide:hover{transform:none}   /* แตะบน iPad/มือถือ ไม่ให้การ์ดขยับ (hover ค้าง) */
 .wc.slide.in{opacity:1}
-.wc.slide.out{opacity:0;transform:rotate(var(--r,0deg)) translateY(-24px) scale(.98)}
-.wc.slide.out{position:absolute;pointer-events:none}   /* ใบเก่าที่กำลังจาง ไม่จองที่ — ใบใหม่อยู่กลางทันที */
+.wc.slide.out{opacity:0;transform:translateY(-24px) scale(.98);pointer-events:none;z-index:0}
+.wc.slide.in:not(.out){z-index:1}
 
 .empty{text-align:center;align-self:center;padding:0 16px}
 .empty p{font-size:clamp(1.1rem,3.5vh,2rem)}
@@ -220,7 +223,7 @@ body.idle .ctrls{opacity:0}
     board.hidden = v!=='board'; center.hidden = v!=='slide';
     $('#bBoard').hidden=$('#bPrev').hidden=$('#bNext').hidden = v!=='slide';
     $('#barWrap').hidden = !(v==='slide' && playing);
-    if(v==='board'){ stop(); var old=center.querySelector('.slide'); if(old) old.remove(); }
+    if(v==='board'){ stop(); Array.prototype.forEach.call(center.querySelectorAll('.slide'),function(o){ o.remove(); }); }
     syncPlay();
   }
   function syncPlay(){
@@ -234,8 +237,8 @@ body.idle .ctrls{opacity:0}
   function schedule(){ clearTimeout(timer); timer = playing ? setTimeout(next,dwell) : null; t0=performance.now(); }
 
   function show(w){
-    var old=center.querySelector('.slide');
-    if(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); }
+    // ทุกใบที่ยังแสดงอยู่ → จางออก (กดเร็ว ๆ หลายครั้งก็ไม่มีใบค้าง)
+    Array.prototype.forEach.call(center.querySelectorAll('.slide:not(.out)'),function(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); });
     var el=WishCard.build(w,{big:true}); el.classList.add('slide'); center.appendChild(el);
     fit(el); if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(el); });
     var len=String(w.message).length;
