@@ -2,11 +2,11 @@
 <!--
   หน้ารวมคำอวยพร — เปิดบนมือถือ หรือจอ/โปรเจกเตอร์ในงาน
   • เริ่มต้นเป็น "บอร์ด" โชว์คำอวยพรทั้งหมด วางแบบสุ่ม เอียงบ้างตรงบ้าง (เลื่อนลงช้า ๆ เองถ้าล้นจอ)
-  • ▶ เล่นสไลด์โชว์ = โชว์ทีละใบเต็มจอ  ⏸ = หยุด  ▦ = กลับมาดูทั้งหมด  แตะการ์ดบนบอร์ด = เปิดใบนั้น
+  • แตะการ์ดบนบอร์ด = เปิดใบนั้นเต็มจอ · แตะการ์ดที่เปิดอยู่ / ‹ › = ใบถัดไป/ก่อนหน้า · ▦ ดูทั้งหมด = กลับบอร์ด
   • ดึงคำอวยพรที่ "แสดง" จาก Google Sheet (URL เดียวกับ RSVP_ENDPOINT ใน index.html — อ่านให้เอง)
     คำอวยพรใหม่ที่อนุมัติจะเด้งขึ้นเอง (เช็กทุก 45 วินาที)
-  • คีย์บอร์ด: Space = เล่น/หยุด  ← → = ย้อน/ถัดไป  Esc = ดูทั้งหมด  F = เต็มจอ
-  • ?endpoint=<URL /exec> ใช้แทนค่าจาก index.html ได้   ?play=1 เปิดมาเป็นสไลด์โชว์เลย
+  • คีย์บอร์ด: ← → = ย้อน/ถัดไป  Esc = ดูทั้งหมด  F = เต็มจอ
+  • ?endpoint=<URL /exec> ใช้แทนค่าจาก index.html ได้
 -->
 <html lang="th" data-theme="3">
 <head>
@@ -43,7 +43,7 @@ body.idle{cursor:none}
 .back svg{width:18px;height:18px}
 .back:hover{background:rgba(239,211,203,.6)}
 .back:focus-visible{outline:2px dashed var(--red);outline-offset:2px}
-body.slide-view .back{display:none!important}   /* สไลด์โชว์บนจอในงาน: ซ่อนปุ่มกลับ */
+body.slide-view .back{display:none!important}   /* ตอนเปิดการ์ดเต็มจอ: ซ่อนปุ่มกลับ (ใช้ ดูทั้งหมด แทน) */
 .top h1{font-family:var(--script);color:var(--red);font-size:clamp(2rem,6vh,4rem);line-height:1}
 .top small{font-size:clamp(.75rem,1.8vh,1rem)}
 
@@ -52,15 +52,13 @@ body.slide-view .back{display:none!important}   /* สไลด์โชว์�
 .board::-webkit-scrollbar{display:none}
 .cols{columns:auto clamp(150px,20vw,280px);column-gap:clamp(18px,2.4vw,36px);max-width:1800px;margin:0 auto;--wfs:clamp(13px,.55vw + 7px,17px)}
 
-/* ---------- slideshow ---------- */
-/* ใบเก่า (กำลังจาง) กับใบใหม่ วางซ้อนในช่องเดียวกันของ grid → ใบใหม่อยู่กลางทันที ไม่ไปต่อทางขวา (ใช้ได้ทั้ง Safari/iPad) */
+/* ---------- ดูทีละใบ ---------- */
+/* มีการ์ดบนจอทีละใบเสมอ: ใบเก่าหายทันที ใบใหม่ค่อย ๆ ชัดขึ้นตรงกลาง (ไม่มีใบซ้อน/เรียงข้างกัน ทุกเบราว์เซอร์) */
 .center{display:grid;place-items:center;min-height:0;padding:clamp(20px,4vh,40px) clamp(16px,4vw,56px) 110px}
-.center>.wc.slide{grid-area:1/1}
-.wc.slide{opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.wc.slide{opacity:0;transition:opacity .35s ease}
 .wc.slide:hover{transform:none}   /* แตะบน iPad/มือถือ ไม่ให้การ์ดขยับ (hover ค้าง) */
 .wc.slide.in{opacity:1}
-.wc.slide.out{opacity:0;transform:translateY(-24px) scale(.98);pointer-events:none;z-index:0}
-.wc.slide.in:not(.out){z-index:1}
+.wc.slide .wc-msg{max-height:none;overflow:visible}   /* ขนาดตัวหนังสือคุมด้วย fit() แทน — ไม่มีแถบเลื่อน/ไม่ตัดเครื่องหมาย “ */
 
 .empty{text-align:center;align-self:center;padding:0 16px}
 .empty p{font-size:clamp(1.1rem,3.5vh,2rem)}
@@ -73,17 +71,13 @@ body.idle .ctrls{opacity:0}
 .cb{height:44px;min-width:44px;border-radius:999px;color:var(--red);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-weight:600;font-size:.95rem}
 .cb svg{width:20px;height:20px}
 .cb:hover{background:rgba(239,211,203,.6)}
-.cb--main{background:var(--red);color:var(--white);padding:0 18px 0 14px;box-shadow:0 3px 0 var(--red-deep)}
-.cb--main:hover{background:var(--red-deep)}
 .cb:focus-visible{outline:2px dashed var(--red);outline-offset:2px}
-.bar{height:3px;width:100%;background:rgba(194,59,59,.15);border-radius:3px;overflow:hidden;position:absolute;left:18px;right:18px;bottom:3px;width:auto}
-.bar i{display:block;height:100%;width:0;background:var(--red)}
 .ctrls{position:relative}
 
 .hint{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:var(--red);color:var(--white);padding:6px 16px;border-radius:999px;font-size:.85rem;opacity:0;transition:opacity .4s;z-index:5}
 .hint.show{opacity:1}
 @media (max-width:700px){
-  .cb span{display:none} .cb--main{padding:0 14px}
+  .cb span{display:none}
   .top h1{font-size:2rem}
   .top .lead img{height:44px}
 }
@@ -113,10 +107,8 @@ body.idle .ctrls{opacity:0}
   <div class="ctrls" id="ctrls" hidden>
     <button class="cb" id="bBoard" type="button" hidden aria-label="ดูทั้งหมด"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>ดูทั้งหมด</span></button>
     <button class="cb" id="bPrev" type="button" hidden aria-label="ก่อนหน้า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <button class="cb cb--main" id="bPlay" type="button"><svg id="icPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg id="icPause" viewBox="0 0 24 24" fill="currentColor" hidden><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span id="playTxt">เล่นสไลด์โชว์</span></button>
     <button class="cb" id="bNext" type="button" hidden aria-label="ถัดไป"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="cb" id="bFull" type="button" aria-label="เต็มจอ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
-    <div class="bar" id="barWrap" hidden><i id="bar"></i></div>
   </div>
 </div>
 <div class="hint" id="hint"></div>
@@ -129,7 +121,7 @@ body.idle .ctrls{opacity:0}
   var $=function(s){ return document.querySelector(s); };
   var board=$('#board'), cols=$('#cols'), center=$('#center'), empty=$('#empty');
   var list=[], order={}, seenAny=false, endpoint='';
-  var view='board', playing=false, idx=-1, timer=null, t0=0, dwell=0, queue=[];
+  var view='board', idx=-1;
 
   function findEndpoint(){
     var q=new URLSearchParams(location.search).get('endpoint');
@@ -166,8 +158,6 @@ body.idle .ctrls{opacity:0}
       var changed = ws.map(key).join('\n') !== list.map(key).join('\n');
       var cur=list[idx]; list=ws;
       idx = cur ? list.findIndex(function(w){ return key(w)===key(cur); }) : -1;
-      queue = queue.filter(function(k){ return list.some(function(w){ return key(w)===k; }); })
-                   .concat(fresh);
       render(changed, fresh);
     }).catch(function(){ if(!list.length){ $('#emptyMsg').textContent='โหลดคำอวยพรไม่ได้ จะลองใหม่อัตโนมัติ'; showEmpty(true); } });
   }
@@ -180,10 +170,9 @@ body.idle .ctrls{opacity:0}
 
   function render(changed, fresh){
     $('#count').textContent = list.length ? 'คำอวยพร '+list.length+' ใบ' : '';
-    if(!list.length){ $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — เขียนได้ที่แบบตอบรับในการ์ดเชิญนะ'; showEmpty(true); stop(); return; }
+    if(!list.length){ $('#emptyMsg').textContent='ยังไม่มีคำอวยพร — เขียนได้ที่แบบตอบรับในการ์ดเชิญนะ'; showEmpty(true); return; }
     showEmpty(false);
     if(changed) renderBoard(fresh||[]);
-    if(view==='slide' && playing && !timer) next();
   }
 
   /* ---------- บอร์ด ---------- */
@@ -217,63 +206,36 @@ body.idle .ctrls{opacity:0}
     else setTimeout(function(){ requestAnimationFrame(function(t){ last=t; drift(t); }); },1000);
   })(performance.now());
 
-  /* ---------- สไลด์โชว์ ---------- */
+  /* ---------- ดูทีละใบ ---------- */
   function setView(v){
     view=v; document.body.classList.toggle('slide-view', v==='slide');
     board.hidden = v!=='board'; center.hidden = v!=='slide';
     $('#bBoard').hidden=$('#bPrev').hidden=$('#bNext').hidden = v!=='slide';
-    $('#barWrap').hidden = !(v==='slide' && playing);
-    if(v==='board'){ stop(); Array.prototype.forEach.call(center.querySelectorAll('.slide'),function(o){ o.remove(); }); }
-    syncPlay();
+    if(v==='board') center.innerHTML='';
   }
-  function syncPlay(){
-    $('#icPlay').toggleAttribute('hidden',playing); $('#icPause').toggleAttribute('hidden',!playing);   // SVG ไม่มี .hidden ต้องใช้ attribute
-    $('#playTxt').textContent = playing ? 'หยุด' : (view==='slide' ? 'เล่นต่อ' : 'เล่นสไลด์โชว์');
-    $('#bPlay').setAttribute('aria-label',$('#playTxt').textContent);
-    $('#barWrap').hidden = !(view==='slide' && playing);
-  }
-  function play(){ if(!list.length) return; playing=true; if(view!=='slide'){ setView('slide'); next(); } else { syncPlay(); schedule(); } }
-  function stop(){ playing=false; clearTimeout(timer); timer=null; syncPlay(); }
-  function schedule(){ clearTimeout(timer); timer = playing ? setTimeout(next,dwell) : null; t0=performance.now(); }
-
   function show(w){
-    // ทุกใบที่ยังแสดงอยู่ → จางออก (กดเร็ว ๆ หลายครั้งก็ไม่มีใบค้าง)
-    Array.prototype.forEach.call(center.querySelectorAll('.slide:not(.out)'),function(old){ old.classList.remove('in'); old.classList.add('out'); setTimeout(function(){ old.remove(); },800); });
+    center.innerHTML='';   // ใบเก่าหายทันที — บนจอมีทีละใบเสมอ
     var el=WishCard.build(w,{big:true}); el.classList.add('slide'); center.appendChild(el);
-    fit(el); if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(el); });
-    var len=String(w.message).length;
+    fit(el); if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ if(el.isConnected) fit(el); });
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('in'); }); });
-    dwell=Math.min(20000,Math.max(7000,5000+len*55));
-    schedule();
   }
-  // ย่อตัวหนังสือทีละนิดจนข้อความพอดีกรอบ (ข้อความยาว/ขึ้นบรรทัดใหม่บ่อย จะได้ไม่หายท้าย)
+  // ขนาดตัวหนังสือ: เริ่มจากใหญ่สุด แล้วย่อทีละนิดจนข้อความพอดีกรอบ
+  // → ข้อความสั้นตัวใหญ่ ยาวขึ้นตัวเล็กลงเรื่อย ๆ (ไม่มีขั้นกระโดด) · วัดตอนการ์ดอยู่ตำแหน่งจริงบนจอเท่านั้น
+  var FIT_MAX=1.5, FIT_MIN_PX=12, FIT_H=.46;   // ใหญ่สุด (เท่าของตัวหนังสือการ์ด) / เล็กสุด / ความสูงข้อความไม่เกินกี่ส่วนของจอ
   function fit(el){
-    var m=el.querySelector('.wc-msg'); if(!m) return;
-    m.style.fontSize=''; var fs=parseFloat(getComputedStyle(m).fontSize), min=11;
-    while(m.scrollHeight>m.clientHeight+1 && fs>min){ fs=Math.max(min,fs*0.94); m.style.fontSize=fs+'px'; }
+    var m=el.querySelector('.wc-msg'); if(!m || !el.offsetWidth) return;
+    m.style.fontSize=FIT_MAX+'em';
+    var fs=parseFloat(getComputedStyle(m).fontSize), cap=window.innerHeight*FIT_H;
+    while(m.offsetHeight>cap && fs>FIT_MIN_PX){ fs=Math.max(FIT_MIN_PX,fs*0.95); m.style.fontSize=fs+'px'; }
   }
-  var fitT; window.addEventListener('resize',function(){ clearTimeout(fitT); fitT=setTimeout(function(){ var c=center.querySelector('.slide:last-child'); if(c) fit(c); },150); });
-  function next(){
-    if(!list.length) return;
-    var w=null;
-    while(queue.length && !w){ var k=queue.shift(); w=list.find(function(x){ return key(x)===k; })||null; }
-    if(w) idx=list.indexOf(w); else { idx=(idx+1)%list.length; w=list[idx]; }
-    show(w);
-  }
+  var fitT; window.addEventListener('resize',function(){ clearTimeout(fitT); fitT=setTimeout(function(){ var c=center.querySelector('.slide'); if(c) fit(c); },150); });
+  function next(){ if(!list.length) return; idx=(idx+1)%list.length; show(list[idx]); }
   function prev(){ if(!list.length) return; idx=(idx-1+list.length)%list.length; show(list[idx]); }
-
-  (function tick(){
-    var on=playing&&timer;
-    $('#bar').style.width = (on ? Math.min(1,(performance.now()-t0)/dwell)*100 : 0)+'%';
-    if(on) requestAnimationFrame(tick); else setTimeout(function(){ requestAnimationFrame(tick); },500);   // ไม่เล่น = เช็กแค่ครึ่งวินาทีครั้ง
-  })();
 
   /* ---------- ปุ่ม / คีย์บอร์ด ---------- */
   var hintT;
   function hint(t){ var h=$('#hint'); h.textContent=t; h.classList.add('show'); clearTimeout(hintT); hintT=setTimeout(function(){ h.classList.remove('show'); },1400); }
   function fullscreen(){ var d=document; if(!d.fullscreenElement){ if(d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(function(){}); } else d.exitFullscreen(); }
-  function togglePlay(){ if(playing){ stop(); hint('หยุดชั่วคราว'); } else play(); }
-  $('#bPlay').addEventListener('click',togglePlay);
   $('#bNext').addEventListener('click',function(){ next(); });
   $('#bPrev').addEventListener('click',function(){ prev(); });
   $('#bBoard').addEventListener('click',function(){ setView('board'); });
@@ -285,8 +247,7 @@ body.idle .ctrls{opacity:0}
   center.addEventListener('click',function(e){ if(e.target.closest('.slide')) next(); });
   document.addEventListener('keydown',function(e){
     if(e.target.closest&&e.target.closest('button')&&(e.key===' '||e.key==='Enter')) return;
-    if(e.key===' '){ e.preventDefault(); togglePlay(); }
-    else if(e.key==='ArrowRight'){ if(view!=='slide') setView('slide'); next(); }
+    if(e.key==='ArrowRight'){ if(view!=='slide') setView('slide'); next(); }
     else if(e.key==='ArrowLeft'){ if(view!=='slide') setView('slide'); prev(); }
     else if(e.key==='Escape') setView('board');
     else if(e.key==='f'||e.key==='F') fullscreen();
@@ -298,9 +259,8 @@ body.idle .ctrls{opacity:0}
   function keepAwake(){ try{ navigator.wakeLock&&navigator.wakeLock.request('screen').catch(function(){}); }catch(e){} }
   keepAwake(); document.addEventListener('visibilitychange',function(){ if(!document.hidden) keepAwake(); });
 
-  var autoPlay=new URLSearchParams(location.search).get('play')==='1';
   findEndpoint().then(function(ep){ endpoint=ep; return load(); })
-    .then(function(){ if(autoPlay) play(); setInterval(load,REFRESH_MS); });
+    .then(function(){ setInterval(load,REFRESH_MS); });
 })();
 </script>
 </body>
