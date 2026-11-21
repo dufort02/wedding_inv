@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<!--
+  เครื่องมือสร้างตัวละครจาก JSON (สำหรับเจ้าของงาน/ทีมงาน — ไม่มีลิงก์จากหน้าไหน)
+  • วาง JSON ค่าตัวละคร (แท็บ "บันทึก" ช่องค่าตัวละคร หรือคอลัมน์ avatarConfig ในแท็บ RSVP) → กด สร้าง → บันทึก PNG
+  • กติกาตัวละคร (ชิ้นส่วน ลำดับชั้น body ตามเสื้อ ชุดสี ชุดนักเรียน การย้อมสี) อ่านจาก index.html ทุกครั้งที่เปิด
+    → แก้ที่ index.html ที่เดียว หน้านี้ตามเอง ไม่ต้องแก้ไฟล์นี้
+  • ไม่ต่อกับ Google Sheet และไม่เก็บข้อมูลใด ๆ
+-->
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Avatar Tool — PALIDA &amp; PACHAYA</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A27;--cream:#F3EADB;--card:#FFFDF8;--red:#B8312F;--red-deep:#8E2423;--muted:#6E4B41}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Mali,sans-serif;font-size:15px}
+main{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+h1{font:700 1.6rem Fredoka,sans-serif;color:var(--red);margin:0 0 4px;letter-spacing:.02em}
+.sub{margin:0 0 20px;color:var(--muted);font-size:.9rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.box{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:16px;box-shadow:3px 3px 0 var(--ink)}
+label{display:block;font-weight:600;margin-bottom:6px}
+textarea{width:100%;min-height:220px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:10px;border:1.5px solid #cbbfa9;border-radius:10px;background:#fff;color:var(--ink);resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+button{font:600 .95rem Mali,sans-serif;border:2px solid var(--ink);border-radius:999px;padding:9px 18px;cursor:pointer;background:var(--card);color:var(--ink)}
+button.main{background:var(--red);color:#fff;border-color:var(--red-deep)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;border:1.5px solid #cbbfa9;border-radius:999px;overflow:hidden}
+.seg label{margin:0;font-weight:600;font-size:.85rem;padding:6px 12px;cursor:pointer}
+.seg input{display:none}
+.seg input:checked+span{color:var(--red)}
+.seg label:has(input:checked){background:#f6e2dd}
+.msg{margin-top:12px;font-size:.9rem;min-height:1.4em;white-space:pre-line}
+.msg.err{color:var(--red)}
+.msg.ok{color:#2f7a4a}
+.stage{aspect-ratio:1;border-radius:12px;border:1.5px dashed #cbbfa9;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background-color:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);
+  background-size:20px 20px;background-position:0 0,10px 10px}
+.stage.cream{background:var(--cream)}
+.stage img{width:100%;height:100%;object-fit:contain;display:block}
+.stage .ph{color:var(--muted);font-size:.9rem;text-align:center;padding:16px}
+details{margin-top:12px;font-size:.85rem;color:var(--muted)}
+details pre{white-space:pre-wrap;word-break:break-word;background:#fff;border-radius:8px;padding:8px;margin:6px 0 0}
+#layers{position:fixed;left:-9999px;top:0;width:10px;height:10px;overflow:hidden}
+</style>
+</head>
+<body>
+<main>
+  <h1>Avatar Tool</h1>
+  <p class="sub">วาง JSON ค่าตัวละครของแขก 1 คน แล้วกด "สร้าง" · ใช้กติกาตัวละครจากเว็บการ์ดเชิญปัจจุบัน</p>
+  <div class="grid">
+    <section class="box">
+      <label for="json">ค่าตัวละคร (JSON)</label>
+      <textarea id="json" spellcheck="false" placeholder='{"sel":{"shirt":32,"hair":5,...},"colors":{"shirt":"combo:32:2",...}}'></textarea>
+      <div class="row">
+        <button class="main" id="build" type="button" disabled>สร้าง</button>
+        <button id="clear" type="button">ล้าง</button>
+      </div>
+      <div class="msg" id="msg">กำลังโหลดกติกาตัวละครจาก index.html...</div>
+      <details><summary>ค่าที่ใช้วาดจริง</summary><pre id="used">—</pre></details>
+    </section>
+    <section class="box">
+      <div class="stage" id="stage"><div class="ph">ตัวละครจะขึ้นตรงนี้</div></div>
+      <div class="row">
+        <div class="seg" role="radiogroup" aria-label="พื้นหลัง">
+          <label><input type="radio" name="bg" value="none" checked><span>พื้นใส</span></label>
+          <label><input type="radio" name="bg" value="cream"><span>พื้นครีม</span></label>
+        </div>
+        <div class="seg" role="radiogroup" aria-label="ขนาดไฟล์">
+          <label><input type="radio" name="size" value="1024" checked><span>1024px</span></label>
+          <label><input type="radio" name="size" value="2048"><span>2048px</span></label>
+        </div>
+        <button id="save" type="button" disabled>บันทึก PNG</button>
+      </div>
+    </section>
+  </div>
+</main>
+<div id="layers" aria-hidden="true"></div>
+
+<script>
+(function(){
+  var $=function(s){ return document.querySelector(s); };
+  var msg=$('#msg'), stage=$('#stage'), engine=null, lastPng=null, busyBuild=false;
+  function say(t,cls){ msg.textContent=t; msg.className='msg'+(cls?' '+cls:''); }
+
+  /* ---------- อ่านกติกาตัวละครจาก index.html ---------- */
+  // ดึงฟังก์ชันจากโค้ดด้วยการนับวงเล็บ (ข้ามสตริง/คอมเมนต์/regex แบบง่าย)
+  function grabBlock(src,start){
+    var i=src.indexOf('{',start), depth=0, q=null;
+    for(;i<src.length;i++){
+      var c=src[i], n=src[i+1];
+      if(q){ if(c==='\\'){ i++; continue; } if(c===q) q=null; continue; }
+      if(c==='/'&&n==='/'){ i=src.indexOf('\n',i); if(i<0) break; continue; }
+      if(c==='/'&&n==='*'){ i=src.indexOf('*/',i+2)+1; continue; }
+      if(c==='"'||c==="'"||c==='`'){ q=c; continue; }
+      if(c==='/'&&/[(,=:!&|?{};]\s*$/.test(src.slice(Math.max(0,i-20),i))){   // regex literal
+        for(i++;i<src.length&&src[i]!=='/';i++){ if(src[i]==='\\') i++; else if(src[i]==='['){ while(src[++i]!==']'){ if(src[i]==='\\') i++; } } }
+        continue;
+      }
+      if(c==='{') depth++;
+      else if(c==='}'){ depth--; if(!depth) return src.slice(start,i+1); }
+    }
+    throw new Error('อ่านโค้ดไม่ครบ');
+  }
+  function fn(src,name){
+    var m=new RegExp('function '+name+'\\(').exec(src); if(!m) throw new Error('ไม่พบฟังก์ชัน '+name+' ใน index.html');
+    return grabBlock(src,m.index);
+  }
+  function line(src,startsWith){
+    var i=src.indexOf(startsWith); if(i<0) throw new Error('ไม่พบ "'+startsWith+'" ใน index.html');
+    var j=src.indexOf('\n',i); return src.slice(i,j<0?undefined:j);
+  }
+  function between(src,a,b){
+    var i=src.indexOf(a); if(i<0) throw new Error('ไม่พบ "'+a+'" ใน index.html');
+    var j=src.indexOf(b,i); if(j<0) throw new Error('ไม่พบ "'+b+'" ใน index.html');
+    return src.slice(i,j+b.length);
+  }
+
+  function loadEngine(html){
+    var s0=html.indexOf('var CONFIG = {'); if(s0<0) throw new Error('ไม่พบ CONFIG ใน index.html');
+    var s1=html.indexOf('\n(function(){',s0); if(s1<0) throw new Error('ไม่พบส่วนเริ่มโปรแกรมใน index.html');
+    var cfg=html.slice(s0,s1);                     // ส่วนตั้งค่า (ข้อมูล + ฟังก์ชันช่วย ไม่แตะหน้าเว็บ)
+    var app=html.slice(s1,html.indexOf('<\/script>',s1));
+    var names=['CONFIG','LAYERS','Z_ORDER','UNIFORMS','SHIRT_COMBOS','comboOf','BODY_FOR_SHIRT','FOR_SHIRT','linkOk','backOk','BACK_FALLBACK',
+               'RENUM_V','migrateSel','WINK_EYES','SPECIAL_REPLACES','HAIR_PAIR'];
+    var engineSrc=[
+      'var useCORS=/^https?:$/.test(location.protocol), toast=function(){}, warnedTint=true, loadedAny=false;',
+      'var win={classList:{add:function(){},remove:function(){}}}, layerEls={}, busy=0;',
+      between(app,'var DEFAULT_SEL={};','Object.keys(UNIFORMS).forEach(function(n){ DEFAULT_SEL[\'uni\'+n]=UNIFORMS[n].def; });'),
+      'var sel=Object.assign({},DEFAULT_SEL), colors={};',
+      line(app,'var LAYER_BY_KEY={};'),
+      fn(app,'srcFor'), fn(app,'webFor'), fn(app,'rgb2hsl'), fn(app,'hsl2rgb'), fn(app,'hue2rgb'), fn(app,'hex2hsl'),
+      line(app,'var tintCache='), fn(app,'tint'), fn(app,'comboPaint'),
+      fn(app,'renderLayer'), fn(app,'winkOn'), fn(app,'setHalf'), fn(app,'canColor'), fn(app,'syncFaceAccZ'),
+      'return {',
+      '  DEFAULT_SEL:DEFAULT_SEL, layerEls:layerEls, busy:function(){ return busy; },',
+      '  set:function(s,c){ sel=s; colors=c; }, sel:function(){ return sel; },',
+      '  render:function(){ syncFaceAccZ(); Z_ORDER.forEach(renderLayer); }',
+      '};'
+    ].join('\n');
+    var make=new Function(cfg+'\nvar __eng=(function(){\n'+engineSrc+'\n})();\nreturn {'+names.map(function(n){ return n+':(typeof '+n+'!=="undefined"?'+n+':undefined)'; }).join(',')+',engine:__eng};');
+    var E=make();
+    // ชั้นภาพจริง (เหมือนหน้าเว็บหลัก) — ซ่อนไว้นอกจอ ใช้วาดลงแคนวาสตอนสร้าง
+    var box=$('#layers');
+    E.Z_ORDER.forEach(function(k,i){
+      var im=new Image(); im.alt=''; im.style.zIndex=i+1; if(/^https?:$/.test(location.protocol)) im.crossOrigin='anonymous';
+      im.addEventListener('load',function(){ im.style.visibility='visible'; });
+      im.addEventListener('error',function(){ im.style.visibility='hidden'; im.dataset.err='1'; });
+      box.appendChild(im); E.engine.layerEls[k]=im;
+    });
+    return E;
+  }
+
+  fetch('index.html',{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('โหลด index.html ไม่ได้ ('+r.status+')'); return r.text(); })
+    .then(function(html){ engine=loadEngine(html); $('#build').disabled=false; say('พร้อมแล้ว — วาง JSON แล้วกด "สร้าง"','ok'); })
+    .catch(function(e){ say('โหลดกติกาตัวละครไม่ได้: '+e.message+'\n(เปิดหน้านี้ผ่านเว็บ เช่น palida-pachaya-wd.pages.dev/avatar-tool.html)','err'); });
+
+  /* ---------- อ่าน JSON ---------- */
+  function parseInput(t){
+    t=String(t||'').trim();
+    if(!t) throw new Error('ยังไม่ได้วาง JSON');
+    // ก๊อปจาก Google Sheets บางครั้งได้ "..." ครอบ และ " ข้างในเป็น ""
+    if(/^".*"$/s.test(t) && t.indexOf('""')>=0) t=t.slice(1,-1).replace(/""/g,'"');
+    var i=t.indexOf('{'), j=t.lastIndexOf('}'); if(i<0||j<i) throw new Error('ไม่เจอเครื่องหมาย { } — ต้องเป็น JSON เช่น {"sel":{...},"colors":{...}}');
+    var o; try{ o=JSON.parse(t.slice(i,j+1)); }catch(e){ throw new Error('JSON ผิดรูปแบบ: '+e.message); }
+    if(o && typeof o.avatarConfig==='string'){ try{ o=JSON.parse(o.avatarConfig); }catch(e){} }
+    var s=o.sel||(o.shirt!=null||o.hair!=null?o:null);
+    if(!s || typeof s!=='object') throw new Error('ไม่เจอ "sel" (ชิ้นส่วนที่ใส่) ใน JSON');
+    return {sel:s, colors:(o.colors&&typeof o.colors==='object')?o.colors:{}, selV:o.selV};
+  }
+
+  /* ---------- สร้างภาพ ---------- */
+  function waitImg(im){ return (!im.getAttribute('src')||im.complete) ? Promise.resolve() :
+    new Promise(function(r){ im.addEventListener('load',r,{once:true}); im.addEventListener('error',r,{once:true}); }); }
+  function settle(){   // รอให้ย้อมสีเสร็จ แล้วรอทุกชั้นโหลดเสร็จ
+    return new Promise(function(res){ (function chk(){ engine.engine.busy() ? setTimeout(chk,60) : res(); })(); })
+      .then(function(){ return Promise.all(engine.Z_ORDER.map(function(k){ return waitImg(engine.engine.layerEls[k]); })); });
+  }
+  function compose(size,bg){
+    var L=engine.engine.layerEls, c=document.createElement('canvas'); c.width=c.height=size; var x=c.getContext('2d'), drew=0, missing=[];
+    if(bg) { x.fillStyle=bg; x.fillRect(0,0,size,size); }
+    engine.Z_ORDER.slice().sort(function(a,b){ return (+L[a].style.zIndex)-(+L[b].style.zIndex) || engine.Z_ORDER.indexOf(a)-engine.Z_ORDER.indexOf(b); }).forEach(function(k){
+      var im=L[k];
+      if(!im.getAttribute('src')) return;
+      if(im.dataset.err==='1' || !im.naturalWidth){ missing.push(k); return; }
+      var hw=im.naturalWidth/2, hh=im.naturalHeight;
+      if(im.dataset.half==='L') x.drawImage(im,0,0,hw,hh,0,0,size/2,size);
+      else if(im.dataset.half==='R') x.drawImage(im,hw,0,hw,hh,size/2,0,size/2,size);
+      else x.drawImage(im,0,0,size,size);
+      drew++;
+    });
+    return {url: drew ? c.toDataURL('image/png') : null, missing:missing};
+  }
+  function opt(name){ var r=document.querySelector('input[name="'+name+'"]:checked'); return r?r.value:''; }
+
+  function build(){
+    if(!engine || busyBuild) return;
+    var input;
+    try{ input=parseInput($('#json').value); }catch(e){ reset(); say(e.message,'err'); return; }
+    var g={sel:Object.assign({},input.sel), selV:input.selV||engine.RENUM_V};   // ไม่มี selV = ถือว่าเป็นเลขชุดปัจจุบัน
+    engine.migrateSel(g);
+    var sel=Object.assign({},engine.engine.DEFAULT_SEL,g.sel), colors=Object.assign({},input.colors);
+    var unknown=Object.keys(input.sel).filter(function(k){ return !(k in engine.engine.DEFAULT_SEL) && !/^side_/.test(k); });
+    busyBuild=true; $('#build').disabled=true; $('#save').disabled=true; say('กำลังสร้าง...');
+    Object.keys(engine.engine.layerEls).forEach(function(k){ delete engine.engine.layerEls[k].dataset.err; });
+    engine.engine.set(sel,colors); engine.engine.render();
+    settle().then(function(){
+      var size=+opt('size')||1024, r=compose(size,null);
+      lastPng={url:r.url,sel:sel};
+      if(!r.url){ throw new Error('ไม่มีชั้นภาพให้วาด — ตรวจเลขชิ้นส่วนใน JSON'); }
+      stage.innerHTML=''; var im=new Image(); im.alt='ตัวละคร'; im.src=r.url; stage.appendChild(im);
+      $('#used').textContent=JSON.stringify({sel:sel,colors:colors},null,1);
+      var notes=[];
+      if(r.missing.length) notes.push('หาไฟล์รูปไม่เจอ: '+r.missing.join(', ')+' (เลขชิ้นส่วนอาจเกินจำนวนที่มี)');
+      if(unknown.length) notes.push('ไม่รู้จักค่า: '+unknown.join(', ')+' (ข้ามไป)');
+      say(notes.length ? 'สร้างแล้ว แต่มีข้อสังเกต:\n'+notes.join('\n') : 'สร้างเสร็จแล้ว', notes.length?'err':'ok');
+      $('#save').disabled=false;
+    }).catch(function(e){ reset(); say('สร้างไม่ได้: '+e.message,'err'); })
+      .then(function(){ busyBuild=false; $('#build').disabled=false; });
+  }
+
+  // ล้างภาพ/ปุ่มบันทึก — กันบันทึกรูปของคนก่อนหน้าโดยไม่ตั้งใจ
+  function reset(){ stage.innerHTML='<div class="ph">ตัวละครจะขึ้นตรงนี้</div>'; lastPng=null; $('#save').disabled=true; $('#used').textContent='—'; }
+
+  function save(){
+    if(!engine || !lastPng) return;
+    var size=+opt('size')||1024, bg=opt('bg')==='cream'?'#F3EADB':null;
+    settle().then(function(){
+      var r=compose(size,bg); if(!r.url) return;
+      var a=document.createElement('a'); a.href=r.url;
+      var s=lastPng.sel; a.download='avatar_shirt'+(s.shirt||0)+'_hair'+(s.hair||0)+'_'+size+'.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  }
+
+  $('#build').addEventListener('click',build);
+  $('#save').addEventListener('click',save);
+  $('#clear').addEventListener('click',function(){ $('#json').value=''; reset(); if(engine) say('พร้อมแล้ว — วาง JSON แล้วกด "สร้าง"','ok'); $('#json').focus(); });
+  $('#json').addEventListener('keydown',function(e){ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) build(); });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="bg"]'),function(r){
+    r.addEventListener('change',function(){ stage.classList.toggle('cream',opt('bg')==='cream'); });
+  });
+})();
+</script>
+</body>
+</html>
