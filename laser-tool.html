@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<!--
+  เครื่องมือแปลงรูปตัวละครเป็นไฟล์สำหรับเลเซอร์ (Grayscale) — สำหรับเจ้าของงาน/ทีมงาน ไม่มีลิงก์จากหน้าไหน
+  • อัปโหลดรูป (PNG/JPG หลายใบ) → ปรับค่า → ดาวน์โหลด *_laser.png (ขนาดพิกเซลเท่ารูปเดิม)
+  • พื้นหลัง → ขาว (ไม่ยิง) · ลายเส้น → ดำ · สีพื้น → ระดับเทาที่ไม้ติดจริง (ช่วง "เข้มสุด–อ่อนสุด")
+  • ใน xTool Creative Space: Bitmap mode = Grayscale แล้วกำหนดขนาดชิ้นงานตอนวางรูป
+  • ประมวลผลในเครื่องที่เปิดเท่านั้น ไม่ส่งรูปไปไหน
+-->
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Laser Tool — PALIDA &amp; PACHAYA</title>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2B2A27;--cream:#F3EADB;--card:#FFFDF8;--red:#B8312F;--red-deep:#8E2423;--muted:#6E4B41;--line:#cbbfa9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Mali,sans-serif;font-size:15px}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+h1{font:700 1.6rem Fredoka,sans-serif;color:var(--red);margin:0 0 4px}
+.sub{margin:0 0 18px;color:var(--muted);font-size:.9rem}
+.box{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:16px;box-shadow:3px 3px 0 var(--ink);margin-bottom:18px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted);cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--red);background:#fbe9e5;color:var(--red)}
+.drop b{color:var(--ink)}
+.ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px;margin-top:16px}
+.ctl label{display:flex;justify-content:space-between;font-weight:600;font-size:.9rem;margin-bottom:4px}
+.ctl label span{color:var(--red);font-family:Fredoka,sans-serif}
+.ctl small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--red)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+.seg label{margin:0;font-weight:600;font-size:.85rem;padding:6px 12px;cursor:pointer;display:block}
+.seg input{display:none}
+.seg label:has(input:checked){background:#f6e2dd;color:var(--red)}
+.chk{display:flex;gap:8px;align-items:center;font-size:.9rem;font-weight:600;cursor:pointer}
+.chk input{accent-color:var(--red);width:18px;height:18px}
+.ramp{display:flex;height:16px;border-radius:6px;overflow:hidden;border:1.5px solid var(--line);margin-top:6px}
+.ramp i{flex:1}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin:0 0 12px}
+button{font:600 .92rem Mali,sans-serif;border:2px solid var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer;background:var(--card);color:var(--ink)}
+button.main{background:var(--red);color:#fff;border-color:var(--red-deep)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.sm{padding:5px 12px;font-size:.82rem}
+.list{display:grid;gap:14px}
+.item{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.item .hd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:.85rem}
+.item .nm{font-weight:600;word-break:break-all}
+.item .px{color:var(--muted);font-family:Fredoka,sans-serif}
+.item .warn{color:var(--red);font-size:.8rem}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pair figure{margin:0}
+.pair figcaption{font-size:.75rem;color:var(--muted);text-align:center;margin-top:4px}
+.pair .im{aspect-ratio:1;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background-color:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);
+  background-size:16px 16px;background-position:0 0,8px 8px;border:1px solid #e4dccd}
+.pair .im.out{background:#fff}
+.pair img,.pair canvas{max-width:100%;max-height:100%;display:block}
+.empty{color:var(--muted);text-align:center;padding:20px}
+.note{font-size:.82rem;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+<main>
+  <h1>Laser Tool</h1>
+  <p class="sub">แปลงรูปตัวละครเป็นไฟล์ Grayscale สำหรับแกะเลเซอร์ · ขนาดพิกเซลเท่ารูปเดิม · รูปไม่ถูกส่งไปไหน ประมวลผลในเครื่องนี้</p>
+
+  <section class="box">
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="เลือกรูป">
+      <b>แตะเพื่อเลือกรูป</b> หรือลากรูปมาวางตรงนี้ · PNG / JPG · หลายใบพร้อมกันได้
+    </div>
+    <input type="file" id="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+
+    <div class="ctrls">
+      <div class="ctl">
+        <label for="dark">สีพื้นเข้มสุด <span id="darkV"></span></label>
+        <input type="range" id="dark" min="20" max="85" value="60">
+        <small>ส่วนสีเข้ม เช่น ผมเข้ม ยิงแรงแค่ไหน (% ความเข้ม)</small>
+      </div>
+      <div class="ctl">
+        <label for="light">สีพื้นอ่อนสุด <span id="lightV"></span></label>
+        <input type="range" id="light" min="5" max="60" value="18">
+        <small>ส่วนสีอ่อน เช่น ผิว ชุดพาสเทล — ต่ำไปจะไม่ติดไม้</small>
+        <div class="ramp" id="ramp" aria-hidden="true"></div>
+      </div>
+      <div class="ctl">
+        <label for="line">ความไวลายเส้น <span id="lineV"></span></label>
+        <input type="range" id="line" min="4" max="40" value="12">
+        <small>เฉพาะสีที่เกือบดำเป็นเส้น · สูงขึ้น = สีเข้ม (เช่น ผมดำ) กลายเป็นดำทึบด้วย</small>
+      </div>
+      <div class="ctl">
+        <label>แบบเงา</label>
+        <div class="seg" role="radiogroup" aria-label="แบบเงา">
+          <label><input type="radio" name="mode" value="0" checked>ไล่นุ่ม</label>
+          <label><input type="radio" name="mode" value="4">4 ขั้น</label>
+          <label><input type="radio" name="mode" value="3">3 ขั้น</label>
+        </div>
+        <div style="margin-top:10px"><label class="chk"><input type="checkbox" id="keepWhite" checked>ส่วนสีขาวในตัวละครไม่ยิง</label></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bar">
+    <div class="note" id="count">ยังไม่มีรูป</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="dlAll" class="main" type="button" disabled>ดาวน์โหลดทั้งหมด (ทีละไฟล์)</button>
+      <button id="clear" type="button" disabled>ล้างทั้งหมด</button>
+    </div>
+  </div>
+  <div class="list" id="list"><div class="empty">อัปโหลดรูปตัวละคร (เช่น ไฟล์จาก avatar-tool.html) เพื่อเริ่ม</div></div>
+
+  <p class="note" style="margin-top:18px">
+    ใน xTool Creative Space: วางไฟล์ <b>_laser.png</b> → ตั้งขนาดชิ้นงาน → Bitmap mode = <b>Grayscale</b> → ยิง Material Test Array บนเศษไม้แผ่นเดียวกันก่อน<br>
+    ดำ = ยิงแรงสุด · ขาว = ไม่ยิง · รูปเล็กกว่า 600px อาจไม่คมถ้าแกะชิ้นใหญ่
+  </p>
+</main>
+
+<script>
+(function(){
+  var $=function(s){ return document.querySelector(s); };
+  var items=[], seq=0, tmr=null;
+
+  /* ---------- ค่าที่ตั้ง ---------- */
+  function opts(){
+    var d=+$('#dark').value/100, l=+$('#light').value/100;
+    if(l>d-.05) l=Math.max(0,d-.05);
+    return {dark:d, light:l, line:+$('#line').value/100, steps:+document.querySelector('input[name=mode]:checked').value, keepWhite:$('#keepWhite').checked};
+  }
+  function syncLabels(){
+    var o=opts();
+    $('#darkV').textContent=Math.round(o.dark*100)+'%'; $('#lightV').textContent=Math.round(o.light*100)+'%'; $('#lineV').textContent=Math.round(o.line*100)+'%';
+    var r=$('#ramp'); r.innerHTML='';
+    var n=o.steps||8; for(var i=0;i<n;i++){ var b=o.light+(o.dark-o.light)*(n===1?1:i/(n-1)), g=Math.round(255*(1-b)); var e=document.createElement('i'); e.style.background='rgb('+g+','+g+','+g+')'; r.appendChild(e); }
+  }
+
+  /* ---------- แปลงรูป ----------
+     1) วางบนพื้นขาว (พื้นใส → ขาว)
+     2) พื้นหลังทึบสีเดียว (เช่น ครีม) → ไล่จากขอบรูป เปลี่ยนเป็นขาว
+     3) ความสว่างต่ำกว่า "ความไวลายเส้น" → เส้นดำ
+     4) สีพื้นที่เหลือ → ยืดช่วงความสว่าง (สว่างสุดของรูป = อ่อนสุด, เข้มสุด = เข้มสุด) แล้วดึงสีอ่อนให้ห่างกันขึ้น
+        → ผิวอ่อนสุด สีพาสเทลแยกกันได้ ผมเข้มยังเข้มแต่ไม่ดำทึบ (ลายเส้นดำยังตัดเห็น)
+     5) สีขาวจริงในตัวละคร → ไม่ยิง (เลือกได้) */
+  function convert(img,o){
+    var W=img.naturalWidth, H=img.naturalHeight, c=document.createElement('canvas'); c.width=W; c.height=H;
+    var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(img,0,0);
+    var src=document.createElement('canvas'); src.width=W; src.height=H; var sx=src.getContext('2d'); sx.drawImage(img,0,0);
+    var A=sx.getImageData(0,0,W,H).data; src.width=src.height=0;   // alpha เดิม
+    var d=x.getImageData(0,0,W,H), p=d.data, N=W*H, L=new Float32Array(N), bg=new Uint8Array(N), i, k;
+    for(k=0,i=0;k<N;k++,i+=4) L[k]=(0.2126*p[i]+0.7152*p[i+1]+0.0722*p[i+2])/255;
+    // พื้นหลัง: โปร่งใส หรือ สีเดียวกับขอบรูปที่ต่อกันจากขอบ
+    var edge=[], ref=null;
+    for(var xx=0;xx<W;xx++){ edge.push(xx, (H-1)*W+xx); } for(var yy=0;yy<H;yy++){ edge.push(yy*W, yy*W+W-1); }
+    var opq=edge.filter(function(q){ return A[q*4+3]>200; });
+    if(opq.length>edge.length*.6){   // ขอบทึบ → หาสีพื้น (ค่ากลางของขอบ)
+      var rs=[],gs=[],bs=[]; opq.forEach(function(q){ rs.push(p[q*4]); gs.push(p[q*4+1]); bs.push(p[q*4+2]); });
+      var med=function(a){ a.sort(function(m,n){ return m-n; }); return a[a.length>>1]; }; ref=[med(rs),med(gs),med(bs)];
+    }
+    function isBg(q){ var j=q*4; if(A[j+3]<40) return true; if(!ref) return false;
+      return Math.abs(p[j]-ref[0])+Math.abs(p[j+1]-ref[1])+Math.abs(p[j+2]-ref[2])<36; }
+    var st=new Int32Array(N), sp=0;
+    edge.forEach(function(q){ if(!bg[q]&&isBg(q)){ bg[q]=1; st[sp++]=q; } });
+    while(sp){ var q=st[--sp], qx=q%W;
+      if(qx>0&&!bg[q-1]&&isBg(q-1)){ bg[q-1]=1; st[sp++]=q-1; }
+      if(qx<W-1&&!bg[q+1]&&isBg(q+1)){ bg[q+1]=1; st[sp++]=q+1; }
+      if(q>=W&&!bg[q-W]&&isBg(q-W)){ bg[q-W]=1; st[sp++]=q-W; }
+      if(q<N-W&&!bg[q+W]&&isBg(q+W)){ bg[q+W]=1; st[sp++]=q+W; } }
+    st=null;
+    // ช่วงสีพื้นของรูปนี้: 1% เข้มสุด – 99% สว่างสุด (ตัดขอบเส้นเล็ก ๆ ออก)
+    var WHITE=.965, hist=new Uint32Array(256), cnt=0;
+    for(k=0;k<N;k++){ if(bg[k]) continue; var v=L[k]; if(v<o.line||(o.keepWhite&&v>=WHITE)) continue; hist[Math.round(v*255)]++; cnt++; }
+    var lo=0, hi=255, acc=0, b;
+    for(b=0;b<256;b++){ acc+=hist[b]; if(acc>=cnt*.01){ lo=b; break; } }
+    acc=0; for(b=255;b>=0;b--){ acc+=hist[b]; if(acc>=cnt*.01){ hi=b; break; } }
+    if(hi-lo<8){ lo=Math.max(0,hi-8); }
+    var rank=new Float32Array(256);   // 0 = สว่างสุด (อ่อนสุด), 1 = เข้มสุด
+    for(b=0;b<256;b++){ var t0=Math.min(1,Math.max(0,(hi-b)/(hi-lo))); rank[b]=Math.pow(t0,.8); }
+    var out=new Uint8ClampedArray(N), burn;
+    for(k=0;k<N;k++){
+      if(bg[k]){ burn=0; }
+      else{
+        var v2=L[k];
+        if(v2<o.line) burn=o.dark+(1-o.dark)*Math.min(1,(o.line-v2)/Math.max(.02,o.line*.6)+.35);   // ลายเส้น → ดำ (ขอบเส้นนุ่ม)
+        else if(o.keepWhite&&v2>=WHITE) burn=0;
+        else{ var t=rank[Math.round(v2*255)]; if(o.steps) t=Math.min(o.steps-1,Math.floor(t*o.steps))/(o.steps-1); burn=o.light+(o.dark-o.light)*t; }
+      }
+      out[k]=Math.round(255*(1-Math.min(1,burn)));
+    }
+    // ขอบระหว่างพื้นหลังกับตัวละคร: ผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
+    for(k=0,i=0;k<N;k++,i+=4){ var a=A[i+3]/255, g=out[k]; if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; }
+    x.putImageData(d,0,0);
+    return c;
+  }
+
+  /* ---------- รายการรูป ---------- */
+  function addFiles(files){
+    Array.prototype.forEach.call(files,function(f){
+      if(!/^image\//.test(f.type)) return;
+      var url=URL.createObjectURL(f), img=new Image();
+      img.onload=function(){ var it={id:++seq,name:f.name,img:img,url:url,out:null}; items.push(it); renderItem(it); refresh(); };
+      img.onerror=function(){ URL.revokeObjectURL(url); alert('เปิดรูปไม่ได้: '+f.name); };
+      img.src=url;
+    });
+  }
+  function baseName(n){ return n.replace(/\.[^.]+$/,''); }
+  function renderItem(it){
+    var list=$('#list'); var em=list.querySelector('.empty'); if(em) em.remove();
+    var el=document.createElement('div'); el.className='item'; el.id='it'+it.id;
+    var small=Math.min(it.img.naturalWidth,it.img.naturalHeight)<600;
+    el.innerHTML='<div class="hd"><span class="nm"></span><span class="px">'+it.img.naturalWidth+'×'+it.img.naturalHeight+'px</span>'+
+      (small?'<span class="warn">รูปเล็ก อาจไม่คมถ้าแกะชิ้นใหญ่</span>':'')+
+      '<span style="display:flex;gap:6px"><button class="sm main" data-a="dl" type="button">ดาวน์โหลด</button><button class="sm" data-a="rm" type="button">ลบ</button></span></div>'+
+      '<div class="pair"><figure><div class="im"></div><figcaption>รูปเดิม</figcaption></figure><figure><div class="im out"></div><figcaption>สำหรับเลเซอร์ (ดำ = ยิงแรง)</figcaption></figure></div>';
+    el.querySelector('.nm').textContent=it.name;
+    var o=new Image(); o.src=it.url; o.alt=''; el.querySelectorAll('.im')[0].appendChild(o);
+    el.querySelector('[data-a=dl]').addEventListener('click',function(){ download(it); });
+    el.querySelector('[data-a=rm]').addEventListener('click',function(){ URL.revokeObjectURL(it.url); items=items.filter(function(z){ return z!==it; }); el.remove(); refresh(); });
+    $('#list').appendChild(el);
+    process(it);
+  }
+  function process(it){
+    var c=convert(it.img,opts()); it.out=c;
+    var box=document.querySelector('#it'+it.id+' .im.out'); if(!box) return; box.innerHTML=''; box.appendChild(c);
+  }
+  function processAll(){ clearTimeout(tmr); tmr=setTimeout(function(){ items.forEach(process); },150); }
+  function refresh(){
+    $('#count').textContent = items.length ? 'รูปทั้งหมด '+items.length+' ใบ' : 'ยังไม่มีรูป';
+    $('#dlAll').disabled=$('#clear').disabled=!items.length;
+    if(!items.length && !$('#list').querySelector('.empty')) $('#list').innerHTML='<div class="empty">อัปโหลดรูปตัวละคร (เช่น ไฟล์จาก avatar-tool.html) เพื่อเริ่ม</div>';
+  }
+  function download(it){
+    return new Promise(function(res){
+      if(!it.out) process(it);
+      it.out.toBlob(function(b){
+        var a=document.createElement('a'), u=URL.createObjectURL(b); a.href=u; a.download=baseName(it.name)+'_laser.png';
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000); res();
+      },'image/png');
+    });
+  }
+
+  /* ---------- ปุ่ม / ลากวาง ---------- */
+  var drop=$('#drop'), file=$('#file');
+  drop.addEventListener('click',function(){ file.click(); });
+  drop.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); file.click(); } });
+  file.addEventListener('change',function(){ addFiles(file.files); file.value=''; });
+  ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop',function(e){ addFiles(e.dataTransfer.files); });
+  ['dark','light','line'].forEach(function(id){ $('#'+id).addEventListener('input',function(){ syncLabels(); processAll(); }); });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=mode]'),function(r){ r.addEventListener('change',function(){ syncLabels(); processAll(); }); });
+  $('#keepWhite').addEventListener('change',processAll);
+  // ดาวน์โหลดทีละไฟล์ต่อกัน (เบราว์เซอร์อาจถามครั้งแรกว่าอนุญาตให้ดาวน์โหลดหลายไฟล์ไหม)
+  $('#dlAll').addEventListener('click',function(){
+    var btn=this; btn.disabled=true; var list=items.slice(), i=0;
+    (function next(){ if(i>=list.length){ btn.disabled=!items.length; return; } download(list[i++]).then(function(){ setTimeout(next,400); }); })();
+  });
+  $('#clear').addEventListener('click',function(){ items.forEach(function(it){ URL.revokeObjectURL(it.url); }); items=[]; $('#list').innerHTML=''; refresh(); });
+  syncLabels();
+})();
+</script>
+</body>
+</html>
