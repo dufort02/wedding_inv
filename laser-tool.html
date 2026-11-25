@@ -3,6 +3,7 @@
   เครื่องมือแปลงรูปตัวละครเป็นไฟล์สำหรับเลเซอร์ (Grayscale) — สำหรับเจ้าของงาน/ทีมงาน ไม่มีลิงก์จากหน้าไหน
   • อัปโหลดรูป (PNG/JPG หลายใบ) → ปรับค่า → ดาวน์โหลด *_laser.png (ขนาดพิกเซลเท่ารูปเดิม)
   • พื้นหลัง → ขาว (ไม่ยิง) · ลายเส้น → ดำ · สีพื้น → ระดับเทาที่ไม้ติดจริง (ช่วง "เข้มสุด–อ่อนสุด")
+  • ไฟล์เติมสีอ่อน (_laser_fill.png): ยิงแล้วสีอ่อนไม่ติด → ยิงไฟล์นี้ซ้ำตำแหน่ง/ขนาดเดิมใน XCS (ห้ามขยับไม้) มีแค่ส่วนที่เบากว่า "เติมส่วนที่เบากว่า"
   • ดาวน์โหลดได้ 2 แบบ: พื้นขาว (_laser.png) หรือพื้นใส (_laser_clear.png — ส่วนขาวในตัวละครยังเป็นขาว)
   • ใน xTool Creative Space: Bitmap mode = Grayscale แล้วกำหนดขนาดชิ้นงานตอนวางรูป
   • ประมวลผลในเครื่องที่เปิดเท่านั้น ไม่ส่งรูปไปไหน
@@ -52,7 +53,8 @@ button.sm{padding:5px 12px;font-size:.82rem}
 .item .nm{font-weight:600;word-break:break-all}
 .item .px{color:var(--muted);font-family:Fredoka,sans-serif}
 .item .warn{color:var(--red);font-size:.8rem}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pair{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media (max-width:640px){.pair{grid-template-columns:1fr 1fr}}
 .pair figure{margin:0}
 .pair figcaption{font-size:.75rem;color:var(--muted);text-align:center;margin-top:4px}
 .pair .im{aspect-ratio:1;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;
@@ -102,6 +104,11 @@ button.sm{padding:5px 12px;font-size:.82rem}
         </div>
         <div style="margin-top:10px"><label class="chk"><input type="checkbox" id="keepWhite" checked>ส่วนสีขาวในตัวละครไม่ยิง</label></div>
       </div>
+      <div class="ctl">
+        <label for="fillCut">ไฟล์เติมสีอ่อน: เติมส่วนที่เบากว่า <span id="fillCutV"></span></label>
+        <input type="range" id="fillCut" min="10" max="70" value="32">
+        <small>ใช้เมื่อยิงแล้วสีอ่อนไม่ติด — ไฟล์เติมมีแค่ส่วนที่ยิงเบากว่าค่านี้ ส่วนอื่นเป็นขาว (ไม่ยิงซ้ำ) · ขนาดเท่าไฟล์แรก วางตำแหน่งเดิมใน XCS · ใช้ค่าอื่นให้เหมือนตอนทำไฟล์แรก</small>
+      </div>
     </div>
   </section>
 
@@ -133,10 +140,11 @@ button.sm{padding:5px 12px;font-size:.82rem}
   function opts(){
     var d=+$('#dark').value/100, l=+$('#light').value/100;
     if(l>d-.05) l=Math.max(0,d-.05);
-    return {dark:d, light:l, line:+$('#line').value/100, steps:+document.querySelector('input[name=mode]:checked').value, keepWhite:$('#keepWhite').checked, clear:(document.querySelector('input[name=bg]:checked')||{}).value==='clear'};
+    return {dark:d, light:l, line:+$('#line').value/100, steps:+document.querySelector('input[name=mode]:checked').value, keepWhite:$('#keepWhite').checked, clear:(document.querySelector('input[name=bg]:checked')||{}).value==='clear', fillCut:+$('#fillCut').value/100};
   }
   function syncLabels(){
     var o=opts();
+    $('#fillCutV').textContent=Math.round(o.fillCut*100)+'%';
     $('#darkV').textContent=Math.round(o.dark*100)+'%'; $('#lightV').textContent=Math.round(o.light*100)+'%'; $('#lineV').textContent=Math.round(o.line*100)+'%';
     var r=$('#ramp'); r.innerHTML='';
     var n=o.steps||8; for(var i=0;i<n;i++){ var b=o.light+(o.dark-o.light)*(n===1?1:i/(n-1)), g=Math.round(255*(1-b)); var e=document.createElement('i'); e.style.background='rgb('+g+','+g+','+g+')'; r.appendChild(e); }
@@ -149,7 +157,8 @@ button.sm{padding:5px 12px;font-size:.82rem}
      4) สีพื้นที่เหลือ → ยืดช่วงความสว่าง (สว่างสุดของรูป = อ่อนสุด, เข้มสุด = เข้มสุด) แล้วดึงสีอ่อนให้ห่างกันขึ้น
         → ผิวอ่อนสุด สีพาสเทลแยกกันได้ ผมเข้มยังเข้มแต่ไม่ดำทึบ (ลายเส้นดำยังตัดเห็น)
      5) สีขาวจริงในตัวละคร → ไม่ยิง (เลือกได้) */
-  function convert(img,o){
+  // fill=true → ไฟล์เติมสีอ่อน: เก็บแค่สีพื้นที่ยิงเบากว่า fillCut ส่วนอื่นขาว (พื้นขาวทึบเสมอ ขนาดเท่าเดิม)
+  function convert(img,o,fill){
     var W=img.naturalWidth, H=img.naturalHeight, c=document.createElement('canvas'); c.width=W; c.height=H;
     var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(img,0,0);
     var src=document.createElement('canvas'); src.width=W; src.height=H; var sx=src.getContext('2d'); sx.drawImage(img,0,0);
@@ -185,18 +194,21 @@ button.sm{padding:5px 12px;font-size:.82rem}
     for(b=0;b<256;b++){ var t0=Math.min(1,Math.max(0,(hi-b)/(hi-lo))); rank[b]=Math.pow(t0,.8); }
     var out=new Uint8ClampedArray(N), burn;
     for(k=0;k<N;k++){
+      var isFill=false;
       if(bg[k]){ burn=0; }
       else{
         var v2=L[k];
         if(v2<o.line) burn=o.dark+(1-o.dark)*Math.min(1,(o.line-v2)/Math.max(.02,o.line*.6)+.35);   // ลายเส้น → ดำ (ขอบเส้นนุ่ม)
         else if(o.keepWhite&&v2>=WHITE) burn=0;
-        else{ var t=rank[Math.round(v2*255)]; if(o.steps) t=Math.min(o.steps-1,Math.floor(t*o.steps))/(o.steps-1); burn=o.light+(o.dark-o.light)*t; }
+        else{ var t=rank[Math.round(v2*255)]; if(o.steps) t=Math.min(o.steps-1,Math.floor(t*o.steps))/(o.steps-1); burn=o.light+(o.dark-o.light)*t; isFill=burn<=o.fillCut+1e-6; }
+        if(fill && !isFill) burn=0;   // ไฟล์เติม: เส้น/ส่วนขาว/ส่วนเข้ม → ไม่ยิงซ้ำ
       }
       out[k]=Math.round(255*(1-Math.min(1,burn)));
     }
     // พื้นขาว: ขอบระหว่างพื้นหลังกับตัวละครผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
     // พื้นใส: พื้นหลังโปร่งใส ตัวละครคงความโปร่งใสเดิมที่ขอบ (ส่วนขาวในตัวละครยังเป็นขาว ไม่เป็นรู)
     for(k=0,i=0;k<N;k++,i+=4){ var a=A[i+3]/255, g=out[k];
+      if(fill){ if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; continue; }   // ขอบเนียนแบบเดียวกับไฟล์พื้นขาว
       if(o.clear){ p[i]=p[i+1]=p[i+2]=g; p[i+3]= bg[k] ? 0 : A[i+3]; continue; }
       if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; }
     x.putImageData(d,0,0);
@@ -220,18 +232,21 @@ button.sm{padding:5px 12px;font-size:.82rem}
     var small=Math.min(it.img.naturalWidth,it.img.naturalHeight)<600;
     el.innerHTML='<div class="hd"><span class="nm"></span><span class="px">'+it.img.naturalWidth+'×'+it.img.naturalHeight+'px</span>'+
       (small?'<span class="warn">รูปเล็ก อาจไม่คมถ้าแกะชิ้นใหญ่</span>':'')+
-      '<span style="display:flex;gap:6px"><button class="sm main" data-a="dl" type="button">ดาวน์โหลด</button><button class="sm" data-a="rm" type="button">ลบ</button></span></div>'+
-      '<div class="pair"><figure><div class="im"></div><figcaption>รูปเดิม</figcaption></figure><figure><div class="im out"></div><figcaption>สำหรับเลเซอร์ (ดำ = ยิงแรง)</figcaption></figure></div>';
+      '<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm main" data-a="dl" type="button">ดาวน์โหลด</button><button class="sm" data-a="fill" type="button">ไฟล์เติมสีอ่อน</button><button class="sm" data-a="rm" type="button">ลบ</button></span></div>'+
+      '<div class="pair"><figure><div class="im"></div><figcaption>รูปเดิม</figcaption></figure><figure><div class="im out"></div><figcaption>สำหรับเลเซอร์ (ดำ = ยิงแรง)</figcaption></figure>'+
+      '<figure><div class="im out fill"></div><figcaption>ไฟล์เติมสีอ่อน (ยิงซ้ำตำแหน่งเดิม)</figcaption></figure></div>';
     el.querySelector('.nm').textContent=it.name;
     var o=new Image(); o.src=it.url; o.alt=''; el.querySelectorAll('.im')[0].appendChild(o);
     el.querySelector('[data-a=dl]').addEventListener('click',function(){ download(it); });
+    el.querySelector('[data-a=fill]').addEventListener('click',function(){ save(it.fill,baseName(it.name)+'_laser_fill.png'); });
     el.querySelector('[data-a=rm]').addEventListener('click',function(){ URL.revokeObjectURL(it.url); items=items.filter(function(z){ return z!==it; }); el.remove(); refresh(); });
     $('#list').appendChild(el);
     process(it);
   }
   function process(it){
-    var o=opts(), c=convert(it.img,o); it.out=c; it.clear=o.clear;
-    var box=document.querySelector('#it'+it.id+' .im.out'); if(!box) return; box.innerHTML=''; box.classList.toggle('clear',o.clear); box.appendChild(c);
+    var o=opts(), c=convert(it.img,o); it.out=c; it.clear=o.clear; it.fill=convert(it.img,o,true);
+    var box=document.querySelector('#it'+it.id+' .im.out:not(.fill)'); if(!box) return; box.innerHTML=''; box.classList.toggle('clear',o.clear); box.appendChild(c);
+    var fb=document.querySelector('#it'+it.id+' .im.fill'); if(fb){ fb.innerHTML=''; fb.appendChild(it.fill); }
   }
   function processAll(){ clearTimeout(tmr); tmr=setTimeout(function(){ items.forEach(process); },150); }
   function refresh(){
@@ -239,14 +254,17 @@ button.sm{padding:5px 12px;font-size:.82rem}
     $('#dlAll').disabled=$('#clear').disabled=!items.length;
     if(!items.length && !$('#list').querySelector('.empty')) $('#list').innerHTML='<div class="empty">อัปโหลดรูปตัวละคร (เช่น ไฟล์จาก avatar-tool.html) เพื่อเริ่ม</div>';
   }
-  function download(it){
+  function save(canvas,name){
     return new Promise(function(res){
-      if(!it.out) process(it);
-      it.out.toBlob(function(b){
-        var a=document.createElement('a'), u=URL.createObjectURL(b); a.href=u; a.download=baseName(it.name)+(it.clear?'_laser_clear.png':'_laser.png');
+      canvas.toBlob(function(b){
+        var a=document.createElement('a'), u=URL.createObjectURL(b); a.href=u; a.download=name;
         document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000); res();
       },'image/png');
     });
+  }
+  function download(it){
+    if(!it.out) process(it);
+    return save(it.out, baseName(it.name)+(it.clear?'_laser_clear.png':'_laser.png'));
   }
 
   /* ---------- ปุ่ม / ลากวาง ---------- */
@@ -257,7 +275,7 @@ button.sm{padding:5px 12px;font-size:.82rem}
   ['dragenter','dragover'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
   drop.addEventListener('drop',function(e){ addFiles(e.dataTransfer.files); });
-  ['dark','light','line'].forEach(function(id){ $('#'+id).addEventListener('input',function(){ syncLabels(); processAll(); }); });
+  ['dark','light','line','fillCut'].forEach(function(id){ $('#'+id).addEventListener('input',function(){ syncLabels(); processAll(); }); });
   Array.prototype.forEach.call(document.querySelectorAll('input[name=mode]'),function(r){ r.addEventListener('change',function(){ syncLabels(); processAll(); }); });
   $('#keepWhite').addEventListener('change',processAll);
   Array.prototype.forEach.call(document.querySelectorAll('input[name=bg]'),function(r){ r.addEventListener('change',processAll); });
