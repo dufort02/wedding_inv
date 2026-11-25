@@ -3,6 +3,7 @@
   เครื่องมือแปลงรูปตัวละครเป็นไฟล์สำหรับเลเซอร์ (Grayscale) — สำหรับเจ้าของงาน/ทีมงาน ไม่มีลิงก์จากหน้าไหน
   • อัปโหลดรูป (PNG/JPG หลายใบ) → ปรับค่า → ดาวน์โหลด *_laser.png (ขนาดพิกเซลเท่ารูปเดิม)
   • พื้นหลัง → ขาว (ไม่ยิง) · ลายเส้น → ดำ · สีพื้น → ระดับเทาที่ไม้ติดจริง (ช่วง "เข้มสุด–อ่อนสุด")
+  • ดาวน์โหลดได้ 2 แบบ: พื้นขาว (_laser.png) หรือพื้นใส (_laser_clear.png — ส่วนขาวในตัวละครยังเป็นขาว)
   • ใน xTool Creative Space: Bitmap mode = Grayscale แล้วกำหนดขนาดชิ้นงานตอนวางรูป
   • ประมวลผลในเครื่องที่เปิดเท่านั้น ไม่ส่งรูปไปไหน
 -->
@@ -58,6 +59,7 @@ button.sm{padding:5px 12px;font-size:.82rem}
   background-color:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);
   background-size:16px 16px;background-position:0 0,8px 8px;border:1px solid #e4dccd}
 .pair .im.out{background:#fff}
+.pair .im.out.clear{background-color:#fff;background-image:linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%),linear-gradient(45deg,#eee 25%,transparent 25%,transparent 75%,#eee 75%);background-size:16px 16px;background-position:0 0,8px 8px}
 .pair img,.pair canvas{max-width:100%;max-height:100%;display:block}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .note{font-size:.82rem;color:var(--muted);line-height:1.6}
@@ -105,7 +107,11 @@ button.sm{padding:5px 12px;font-size:.82rem}
 
   <div class="bar">
     <div class="note" id="count">ยังไม่มีรูป</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="seg" role="radiogroup" aria-label="พื้นหลังไฟล์ที่ดาวน์โหลด">
+        <label><input type="radio" name="bg" value="white" checked>พื้นขาว</label>
+        <label><input type="radio" name="bg" value="clear">พื้นใส</label>
+      </div>
       <button id="dlAll" class="main" type="button" disabled>ดาวน์โหลดทั้งหมด (ทีละไฟล์)</button>
       <button id="clear" type="button" disabled>ล้างทั้งหมด</button>
     </div>
@@ -127,7 +133,7 @@ button.sm{padding:5px 12px;font-size:.82rem}
   function opts(){
     var d=+$('#dark').value/100, l=+$('#light').value/100;
     if(l>d-.05) l=Math.max(0,d-.05);
-    return {dark:d, light:l, line:+$('#line').value/100, steps:+document.querySelector('input[name=mode]:checked').value, keepWhite:$('#keepWhite').checked};
+    return {dark:d, light:l, line:+$('#line').value/100, steps:+document.querySelector('input[name=mode]:checked').value, keepWhite:$('#keepWhite').checked, clear:(document.querySelector('input[name=bg]:checked')||{}).value==='clear'};
   }
   function syncLabels(){
     var o=opts();
@@ -188,8 +194,11 @@ button.sm{padding:5px 12px;font-size:.82rem}
       }
       out[k]=Math.round(255*(1-Math.min(1,burn)));
     }
-    // ขอบระหว่างพื้นหลังกับตัวละคร: ผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
-    for(k=0,i=0;k<N;k++,i+=4){ var a=A[i+3]/255, g=out[k]; if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; }
+    // พื้นขาว: ขอบระหว่างพื้นหลังกับตัวละครผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
+    // พื้นใส: พื้นหลังโปร่งใส ตัวละครคงความโปร่งใสเดิมที่ขอบ (ส่วนขาวในตัวละครยังเป็นขาว ไม่เป็นรู)
+    for(k=0,i=0;k<N;k++,i+=4){ var a=A[i+3]/255, g=out[k];
+      if(o.clear){ p[i]=p[i+1]=p[i+2]=g; p[i+3]= bg[k] ? 0 : A[i+3]; continue; }
+      if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; }
     x.putImageData(d,0,0);
     return c;
   }
@@ -221,8 +230,8 @@ button.sm{padding:5px 12px;font-size:.82rem}
     process(it);
   }
   function process(it){
-    var c=convert(it.img,opts()); it.out=c;
-    var box=document.querySelector('#it'+it.id+' .im.out'); if(!box) return; box.innerHTML=''; box.appendChild(c);
+    var o=opts(), c=convert(it.img,o); it.out=c; it.clear=o.clear;
+    var box=document.querySelector('#it'+it.id+' .im.out'); if(!box) return; box.innerHTML=''; box.classList.toggle('clear',o.clear); box.appendChild(c);
   }
   function processAll(){ clearTimeout(tmr); tmr=setTimeout(function(){ items.forEach(process); },150); }
   function refresh(){
@@ -234,7 +243,7 @@ button.sm{padding:5px 12px;font-size:.82rem}
     return new Promise(function(res){
       if(!it.out) process(it);
       it.out.toBlob(function(b){
-        var a=document.createElement('a'), u=URL.createObjectURL(b); a.href=u; a.download=baseName(it.name)+'_laser.png';
+        var a=document.createElement('a'), u=URL.createObjectURL(b); a.href=u; a.download=baseName(it.name)+(it.clear?'_laser_clear.png':'_laser.png');
         document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(u); },4000); res();
       },'image/png');
     });
@@ -251,6 +260,7 @@ button.sm{padding:5px 12px;font-size:.82rem}
   ['dark','light','line'].forEach(function(id){ $('#'+id).addEventListener('input',function(){ syncLabels(); processAll(); }); });
   Array.prototype.forEach.call(document.querySelectorAll('input[name=mode]'),function(r){ r.addEventListener('change',function(){ syncLabels(); processAll(); }); });
   $('#keepWhite').addEventListener('change',processAll);
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=bg]'),function(r){ r.addEventListener('change',processAll); });
   // ดาวน์โหลดทีละไฟล์ต่อกัน (เบราว์เซอร์อาจถามครั้งแรกว่าอนุญาตให้ดาวน์โหลดหลายไฟล์ไหม)
   $('#dlAll').addEventListener('click',function(){
     var btn=this; btn.disabled=true; var list=items.slice(), i=0;
