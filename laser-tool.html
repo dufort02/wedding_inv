@@ -65,6 +65,19 @@ button.sm{padding:5px 12px;font-size:.82rem}
 .pair img,.pair canvas{max-width:100%;max-height:100%;display:block}
 .empty{color:var(--muted);text-align:center;padding:20px}
 .note{font-size:.82rem;color:var(--muted);line-height:1.6}
+.picker{position:fixed;inset:0;z-index:50;background:rgba(43,42,39,.55);display:flex;align-items:center;justify-content:center;padding:12px}
+.picker[hidden]{display:none}
+.pk-card{background:var(--card);border:2px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);padding:14px;width:min(760px,100%);max-height:100%;overflow:auto}
+.pk-hd{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.pk-hd b{font:700 1.1rem Fredoka,sans-serif;color:var(--red)}
+.pk-nm{font-size:.8rem;color:var(--muted);word-break:break-all}
+.pk-tip{font-size:.85rem;color:var(--muted);margin:6px 0 10px}
+.pk-stage{position:relative;margin:0 auto;width:fit-content;max-width:100%;border:1px solid #e4dccd;border-radius:8px;overflow:hidden;background:#fff}
+.pk-stage canvas{display:block;max-width:100%;max-height:58vh;height:auto}
+#pkOver{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:manipulation}
+.pk-count{font-size:.85rem;margin:8px 0;min-height:1.3em;color:var(--red)}
+.pk-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.pk-v{font:600 .85rem Fredoka,sans-serif;color:var(--red);min-width:3ch}
 </style>
 </head>
 <body>
@@ -131,6 +144,25 @@ button.sm{padding:5px 12px;font-size:.82rem}
   </p>
 </main>
 
+<div class="picker" id="picker" hidden role="dialog" aria-modal="true" aria-labelledby="pkTitle">
+  <div class="pk-card">
+    <div class="pk-hd"><b id="pkTitle">เลือกส่วนที่จะเติม</b><span id="pkName" class="pk-nm"></span></div>
+    <p class="pk-tip">แตะส่วนที่อยากยิงเติม (เช่น หน้า ระบาย แขน) — ระบบเลือกทั้งก้อน · แตะซ้ำเพื่อเอาออก · สีแดง = จะยิงเติม</p>
+    <div class="pk-stage"><canvas id="pkBase"></canvas><canvas id="pkOver"></canvas></div>
+    <div class="pk-count" id="pkCount"></div>
+    <div class="pk-row">
+      <button type="button" class="sm" id="pkAuto">ใช้ที่ระบบเลือก</button>
+      <button type="button" class="sm" id="pkNone">ล้างทั้งหมด</button>
+      <label class="chk" style="margin-left:auto"><input type="checkbox" id="pkFixOn">ความเข้มเท่ากันทุกส่วน</label>
+      <input type="range" id="pkFix" min="10" max="70" value="35" style="width:120px"><span id="pkFixV" class="pk-v"></span>
+    </div>
+    <div class="pk-row" style="justify-content:flex-end">
+      <button type="button" id="pkCancel">ยกเลิก</button>
+      <button type="button" class="main" id="pkDone">เสร็จ</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   var $=function(s){ return document.querySelector(s); };
@@ -157,13 +189,14 @@ button.sm{padding:5px 12px;font-size:.82rem}
      4) สีพื้นที่เหลือ → ยืดช่วงความสว่าง (สว่างสุดของรูป = อ่อนสุด, เข้มสุด = เข้มสุด) แล้วดึงสีอ่อนให้ห่างกันขึ้น
         → ผิวอ่อนสุด สีพาสเทลแยกกันได้ ผมเข้มยังเข้มแต่ไม่ดำทึบ (ลายเส้นดำยังตัดเห็น)
      5) สีขาวจริงในตัวละคร → ไม่ยิง (เลือกได้) */
-  // fill=true → ไฟล์เติมสีอ่อน: เก็บแค่สีพื้นที่ยิงเบากว่า fillCut ส่วนอื่นขาว (พื้นขาวทึบเสมอ ขนาดเท่าเดิม)
-  function convert(img,o,fill){
+  // วิเคราะห์รูปครั้งเดียวต่อการตั้งค่า → ใช้สร้างไฟล์หลัก ไฟล์เติม และหน้าเลือกส่วนเอง
+  function analyze(img,o){
     var W=img.naturalWidth, H=img.naturalHeight, c=document.createElement('canvas'); c.width=W; c.height=H;
     var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.drawImage(img,0,0);
     var src=document.createElement('canvas'); src.width=W; src.height=H; var sx=src.getContext('2d'); sx.drawImage(img,0,0);
     var A=sx.getImageData(0,0,W,H).data; src.width=src.height=0;   // alpha เดิม
-    var d=x.getImageData(0,0,W,H), p=d.data, N=W*H, L=new Float32Array(N), bg=new Uint8Array(N), i, k;
+    var p=x.getImageData(0,0,W,H).data; c.width=c.height=0;        // สีเดิมบนพื้นขาว
+    var N=W*H, L=new Float32Array(N), bg=new Uint8Array(N), i, k;
     for(k=0,i=0;k<N;k++,i+=4) L[k]=(0.2126*p[i]+0.7152*p[i+1]+0.0722*p[i+2])/255;
     // พื้นหลัง: โปร่งใส หรือ สีเดียวกับขอบรูปที่ต่อกันจากขอบ
     var edge=[], ref=null;
@@ -192,27 +225,54 @@ button.sm{padding:5px 12px;font-size:.82rem}
     if(hi-lo<8){ lo=Math.max(0,hi-8); }
     var rank=new Float32Array(256);   // 0 = สว่างสุด (อ่อนสุด), 1 = เข้มสุด
     for(b=0;b<256;b++){ var t0=Math.min(1,Math.max(0,(hi-b)/(hi-lo))); rank[b]=Math.pow(t0,.8); }
-    var out=new Uint8ClampedArray(N), burn;
+    var gray=new Uint8ClampedArray(N), auto=new Uint8Array(N), burn;
     for(k=0;k<N;k++){
-      var isFill=false;
       if(bg[k]){ burn=0; }
       else{
         var v2=L[k];
         if(v2<o.line) burn=o.dark+(1-o.dark)*Math.min(1,(o.line-v2)/Math.max(.02,o.line*.6)+.35);   // ลายเส้น → ดำ (ขอบเส้นนุ่ม)
         else if(o.keepWhite&&v2>=WHITE) burn=0;
-        else{ var t=rank[Math.round(v2*255)]; if(o.steps) t=Math.min(o.steps-1,Math.floor(t*o.steps))/(o.steps-1); burn=o.light+(o.dark-o.light)*t; isFill=burn<=o.fillCut+1e-6; }
-        if(fill && !isFill) burn=0;   // ไฟล์เติม: เส้น/ส่วนขาว/ส่วนเข้ม → ไม่ยิงซ้ำ
+        else{ var t=rank[Math.round(v2*255)]; if(o.steps) t=Math.min(o.steps-1,Math.floor(t*o.steps))/(o.steps-1); burn=o.light+(o.dark-o.light)*t;
+              if(burn<=o.fillCut+1e-6) auto[k]=1; }   // ระบบเลือกให้: ส่วนที่ยิงเบากว่า "เติมส่วนที่เบากว่า"
       }
-      out[k]=Math.round(255*(1-Math.min(1,burn)));
+      gray[k]=Math.round(255*(1-Math.min(1,burn)));
     }
-    // พื้นขาว: ขอบระหว่างพื้นหลังกับตัวละครผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
-    // พื้นใส: พื้นหลังโปร่งใส ตัวละครคงความโปร่งใสเดิมที่ขอบ (ส่วนขาวในตัวละครยังเป็นขาว ไม่เป็นรู)
-    for(k=0,i=0;k<N;k++,i+=4){ var a=A[i+3]/255, g=out[k];
-      if(fill){ if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; continue; }   // ขอบเนียนแบบเดียวกับไฟล์พื้นขาว
-      if(o.clear){ p[i]=p[i+1]=p[i+2]=g; p[i+3]= bg[k] ? 0 : A[i+3]; continue; }
-      if(!bg[k]&&a<1) g=Math.round(255-(255-g)*a); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; }
-    x.putImageData(d,0,0);
-    return c;
+    return {W:W,H:H,N:N,rgb:p,A:A,L:L,bg:bg,gray:gray,auto:auto,line:o.line};
+  }
+  function canvasOf(r,fn){
+    var c=document.createElement('canvas'); c.width=r.W; c.height=r.H; var x=c.getContext('2d'), d=x.createImageData(r.W,r.H), p=d.data;
+    for(var k=0,i=0;k<r.N;k++,i+=4) fn(k,i,p);
+    x.putImageData(d,0,0); return c;
+  }
+  // ขอบระหว่างพื้นหลังกับตัวละคร: ผสมตามความโปร่งใสเดิม (ขอบไม่หยัก)
+  function edgeMix(r,k,i,g){ var a=r.A[i+3]/255; return (!r.bg[k]&&a<1) ? Math.round(255-(255-g)*a) : g; }
+  // ไฟล์หลัก — พื้นขาว / พื้นใส (ส่วนขาวในตัวละครยังเป็นขาว ไม่เป็นรู)
+  function renderMain(r,o){
+    return canvasOf(r,function(k,i,p){ var g=r.gray[k];
+      if(o.clear){ p[i]=p[i+1]=p[i+2]=g; p[i+3]= r.bg[k] ? 0 : r.A[i+3]; return; }
+      g=edgeMix(r,k,i,g); p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; });
+  }
+  // ไฟล์เติมสีอ่อน — เฉพาะส่วนที่เลือก (mask) · ความเข้มตามไฟล์หลัก หรือค่าเดียวทั้งหมด · พื้นขาวทึบเสมอ ขนาดเท่าเดิม
+  function renderFill(r,mask,fixed){
+    var fg=fixed==null?null:Math.round(255*(1-fixed));
+    return canvasOf(r,function(k,i,p){ var g=255;
+      if(mask[k]) g=edgeMix(r,k,i, fg==null ? r.gray[k] : fg);
+      p[i]=p[i+1]=p[i+2]=g; p[i+3]=255; });
+  }
+  // แตะเลือกเป็นส่วน: ไล่ไปตามพิกเซลที่สีใกล้กันและต่อกัน หยุดที่ลายเส้น/พื้นหลัง → ได้ทั้งก้อน (เช่น หน้า ระบาย แขน)
+  function regionAt(r,px,py){
+    var W=r.W, H=r.H, N=r.N, p=r.rgb, seen=new Uint8Array(N), out=[], s0=py*W+px;
+    if(px<0||py<0||px>=W||py>=H||r.bg[s0]||r.L[s0]<r.line) return out;
+    var sr=p[s0*4], sg=p[s0*4+1], sb=p[s0*4+2], st=[s0]; seen[s0]=1;
+    function ok(q,from){ if(seen[q]||r.bg[q]||r.L[q]<r.line) return false; var j=q*4, f=from*4;
+      if(Math.abs(p[j]-p[f])+Math.abs(p[j+1]-p[f+1])+Math.abs(p[j+2]-p[f+2])>30) return false;      // เปลี่ยนสีกะทันหัน = ขอบส่วน
+      return Math.abs(p[j]-sr)+Math.abs(p[j+1]-sg)+Math.abs(p[j+2]-sb)<=120; }                        // ไม่ไหลไปสีอื่นทั้งก้อน
+    while(st.length){ var q=st.pop(), qx=q%W; out.push(q);
+      if(qx>0&&ok(q-1,q)){ seen[q-1]=1; st.push(q-1); }
+      if(qx<W-1&&ok(q+1,q)){ seen[q+1]=1; st.push(q+1); }
+      if(q>=W&&ok(q-W,q)){ seen[q-W]=1; st.push(q-W); }
+      if(q<N-W&&ok(q+W,q)){ seen[q+W]=1; st.push(q+W); } }
+    return out;
   }
 
   /* ---------- รายการรูป ---------- */
@@ -232,22 +292,70 @@ button.sm{padding:5px 12px;font-size:.82rem}
     var small=Math.min(it.img.naturalWidth,it.img.naturalHeight)<600;
     el.innerHTML='<div class="hd"><span class="nm"></span><span class="px">'+it.img.naturalWidth+'×'+it.img.naturalHeight+'px</span>'+
       (small?'<span class="warn">รูปเล็ก อาจไม่คมถ้าแกะชิ้นใหญ่</span>':'')+
-      '<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm main" data-a="dl" type="button">ดาวน์โหลด</button><button class="sm" data-a="fill" type="button">ไฟล์เติมสีอ่อน</button><button class="sm" data-a="rm" type="button">ลบ</button></span></div>'+
+      '<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm main" data-a="dl" type="button">ดาวน์โหลด</button><button class="sm" data-a="fill" type="button">ไฟล์เติมสีอ่อน</button><button class="sm" data-a="pick" type="button">เลือกส่วนเอง</button><button class="sm" data-a="rm" type="button">ลบ</button></span></div>'+
       '<div class="pair"><figure><div class="im"></div><figcaption>รูปเดิม</figcaption></figure><figure><div class="im out"></div><figcaption>สำหรับเลเซอร์ (ดำ = ยิงแรง)</figcaption></figure>'+
-      '<figure><div class="im out fill"></div><figcaption>ไฟล์เติมสีอ่อน (ยิงซ้ำตำแหน่งเดิม)</figcaption></figure></div>';
+      '<figure><div class="im out fill"></div><figcaption class="fcap">ไฟล์เติมสีอ่อน (ยิงซ้ำตำแหน่งเดิม)</figcaption></figure></div>';
     el.querySelector('.nm').textContent=it.name;
     var o=new Image(); o.src=it.url; o.alt=''; el.querySelectorAll('.im')[0].appendChild(o);
     el.querySelector('[data-a=dl]').addEventListener('click',function(){ download(it); });
     el.querySelector('[data-a=fill]').addEventListener('click',function(){ save(it.fill,baseName(it.name)+'_laser_fill.png'); });
+    el.querySelector('[data-a=pick]').addEventListener('click',function(){ openPicker(it); });
     el.querySelector('[data-a=rm]').addEventListener('click',function(){ URL.revokeObjectURL(it.url); items=items.filter(function(z){ return z!==it; }); el.remove(); refresh(); });
     $('#list').appendChild(el);
     process(it);
   }
   function process(it){
-    var o=opts(), c=convert(it.img,o); it.out=c; it.clear=o.clear; it.fill=convert(it.img,o,true);
+    var o=opts(); it.r=analyze(it.img,o); var c=renderMain(it.r,o); it.out=c; it.clear=o.clear;
+    if(!it.custom || !it.mask || it.mask.length!==it.r.N) it.mask=it.r.auto.slice();   // เลือกเองแล้ว → เก็บที่เลือกไว้
+    it.fill=renderFill(it.r,it.mask,it.fixed);
     var box=document.querySelector('#it'+it.id+' .im.out:not(.fill)'); if(!box) return; box.innerHTML=''; box.classList.toggle('clear',o.clear); box.appendChild(c);
-    var fb=document.querySelector('#it'+it.id+' .im.fill'); if(fb){ fb.innerHTML=''; fb.appendChild(it.fill); }
+    showFill(it);
   }
+  function showFill(it){
+    var fb=document.querySelector('#it'+it.id+' .im.fill'); if(!fb) return; fb.innerHTML=''; fb.appendChild(it.fill);
+    var cap=document.querySelector('#it'+it.id+' .fcap'); if(cap) cap.textContent='ไฟล์เติมสีอ่อน'+(it.custom?' · เลือกเอง':' · ระบบเลือก')+(it.fixed!=null?' · '+Math.round(it.fixed*100)+'% ทุกส่วน':'');
+  }
+
+  /* ---------- เลือกส่วนเอง (แตะเลือก/แตะซ้ำเอาออก) ---------- */
+  var pk={it:null};
+  function openPicker(it){
+    if(!it.r) process(it);
+    pk.it=it; pk.mask=it.mask.slice(); pk.custom=!!it.custom; pk.fixed=it.fixed;
+    var r=it.r, base=$('#pkBase'), ov=$('#pkOver');
+    base.width=ov.width=r.W; base.height=ov.height=r.H;
+    var bx=base.getContext('2d'), bd=bx.createImageData(r.W,r.H); bd.data.set(r.rgb); bx.putImageData(bd,0,0);
+    $('#pkName').textContent=it.name;
+    $('#pkFixOn').checked=pk.fixed!=null; $('#pkFix').value=Math.round((pk.fixed!=null?pk.fixed:opts().fillCut)*100); syncFix();
+    drawOverlay(); $('#picker').hidden=false; document.body.style.overflow='hidden';
+  }
+  function drawOverlay(){
+    var r=pk.it.r, ov=$('#pkOver'), x=ov.getContext('2d'), d=x.createImageData(r.W,r.H), p=d.data, n=0;
+    for(var k=0,i=0;k<r.N;k++,i+=4) if(pk.mask[k]){ p[i]=230; p[i+1]=40; p[i+2]=70; p[i+3]=125; n++; }
+    x.putImageData(d,0,0);
+    $('#pkCount').textContent = n ? 'เลือกไว้ '+(100*n/r.N).toFixed(1)+'% ของรูป' : 'ยังไม่ได้เลือกส่วนไหน';
+  }
+  function syncFix(){ $('#pkFix').disabled=!$('#pkFixOn').checked; $('#pkFixV').textContent=$('#pkFix').value+'%'; }
+  function closePicker(apply){
+    var it=pk.it; if(!it) return;
+    if(apply){ it.mask=pk.mask; it.custom=pk.custom; it.fixed=$('#pkFixOn').checked ? +$('#pkFix').value/100 : null;
+      it.fill=renderFill(it.r,it.mask,it.fixed); showFill(it); }
+    $('#picker').hidden=true; document.body.style.overflow=''; pk.it=null;
+  }
+  $('#pkOver').addEventListener('click',function(e){
+    var it=pk.it; if(!it) return; var rc=this.getBoundingClientRect(), r=it.r;
+    var px=Math.floor((e.clientX-rc.left)*r.W/rc.width), py=Math.floor((e.clientY-rc.top)*r.H/rc.height);
+    var reg=regionAt(r,px,py);
+    if(!reg.length){ $('#pkCount').textContent='ตรงนี้เป็นลายเส้นหรือพื้นหลัง — แตะในส่วนที่เป็นสี'; return; }
+    var on=pk.mask[py*r.W+px]?0:1; for(var j=0;j<reg.length;j++) pk.mask[reg[j]]=on;   // แตะส่วนที่เลือกแล้ว = เอาออก
+    pk.custom=true; drawOverlay();
+  });
+  $('#pkAuto').addEventListener('click',function(){ pk.mask=pk.it.r.auto.slice(); pk.custom=false; drawOverlay(); });
+  $('#pkNone').addEventListener('click',function(){ pk.mask=new Uint8Array(pk.it.r.N); pk.custom=true; drawOverlay(); });
+  $('#pkFixOn').addEventListener('change',syncFix); $('#pkFix').addEventListener('input',syncFix);
+  $('#pkDone').addEventListener('click',function(){ closePicker(true); });
+  $('#pkCancel').addEventListener('click',function(){ closePicker(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&pk.it) closePicker(false); });
+
   function processAll(){ clearTimeout(tmr); tmr=setTimeout(function(){ items.forEach(process); },150); }
   function refresh(){
     $('#count').textContent = items.length ? 'รูปทั้งหมด '+items.length+' ใบ' : 'ยังไม่มีรูป';
