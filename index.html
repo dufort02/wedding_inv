@@ -540,6 +540,13 @@ body.comp-view .rsvp-lead{display:none}
 body.comp-view #main > svg.wave:nth-of-type(n+3),body.comp-view #main > svg.wave:nth-of-type(n+3) + .tdeco-div{display:none}
 .comp-share{margin-top:16px;padding-top:14px;border-top:1.5px dashed rgba(194,59,59,.3);text-align:center}
 .comp-share p{font-size:.85rem;margin-bottom:10px}
+/* ลิงก์ผู้ติดตาม: ช่องลิงก์ + คัดลอก (ใต้ปุ่มแชร์ · ในกล่องใต้ตั๋ว) */
+.comp-link{display:flex;gap:6px;max-width:440px;margin:12px auto 0}
+.comp-link input{flex:1;min-width:0;font:inherit;font-size:.8rem;padding:8px 12px;border:1.5px solid rgba(194,59,59,.45);border-radius:999px;background:var(--white);color:var(--red-deep,#9F2C2E)}
+.comp-link .btn{padding:7px 14px;font-size:.82rem;white-space:nowrap}
+.comp-copy{display:block;margin:8px auto 0;font-size:.8rem;background:none;border:0;color:var(--red);text-decoration:underline;cursor:pointer;font-family:inherit}
+.t3-comp{margin:12px auto 0;max-width:460px;padding:14px;border-radius:14px;background:rgba(255,253,248,.85);border:1.5px dashed rgba(194,59,59,.35);text-align:center}
+.t3-comp p{font-size:.85rem;margin-bottom:10px}
 .thanks{text-align:center;padding:10px 0}
 .thanks>img{width:130px;height:130px;border-radius:50%;margin:0 auto 10px;background:var(--blush);border:1.8px solid var(--red);object-fit:contain}
 .thanks>b{font-family:var(--display);color:var(--red);font-size:1.3rem;display:block}
@@ -884,7 +891,8 @@ footer .script-h{font-size:2rem}
           <div class="t3tk-wait" id="t3Wait"><span id="t3WaitTx">ตอบรับร่วมงานด้านล่าง เพื่อแสดงท้ายตั๋ว</span><a class="btn" href="#rsvp" id="t3WaitBtn">ไปตอบรับ</a></div>
         </div>
       </div>
-      <div class="t3tk-acts"><button class="btn" type="button" id="t3Shot">บันทึกภาพตั๋ว</button><button class="btn btn--ghost" type="button" id="t3Dl">บันทึกรูปตัวละคร</button><button class="btn btn--ghost" type="button" id="t3Redo">แต่งตัวใหม่</button></div>
+      <div class="t3tk-acts"><button class="btn" type="button" id="t3Shot">บันทึกภาพตั๋ว</button><button class="btn btn--ghost" type="button" id="t3Dl">บันทึกรูปตัวละคร</button><button class="btn btn--ghost" type="button" id="t3Redo">แต่งตัวใหม่</button><button class="btn btn--ghost" type="button" id="t3CompBtn" hidden>👥 ส่งลิงก์ผู้ติดตาม</button></div>
+      <div class="t3-comp" id="t3Comp" hidden></div>
     </div>
 
     <p class="hero-msg" style="margin-top:22px">-///-</p>
@@ -2215,13 +2223,35 @@ var STORE_KEY = 'wedding_guest_v1';
     var rec=loadRsvp()||{};
     return location.origin+location.pathname+'?with='+rsvpId()+'&from='+encodeURIComponent(rec.name||(guest&&guest.name)||'')+'&openExternalBrowser=1';
   }
+  var COMP_MSG='มาทำบัตรเข้างานแต่ง Palida & Pachaya กัน (แต่งตัวละคร + ใส่ชื่อ) ->';
   function shareCompanionLink(){
-    var url=companionLink(), text='มาทำบัตรเข้างานแต่ง Palida & Pachaya ของคุณกัน (แต่งตัวละคร + ใส่ชื่อ)';
-    if(navigator.share){ navigator.share({title:'บัตรผู้ติดตาม',text:text,url:url}).catch(function(){}); return; }
-    function done(){ toast('คัดลอกลิงก์แล้ว ส่งให้ผู้ติดตามได้เลย'); }
-    if(navigator.clipboard) navigator.clipboard.writeText(url).then(done,function(){ prompt('คัดลอกลิงก์นี้ส่งให้ผู้ติดตาม',url); });
-    else prompt('คัดลอกลิงก์นี้ส่งให้ผู้ติดตาม',url);
+    var url=companionLink();
+    if(navigator.share){ navigator.share({title:'บัตรผู้ติดตาม',text:COMP_MSG,url:url}).catch(function(){}); return; }
+    copyText(url,'คัดลอกลิงก์แล้ว ส่งให้ผู้ติดตามได้เลย');
   }
+  function copyText(txt,okMsg){
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=txt; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta); ta.select(); var ok=false; try{ ok=document.execCommand('copy'); }catch(e){} ta.remove();
+      if(ok) toast(okMsg); else prompt('คัดลอกข้อความนี้',txt);
+    }
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(function(){ toast(okMsg); },fallback); else fallback();
+  }
+  // กล่องส่งลิงก์ผู้ติดตาม: ปุ่มแชร์ + ช่องลิงก์ (แตะ = เลือกทั้งหมด) + คัดลอก / คัดลอกพร้อมข้อความ
+  function compBox(intro){
+    var url=companionLink(), d=document.createElement('div');
+    d.innerHTML=(intro?'<p>'+intro+'</p>':'')+
+      '<button class="btn" type="button" data-a="share">ส่งลิงก์ให้ผู้ติดตาม</button>'+
+      '<div class="comp-link"><input type="text" readonly aria-label="ลิงก์สำหรับผู้ติดตาม"><button class="btn btn--ghost" type="button" data-a="copy">คัดลอก</button></div>'+
+      '<button class="comp-copy" type="button" data-a="msg">คัดลอกพร้อมข้อความ</button>';
+    var inp=d.querySelector('input'); inp.value=url;
+    inp.addEventListener('focus',function(){ this.select(); }); inp.addEventListener('click',function(){ this.select(); });
+    d.querySelector('[data-a=share]').addEventListener('click',shareCompanionLink);
+    d.querySelector('[data-a=copy]').addEventListener('click',function(){ copyText(url,'คัดลอกลิงก์แล้ว ✓'); });
+    d.querySelector('[data-a=msg]').addEventListener('click',function(){ copyText(COMP_MSG+' '+url,'คัดลอกข้อความพร้อมลิงก์แล้ว ✓'); });
+    return d;
+  }
+  function compIntro(rec){ return 'มากัน '+esc(String(rec.guests))+' ท่าน? ส่งลิงก์ให้ผู้ติดตามมาแต่งตัวละครและทำบัตรของตัวเอง (ลิงก์เดียวใช้ได้ทุกคน)'; }
   function sendCompanion(){
     if(!COMP || !guest) return;
     var data=Object.assign(buildData({mode:'attend',name:guest.name,guests:'0',showOnWall:'ไม่แสดง'}),
@@ -2261,12 +2291,21 @@ var STORE_KEY = 'wedding_guest_v1';
     $('#t3Stamp').hidden=!notYet; $('#t3Shot').classList.toggle('btn--ghost',notYet);
     $('#t3WaitTx').textContent = COMP ? 'QR บัตรเข้างานจะขึ้นเมื่อส่งบัตรผู้ติดตามแล้ว' : 'ตอบรับร่วมงานด้านล่าง เพื่อแสดงท้ายตั๋ว';
     $('#t3WaitBtn').hidden=!!COMP;
+    // ปุ่มส่งลิงก์ผู้ติดตามใต้ตั๋ว — เฉพาะแขกหลักที่ตอบมาร่วมงานและมีผู้ติดตาม (เผื่อลืมส่งหลังตอบ)
+    var hasComp = !!guest && !COMP && !!rec && rec.mode==='attend' && Number(rec.guests)>1;
+    $('#t3CompBtn').hidden=!hasComp; if(!hasComp){ $('#t3Comp').hidden=true; $('#t3Comp').innerHTML=''; }
     $('#t3Who').textContent=t3Who(); if(!on || typeof qrcode!=='function') return;
     var q=qrcode(0,'M'); q.addData(checkinUrl(rsvpId())); q.make();
     $('#passQrImg').src=q.createDataURL(6,2);
     $('#t3QrImg').src=$('#passQrImg').src; $('#t3No').textContent='PP-'+rsvpId().slice(-7).toUpperCase();
     var w=$('#passWith'); w.hidden=!COMP; if(COMP) w.textContent='ผู้ติดตามของ '+(COMP.parentName||'แขก');
   }
+
+  $('#t3CompBtn').addEventListener('click',function(){
+    var box=$('#t3Comp'), open=box.hidden;
+    box.innerHTML=''; if(open) box.appendChild(compBox(compIntro(loadRsvp()||{})));
+    box.hidden=!open;
+  });
 
   form.addEventListener('submit',function(e){
     e.preventDefault();
@@ -2342,7 +2381,7 @@ var STORE_KEY = 'wedding_guest_v1';
     var h=document.createElement('b'); h.textContent=(opt.returning?'คุณตอบรับแล้ว ':'ขอบคุณ ')+rec.name; t.appendChild(h);
     var p=document.createElement('p');
     p.innerHTML={
-      attend:'ยืนยันมาร่วมงาน <b>'+rec.guests+' ท่าน</b>,
+      attend:'ยืนยันมาร่วมงาน <b>'+rec.guests+' ท่าน</b>',
       gift:'ขอบคุณสำหรับของขวัญและคำอวยพร',
       wish:'ขอบคุณสำหรับการ์ดอวยพร'
     }[rec.mode]+(opt.edited?'<br><small>(อัปเดตคำตอบแล้ว)</small>':'');
@@ -2362,9 +2401,7 @@ var STORE_KEY = 'wedding_guest_v1';
     t.appendChild(row);
     if(rec.mode==='attend' && Number(rec.guests)>1){
       var cp=document.createElement('div'); cp.className='comp-share';
-      cp.innerHTML='<p>มากัน '+esc(String(rec.guests))+' ท่าน? ส่งลิงก์ให้ผู้ติดตามมาแต่งตัวละครและทำบัตรของตัวเอง (ลิงก์เดียวใช้ได้ทุกคน)</p>'+
-        '<button class="btn" type="button" id="rShareComp">ส่งลิงก์ให้ผู้ติดตาม</button>';
-      t.appendChild(cp); $('#rShareComp').addEventListener('click',shareCompanionLink);
+      cp.appendChild(compBox(compIntro(rec))); t.appendChild(cp);
     }
     form.hidden=true; t.hidden=false;
     $('#rEdit').addEventListener('click',function(){ fillForm(rec); t.hidden=true; form.hidden=false; $('#rsvpForm').scrollIntoView({behavior:'smooth',block:'start'}); });
