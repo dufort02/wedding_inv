@@ -2342,8 +2342,8 @@ var STORE_KEY = 'wedding_guest_v1';
     var h=document.createElement('b'); h.textContent=(opt.returning?'คุณตอบรับแล้ว ':'ขอบคุณ ')+rec.name; t.appendChild(h);
     var p=document.createElement('p');
     p.innerHTML={
-      attend:'ยืนยันมาร่วมงาน <b>'+rec.guests+' ท่าน</b>'+(rec.food?' · '+esc(rec.food):'')+'<br>เราตั้งตารอพบคุณในวันงาน',
-      gift:'ขอบคุณสำหรับของขวัญและคำอวยพร แม้ไม่ได้มาร่วมงาน แต่ใจของคุณมาถึงเราแล้ว',
+      attend:'ยืนยันมาร่วมงาน <b>'+rec.guests+' ท่าน</b>,
+      gift:'ขอบคุณสำหรับของขวัญและคำอวยพร',
       wish:'ขอบคุณสำหรับการ์ดอวยพร'
     }[rec.mode]+(opt.edited?'<br><small>(อัปเดตคำตอบแล้ว)</small>':'');
     t.appendChild(p);
