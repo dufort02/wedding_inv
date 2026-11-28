@@ -117,7 +117,11 @@ input[type=range]{width:100%;accent-color:var(--red)}
           <span class="muted">ส่วนที่มีลาย/จุดเล็ก ๆ (เช่น ชุดลายจุด กากเพชร) — เปิดเพื่อให้ลายยังอยู่</span>
         </div>
         <div id="texCtl" hidden style="margin-top:8px">
-          <div class="ctl"><label class="t" for="txS">ความชัดของลาย <span id="txSV"></span></label><input type="range" id="txS" min="0" max="100"></div>
+          <div class="ctl"><label class="t" for="txS">ความไวลาย <span id="txSV"></span></label><input type="range" id="txS" min="0" max="100"><small>มาก = ลายจาง ๆ ก็เป็นเส้นลาย · มากไป = ผ้าเรียบกลายเป็นจุดเลอะ</small></div>
+          <div class="ctl"><label class="t">เส้นลายเข้มกว่าพื้น</label>
+            <div class="seg" role="radiogroup" aria-label="เส้นลายเข้มกว่าพื้น">
+              <label><input type="radio" name="txK" value="1">+1 เฉด</label><label><input type="radio" name="txK" value="2">+2 เฉด</label><label><input type="radio" name="txK" value="3">+3 เฉด</label>
+            </div></div>
           <div class="ctl"><label class="t">ขยายจุดลาย</label>
             <div class="seg" role="radiogroup" aria-label="ขยายจุดลาย">
               <label><input type="radio" name="txG" value="0">ไม่ขยาย</label><label><input type="radio" name="txG" value="1">+1px</label><label><input type="radio" name="txG" value="2">+2px</label>
@@ -244,6 +248,15 @@ input[type=range]{width:100%;accent-color:var(--red)}
           var m=(I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0));
           if(m-v>diffT) line[k]=1; } } }
     I=null;
+    // 2.5) พื้นที่ในเส้นล้อม (zone) — ไม่สนสี ใช้กับ "เก็บลาย" ให้คลุมทั้งผืนผ้าที่มีหลายสี
+    var zone=new Int32Array(N).fill(-1), nz=0;
+    for(var z0=0;z0<N;z0++){ if(bg[z0]||line[z0]||zone[z0]>=0) continue; sp=0; st[sp++]=z0; zone[z0]=nz;
+      while(sp){ q=st[--sp]; var zx=q%W;
+        if(zx>0&&zone[q-1]<0&&!bg[q-1]&&!line[q-1]){ zone[q-1]=nz; st[sp++]=q-1; }
+        if(zx<W-1&&zone[q+1]<0&&!bg[q+1]&&!line[q+1]){ zone[q+1]=nz; st[sp++]=q+1; }
+        if(q>=W&&zone[q-W]<0&&!bg[q-W]&&!line[q-W]){ zone[q-W]=nz; st[sp++]=q-W; }
+        if(q<N-W&&zone[q+W]<0&&!bg[q+W]&&!line[q+W]){ zone[q+W]=nz; st[sp++]=q+W; } }
+      nz++; }
     // 3) ส่วน
     var lab=new Int32Array(N).fill(-1), regs=[], minA=Math.max(8,Math.round(N*.00003));
     for(var s0=0;s0<N;s0++){ if(bg[s0]||line[s0]||lab[s0]>=0) continue;
@@ -255,14 +268,16 @@ input[type=range]{width:100%;accent-color:var(--red)}
           if(Math.abs(p[o]-sr)+Math.abs(p[o+1]-sg)+Math.abs(p[o+2]-sb)>48) continue;   // ไม่ไหลจากผิวไปชุดขาวที่ไม่มีเส้นกั้น
           lab[u]=id; st[sp++]=u; } }
       regs.push({n:cnt,R:tR/cnt,G:tG/cnt,B:tB/cnt,L:tL/cnt,seed:s0,small:cnt<minA}); }
-    // ส่วนเล็กจิ๋ว (ขอบเส้น/จุด) → ซึมเข้าส่วนใหญ่ข้าง ๆ
+    // ส่วนเล็กจิ๋ว (ขอบเส้น/เศษสี) → ซึมเข้าส่วนใหญ่ข้าง ๆ ที่สีใกล้กัน
+    // แต่ชิ้นเล็กที่สีต่างจากรอบ ๆ ชัด ๆ (ลูกปัดทองบนผ้าชมพู จี้ ดอกไม้เล็ก) → เก็บไว้เป็นส่วนของตัวเอง แตะเลือกได้
+    var orig=new Int32Array(N); orig.set(lab);
+    function cdist(a2,b2){ return Math.abs(a2.R-b2.R)+Math.abs(a2.G-b2.G)+Math.abs(a2.B-b2.B); }
     for(k=0;k<N;k++) if(lab[k]>=0&&regs[lab[k]].small) lab[k]=-2;
     for(var pass=0;pass<8;pass++){ var changed=0;
-      for(k=0;k<N;k++){ if(lab[k]!==-2) continue; var kx=k%W, cand=-1;
-        if(kx>0&&lab[k-1]>=0) cand=lab[k-1]; else if(kx<W-1&&lab[k+1]>=0) cand=lab[k+1]; else if(k>=W&&lab[k-W]>=0) cand=lab[k-W]; else if(k<N-W&&lab[k+W]>=0) cand=lab[k+W];
-        if(cand>=0){ lab[k]=cand; changed++; } }
+      for(k=0;k<N;k++){ if(lab[k]!==-2) continue; var kx=k%W, sm=regs[orig[k]], nbs=[kx>0?k-1:-1, kx<W-1?k+1:-1, k>=W?k-W:-1, k<N-W?k+W:-1];
+        for(var t2=0;t2<4;t2++){ var u2=nbs[t2]; if(u2<0||lab[u2]<0) continue; if(cdist(sm,regs[lab[u2]])<=70){ lab[k]=lab[u2]; changed++; break; } } }
       if(!changed) break; }
-    for(k=0;k<N;k++) if(lab[k]===-2){ lab[k]=-3; }   // เหลือจริง ๆ → ใช้ความสว่างตัวเอง
+    for(k=0;k<N;k++) if(lab[k]===-2){ lab[k]=orig[k]; if(regs[orig[k]].n>=3) regs[orig[k]].small=false; else lab[k]=-3; }   // ชิ้นเล็กที่สีต่าง → เก็บไว้
     st=null;
     // 4) กลุ่มสี (ระยะสีไม่เกิน 14 — แคบพอให้ผิวชมพูอ่อนกับชุด/ส่วนสีขาวแยกกลุ่มกัน)
     var order=regs.map(function(_,i2){ return i2; }).filter(function(i2){ return !regs[i2].small; }).sort(function(a,b){ return regs[b].n-regs[a].n; });
@@ -272,7 +287,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
       if(best<0){ groups.push({R:g.R,G:g.G,B:g.B,n:0,sL:0,regs:[]}); best=groups.length-1; }
       var G2=groups[best]; G2.regs.push(i2); G2.n+=g.n; G2.sL+=g.L*g.n; g.grp=best; });
     groups.forEach(function(G){ G.L=G.sL/G.n; });
-    return {W:W,H:H,N:N,p:p,A:A,L:L,bg:bg,line:line,lab:lab,regs:regs,groups:groups};
+    return {W:W,H:H,N:N,p:p,A:A,L:L,bg:bg,line:line,lab:lab,regs:regs,groups:groups,zone:zone,nz:nz};
   }
   // เฉดอัตโนมัติของแต่ละกลุ่ม (ขึ้นกับ "ขาว" และจำนวนเฉด)
   function autoLevels(an){
@@ -282,9 +297,17 @@ input[type=range]{width:100%;accent-color:var(--red)}
     var sorted=dark.slice().sort(function(a,b){ return a.L-b.L; }), acc=0;
     for(var i=0;i<sorted.length;i++){ acc+=sorted[i].n; if(acc>=tot*.02){ lo=sorted[i].L; break; } }
     if(wT-lo<.05) lo=wT-.05;
+    // ความสว่างที่ใช้จัดเฉด (aL): เรียงจากเข้มไปอ่อน — กลุ่มใหญ่ที่สีต่างจากกลุ่มก่อนหน้าชัด ๆ (เช่น ทองกับชมพู)
+    // แต่ความสว่างใกล้กัน → ขยับให้ห่างกัน ~0.7 เฉด จะได้ไม่กลืนเป็นเฉดเดียวกันบนไม้
+    var gap=(wT-lo)/cfg.S*.7, minN=an.N*.0004, placed=[];
+    an.groups.forEach(function(G){ G.aL=G.L; });
+    sorted.forEach(function(G){ if(G.n<minN) return;
+      for(var j=placed.length-1;j>=0;j--){ var P=placed[j];
+        if(Math.abs(G.R-P.R)+Math.abs(G.G-P.G)+Math.abs(G.B-P.B)>70 && G.aL-P.aL<gap){ G.aL=Math.min(wT-.001,P.aL+gap); } }
+      placed.push(G); });
     an.groups.forEach(function(G){
       if(G.L>=wT){ G.auto={k:'w'}; return; }
-      var t=Math.pow(Math.min(1,Math.max(0,(wT-G.L)/(wT-lo))),.8);
+      var t=Math.pow(Math.min(1,Math.max(0,(wT-G.aL)/(wT-lo))),.8);
       G.auto={k:'s',t:shadeT(Math.min(cfg.S-1,Math.floor(t*cfg.S)))};
     });
   }
@@ -301,22 +324,14 @@ input[type=range]{width:100%;accent-color:var(--red)}
     it.ov.forEach(function(o){ var rid=a.lab[o.px]; if(rid<0) return;
       var g=a.regs[rid]; if(o.all && g.grp!=null) a.groups[g.grp].regs.forEach(function(r2){ lv[r2]=o.lv; }); else lv[rid]=o.lv;
     });
-    // เก็บลาย (รายส่วน): {px, all, on}
-    var tex=new Uint8Array(a.regs.length);
-    (it.tx||[]).forEach(function(o){ var rid=a.lab[o.px]; if(rid<0) return;
-      var g=a.regs[rid], v=o.on?1:0; if(o.all && g.grp!=null) a.groups[g.grp].regs.forEach(function(r2){ tex[r2]=v; }); else tex[rid]=v;
+    // เก็บลาย: เปิดเป็น "พื้นที่ในเส้นล้อม" (ทั้งผืนผ้า แม้มีหลายสี) · ทุกส่วนที่สีเดียวกัน = ทุกพื้นที่ที่มีสีนั้นอยู่ · {px, all, on}
+    var zt=new Uint8Array(a.nz);
+    (it.tx||[]).forEach(function(o){ var z=a.zone[o.px]; if(z<0) return; var v=o.on?1:0, rid=a.lab[o.px];
+      if(o.all && rid>=0 && a.regs[rid].grp!=null) a.groups[a.regs[rid].grp].regs.forEach(function(r2){ var z2=a.zone[a.regs[r2].seed]; if(z2>=0) zt[z2]=v; });
+      else zt[z]=v;
     });
-    lv.tex=tex; lv.txS=it.txS!=null?it.txS:50; lv.txG=it.txG||0;
+    lv.zt=zt; lv.txS=it.txS!=null?it.txS:50; lv.txG=it.txG||0; lv.txK=it.txK||2;
     return lv;
-  }
-  // ส่วนที่ "เก็บลาย": จุดที่เข้มกว่าสีหลักของส่วนนั้น → เข้มขึ้นทีละเฉดตามความต่าง (สีหลัก = ค่าความสว่างที่ 70% ของส่วน)
-  function texRefs(a,tex){
-    var hist={}, any=false, k, id;
-    for(k=0;k<a.N;k++){ id=a.lab[k]; if(id<0||!tex[id]) continue; any=true; (hist[id]||(hist[id]=new Uint32Array(101)))[Math.round(a.L[k]*100)]++; }
-    if(!any) return null;
-    var ref={}; Object.keys(hist).forEach(function(id2){ var h=hist[id2], tot=0, b; for(b=0;b<=100;b++) tot+=h[b];
-      var acc=0; for(b=0;b<=100;b++){ acc+=h[b]; if(acc>=tot*.7){ ref[id2]=b/100; break; } } });
-    return ref;
   }
   function stepDarker(lv,n){   // ขยับเข้มขึ้น n เฉด (ไม่เกินเฉดสุดท้าย — ไม่กลายเป็นดำแบบลายเส้น)
     if(n<=0||lv.k==='b') return lv;
@@ -324,28 +339,55 @@ input[type=range]{width:100%;accent-color:var(--red)}
     return {k:'s',t:shadeT(Math.min(cfg.S-1,i))};
   }
   // เรนเดอร์ → gray (0–255, -1 = พื้นหลัง)
+  function boxMean(a,r){   // ค่าเฉลี่ยความสว่างรอบ ๆ (รัศมี r) ด้วย integral image
+    var W=a.W, H=a.H, I=new Float64Array((W+1)*(H+1)), M=new Float32Array(a.N), x, y;
+    for(y=0;y<H;y++){ var rs=0; for(x=0;x<W;x++){ rs+=a.L[y*W+x]; I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+rs; } }
+    for(y=0;y<H;y++){ var y0=Math.max(0,y-r), y1=Math.min(H,y+r+1);
+      for(x=0;x<W;x++){ var x0=Math.max(0,x-r), x1=Math.min(W,x+r+1);
+        M[y*W+x]=(I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0)); } }
+    return M;
+  }
   function grayMap(a,lv){
-    var out=new Int16Array(a.N), k, id;
-    for(k=0;k<a.N;k++){
+    var out=new Int16Array(a.N), k, id, W=a.W, N=a.N;
+    for(k=0;k<N;k++){
       if(a.bg[k]){ out[k]=-1; continue; }
       if(a.line[k]){ out[k]=0; continue; }
       id=a.lab[k]; out[k]= id>=0 ? grayOf(lv[id]) : grayOf(levelOfPixelLum(a.L[k]));
     }
-    var ref=lv.tex ? texRefs(a,lv.tex) : null;
-    if(ref){
-      var step=.12-.09*(lv.txS/100), isT=new Uint8Array(a.N), W=a.W;   // ความชัดของลาย: มาก = ต่างนิดเดียวก็นับเป็นลาย
-      for(k=0;k<a.N;k++){ id=a.lab[k]; if(id<0||!lv.tex[id]||a.line[k]) continue; var d=ref[id]-a.L[k];
-        if(d>step*.5){ out[k]=grayOf(stepDarker(lv[id],Math.max(1,Math.round(d/step)))); isT[k]=1; } }
+    // ลายเป็นเส้น: ในส่วนที่ "เก็บลาย" จุดที่เข้มกว่ารอบ ๆ ตัวเล็กน้อย (เส้นลูกไม้ ลายผ้า) → เป็นเส้นลายเฉดเดียวกันทั้งหมด (เข้มกว่าพื้น +txK เฉด)
+    var hasTex=false; if(lv.zt) for(id=0;id<lv.zt.length;id++) if(lv.zt[id]){ hasTex=true; break; }
+    if(hasTex){
+      var M=boxMean(a,Math.max(2,Math.round(Math.min(W,a.H)/300))), thr=.10-.085*(lv.txS/100), isT=new Uint8Array(N);
+      for(k=0;k<N;k++){ id=a.lab[k]; if(id<0||a.zone[k]<0||!lv.zt[a.zone[k]]||a.line[k]) continue;
+        if(M[k]-a.L[k]>thr){ out[k]=grayOf(stepDarker(lv[id],lv.txK||2)); isT[k]=1; } }
       // ขยายจุดลาย (ให้จุดเล็ก ๆ ใหญ่พอให้เลเซอร์ทำรอย) — เฉพาะในส่วนเดียวกัน ไม่ทับเส้น
       for(var pass=0;pass<lv.txG;pass++){ var nx=out.slice(), nT=isT.slice();
-        for(k=0;k<a.N;k++){ id=a.lab[k]; if(id<0||!lv.tex[id]||a.line[k]) continue; var kx=k%W, best=out[k], u;
-          u=kx>0?k-1:-1;     if(u>=0&&isT[u]&&a.lab[u]===id&&out[u]<best) best=out[u];
-          u=kx<W-1?k+1:-1;   if(u>=0&&isT[u]&&a.lab[u]===id&&out[u]<best) best=out[u];
-          u=k>=W?k-W:-1;     if(u>=0&&isT[u]&&a.lab[u]===id&&out[u]<best) best=out[u];
-          u=k<a.N-W?k+W:-1;  if(u>=0&&isT[u]&&a.lab[u]===id&&out[u]<best) best=out[u];
+        for(k=0;k<a.N;k++){ id=a.lab[k]; if(id<0||a.zone[k]<0||!lv.zt[a.zone[k]]||a.line[k]) continue; var kx=k%W, best=out[k], u;
+          u=kx>0?k-1:-1;     if(u>=0&&isT[u]&&a.zone[u]===a.zone[k]&&out[u]<best) best=out[u];
+          u=kx<W-1?k+1:-1;   if(u>=0&&isT[u]&&a.zone[u]===a.zone[k]&&out[u]<best) best=out[u];
+          u=k>=W?k-W:-1;     if(u>=0&&isT[u]&&a.zone[u]===a.zone[k]&&out[u]<best) best=out[u];
+          u=k<a.N-W?k+W:-1;  if(u>=0&&isT[u]&&a.zone[u]===a.zone[k]&&out[u]<best) best=out[u];
           if(best<out[k]){ nx[k]=best; nT[k]=1; } }
         out=nx; isT=nT; }
     }
+    // ขอบเส้นเนียนเหมือนต้นฉบับ: พิกเซลขอบเส้น (ไม่ดำสนิท) ผสมระหว่างดำกับเฉดของส่วนข้าง ๆ ตามความเข้มเดิม
+    // → เส้นหนา/บาง/ปลายเรียวเหมือนรูปที่อัป ไม่หยักเป็นขั้นบันได · cov = ความเป็นเส้น 0–1 (ใช้กับไฟล์เส้นอย่างเดียวด้วย)
+    var cov=new Float32Array(N), LB=.05;
+    for(k=0;k<N;k++){ if(a.bg[k]) continue; var kx=k%W;
+      var near=a.line[k]; if(!near){ near=(kx>0&&a.line[k-1])||(kx<W-1&&a.line[k+1])||(k>=W&&a.line[k-W])||(k<N-W&&a.line[k+W]); }
+      if(!near) continue;
+      // ส่วนสีข้าง ๆ (ใกล้สุดในรัศมี 2px) → ความสว่างอ้างอิง + เฉดของส่วนนั้น
+      var rid=a.lab[k]>=0&&!a.line[k]?a.lab[k]:-1, best=-1;
+      if(rid<0){ for(var rr=1;rr<=2&&best<0;rr++){ var c4=[kx-rr>=0?k-rr:-1, kx+rr<W?k+rr:-1, k-rr*W, k+rr*W];
+          for(var t3=0;t3<4;t3++){ var u3=c4[t3]; if(u3>=0&&u3<N&&!a.line[u3]&&!a.bg[u3]&&a.lab[u3]>=0){ best=u3; break; } } } rid= best>=0 ? a.lab[best] : -1; }
+      var refL= rid>=0 ? Math.max(a.regs[rid].L,.2) : .9, fillG= rid>=0 ? (best>=0?out[best]:out[k]) : 255;
+      if(fillG<0) fillG=255;
+      var c=Math.min(1,Math.max(0,(refL-a.L[k])/(refL-LB)));
+      if(a.line[k]){ c=Math.max(c,.6); if(c>.85) c=1; }   // พิกเซลเส้น (รวมเส้นผมบาง) เข้มอย่างน้อย 60% · แกนเส้น → ดำสนิท
+      if(!a.line[k] && c<.15) continue;    // ไม่ใช่ขอบจริง
+      cov[k]=c; out[k]=Math.round(fillG*(1-c));
+    }
+    out.cov=cov;
     return out;
   }
   function toCanvas(a,gm,mode,keep){   // mode: 'white' | 'clear' · keep(k,g) → false = ขาว
@@ -404,11 +446,11 @@ input[type=range]{width:100%;accent-color:var(--red)}
     });
     $('#resetPart').disabled=!rs.length; syncTex();
   }
-  function texOn(){ if(selPx<0||!an||!regLv) return false; var rid=an.lab[selPx]; return rid>=0 && !!regLv.tex[rid]; }
+  function texOn(){ if(selPx<0||!an||!regLv) return false; var z=an.zone[selPx]; return z>=0 && !!regLv.zt[z]; }
   function syncTex(){
     var on=texOn(), b=$('#texBtn'); b.disabled=selPx<0; b.textContent='เก็บลาย: '+(on?'เปิด':'ปิด'); b.classList.toggle('main',on);
     var any=!!cur && cur.tx.some(function(o){ return o.on; }); $('#texCtl').hidden=!any;
-    if(cur){ $('#txS').value=cur.txS; $('#txSV').textContent=cur.txS+'%'; $$('input[name=txG]').forEach(function(r){ r.checked=+r.value===cur.txG; }); }
+    if(cur){ $('#txS').value=cur.txS; $('#txSV').textContent=cur.txS+'%'; $$('input[name=txG]').forEach(function(r){ r.checked=+r.value===cur.txG; }); $$('input[name=txK]').forEach(function(r){ r.checked=+r.value===(cur.txK||2); }); }
   }
   $('#texBtn').addEventListener('click',function(){
     if(selPx<0) return; var all=$('#sameAll').checked, rid=an.lab[selPx], on=!texOn();
@@ -417,6 +459,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
   });
   $('#txS').addEventListener('input',function(){ if(!cur) return; cur.txS=+this.value; $('#txSV').textContent=cur.txS+'%'; clearTimeout(texT); texT=setTimeout(redraw,120); });
   $$('input[name=txG]').forEach(function(r){ r.addEventListener('change',function(){ if(!cur) return; cur.txG=+r.value; redraw(); }); });
+  $$('input[name=txK]').forEach(function(r){ r.addEventListener('change',function(){ if(!cur) return; cur.txK=+r.value; redraw(); }); });
   var texT=null;
 
   function applyLevel(lv){
@@ -456,7 +499,7 @@ input[type=range]{width:100%;accent-color:var(--red)}
     Array.prototype.forEach.call(files,function(f){
       if(!/^image\//.test(f.type)) return;
       var url=URL.createObjectURL(f), img=new Image();
-      img.onload=function(){ var it={id:++seq,name:f.name,img:img,url:url,ov:[],tx:[],txS:50,txG:0}; items.push(it); addThumb(it); if(!cur) select(it); syncButtons(); };
+      img.onload=function(){ var it={id:++seq,name:f.name,img:img,url:url,ov:[],tx:[],txS:50,txG:0,txK:2}; items.push(it); addThumb(it); if(!cur) select(it); syncButtons(); };
       img.onerror=function(){ URL.revokeObjectURL(url); alert('เปิดรูปไม่ได้: '+f.name); };
       img.src=url;
     });
@@ -495,7 +538,9 @@ input[type=range]{width:100%;accent-color:var(--red)}
   $('#dlMainAll').addEventListener('click',function(){ var b=this; b.disabled=true; var list=items.slice(), i=0;
     (function next(){ if(i>=list.length){ b.disabled=!items.length; return; } exportMain(list[i++]).then(function(){ setTimeout(next,400); }); })(); });
   $('#dlLines').addEventListener('click',function(){ if(!cur) return;
-    withAnalysis(cur,function(a,lv){ save(toCanvas(a,grayMap(a,lv),'white',function(k,g){ return a.line[k]===1; }), base(cur.name)+'_laser_lines.png'); }); });
+    withAnalysis(cur,function(a,lv){ var gm=grayMap(a,lv), lm=new Int16Array(a.N);
+      for(var k=0;k<a.N;k++) lm[k]= a.bg[k] ? -1 : Math.round(255*(1-gm.cov[k]));   // เส้นดำ ขอบเนียนตามต้นฉบับ
+      save(toCanvas(a,lm,'white'), base(cur.name)+'_laser_lines.png'); }); });
   function buildPick(){
     var box=$('#pick'), was={}; $$('#pick input:checked').forEach(function(c){ was[c.value]=1; }); box.innerHTML='';
     levels().forEach(function(lv,i){ if(lv.k==='w') return;
